@@ -161,10 +161,26 @@ class Paper:
                 p.turn_to(seg.heading() + 180)
                 p.stroke_forward(seg.length() - seg.extra_length(stroke_width))
 
-        for seg in self.segments:
-            #STUB
+        if len(self.segments) == 1:
+            seg = self.segments[0]
             draw_segment_right(seg, first=True, last=True)
             draw_segment_left(seg, first=True, last=True)
+        else:
+            # Draw all the segments, going out along the right side, then back
+            # along the left, treating the first and last segments specially.
+            first_seg = self.segments[0]
+            last_seg = self.segments[-1]
+            middle_segments = self.segments[1:-1]
+
+            draw_segment_right(first_seg, first=True)
+            for seg in middle_segments:
+                draw_segment_right(seg)
+            draw_segment_right(last_seg, last=True)
+
+            draw_segment_left(last_seg, last=True)
+            for seg in reversed(middle_segments):
+                draw_segment_left(seg)
+            draw_segment_left(first_seg, first=True)
 
         return p.paper.to_svg_path()
 

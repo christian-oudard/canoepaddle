@@ -4,7 +4,6 @@ from nose.tools import (
     assert_raises,
 )
 
-
 from stroke import Pen, Paper, Segment, sqrt2
 
 def assert_points_equal(a, b):
@@ -88,4 +87,19 @@ def test_start_angle_error():
     assert_raises(
         ValueError,
         lambda: p.paper.to_svg_path_thick(stroke_width=1.0),
+    )
+
+def test_joint():
+    Paper.precision = 2
+
+    p = Pen()
+    p.move_to((-6, 0))
+    p.turn_to(0)
+    p.stroke_forward(6)
+    p.turn_right(60)
+    p.stroke_forward(6)
+    path_data = p.paper.to_svg_path_thick(stroke_width=1.0)
+    assert_equal(
+        path_data,
+        'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',
     )
