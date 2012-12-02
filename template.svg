@@ -9,21 +9,16 @@
     <style type="text/css">
         .lines {
             stroke: black;
-            stroke-width: 0.5;
+            stroke-width: 0.1;
             stroke-linecap: butt;
             fill: none;
         }
         .solid {
             stroke: none;
-            fill: none;
-
-            stroke: black;
-            stroke-width: 0.2;
-            stroke-linecap: butt;
-            fill: none;
+            fill: #a00;
         }
     </style>
-    <path class="solid" d="
+    <path class="lines" d="
         $path_data
         " />
 </svg>

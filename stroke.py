@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
     p = Pen()
     p.move_to((-3, 0))
-    p.turn_to(-45)
+    p.turn_to(190)
     p.stroke_forward(6, start_angle=90, end_angle=45)
     path_data += p.paper.to_svg_path_thick(width=1.0)
     path_data += p.paper.to_svg_path()
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     p = Pen()
     p.move_to((-3, -3))
     p.turn_to(0)
-    p.stroke_forward(10, start_angle=2)
+    p.stroke_forward(6)
     path_data += p.paper.to_svg_path_thick(width=1.0)
     path_data += p.paper.to_svg_path()
 
