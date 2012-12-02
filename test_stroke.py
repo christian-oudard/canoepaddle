@@ -13,10 +13,10 @@ def assert_points_equal(a, b):
     assert_almost_equal(ya, yb, places=12)
 
 def assert_segments_equal(s1, s2):
-    s1 = Segment(*s1)
-    s2 = Segment(*s2)
-    assert_points_equal(s1.a, s2.a)
-    assert_points_equal(s1.b, s2.b)
+    a1, b1 = s1
+    a2, b2 = s2
+    assert_points_equal(a1, a2)
+    assert_points_equal(b1, b2)
 
 def test_movement():
     p = Pen()
@@ -43,9 +43,10 @@ def test_svg_path_thick():
     Paper.precision = 2
 
     p = Pen()
+    p.set_width(1.0)
     p.turn_to(-45)
     p.stroke_forward(5)
-    path_data = p.paper.to_svg_path_thick(stroke_width=1.0)
+    path_data = p.paper.to_svg_path_thick()
     assert_equal(
         path_data,
         'M0.35,-0.35 L-0.35,0.35 L3.18,3.89 L3.89,3.18 z',
@@ -55,20 +56,22 @@ def test_start_angle():
     Paper.precision = 2
 
     p = Pen()
+    p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.stroke_forward(10, start_angle=-45, end_angle=30)
-    path_data = p.paper.to_svg_path_thick(stroke_width=1.0)
+    path_data = p.paper.to_svg_path_thick()
     assert_equal(
         path_data,
         'M-0.50,-0.50 L0.50,0.50 L9.13,0.50 L10.87,-0.50 z',
     )
 
     p = Pen()
+    p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(-45)
     p.stroke_forward(10, start_angle=90, end_angle=None)
-    path_data = p.paper.to_svg_path_thick(stroke_width=1.0)
+    path_data = p.paper.to_svg_path_thick()
     assert_equal(
         path_data,
         'M0.00,-0.71 L-0.00,0.71 L6.72,7.42 L7.42,6.72 z',
@@ -76,29 +79,32 @@ def test_start_angle():
 
 def test_start_angle_error():
     p = Pen()
+    p.set_width(1.0)
     p.stroke_forward(10, start_angle=0)
     assert_raises(
         ValueError,
-        lambda: p.paper.to_svg_path_thick(stroke_width=1.0),
+        lambda: p.paper.to_svg_path_thick(),
     )
 
     p = Pen()
+    p.set_width(1.0)
     p.stroke_forward(1, start_angle=40, end_angle=-40)
     assert_raises(
         ValueError,
-        lambda: p.paper.to_svg_path_thick(stroke_width=1.0),
+        lambda: p.paper.to_svg_path_thick(),
     )
 
 def test_joint():
     Paper.precision = 2
 
     p = Pen()
+    p.set_width(1.0)
     p.move_to((-6, 0))
     p.turn_to(0)
     p.stroke_forward(6)
     p.turn_right(60)
     p.stroke_forward(6)
-    path_data = p.paper.to_svg_path_thick(stroke_width=1.0)
+    path_data = p.paper.to_svg_path_thick()
     assert_equal(
         path_data,
         'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',

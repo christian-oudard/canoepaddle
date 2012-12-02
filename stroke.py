@@ -8,11 +8,12 @@ sqrt2 = math.sqrt(2)
 Point = namedtuple('Point', 'x, y')
 
 class Segment:
-    def __init__(self, a, b, start_angle=None, end_angle=None):
+    def __init__(self, a, b, width, start_angle=None, end_angle=None):
         self.a = a
         self.b = b
         self.start_angle = start_angle
         self.end_angle = end_angle
+        self.width = width
 
     def __iter__(self):
         yield self.a
@@ -58,11 +59,11 @@ class Segment:
             raise ValueError('Slant angle is too steep')
         return slant
 
-    def start_slant_width(self, stroke_width):
-        return self.calc_slant_width(stroke_width, self.start_slant())
+    def start_slant_width(self):
+        return self.calc_slant_width(self.width, self.start_slant())
 
-    def end_slant_width(self, stroke_width):
-        return self.calc_slant_width(stroke_width, self.end_slant())
+    def end_slant_width(self):
+        return self.calc_slant_width(self.width, self.end_slant())
 
     @staticmethod
     def calc_slant_width(stroke_width, slant):
@@ -72,13 +73,13 @@ class Segment:
         """
         return stroke_width / math.sin(math.radians(slant))
 
-    def extra_length(self, stroke_width):
+    def extra_length(self):
         """
         The extra length along the right side of the segment due to the angled
         start and end. Note that the same value for the left side is the
         negative of this.
         """
-        extra_length = (stroke_width / 2) * (
+        extra_length = (self.width / 2) * (
             math.tan(math.radians(self.start_slant() - 90)) -
             math.tan(math.radians(self.end_slant() - 90))
         )
@@ -93,10 +94,11 @@ class Paper:
     def __init__(self):
         self.segments = []
 
-    def add_segment(self, a, b, start_angle=None, end_angle=None):
+    def add_segment(self, a, b, width, start_angle=None, end_angle=None):
         new_segment = Segment(
             Point(*a),
             Point(*b),
+            width,
             start_angle,
             end_angle,
         )
@@ -105,11 +107,16 @@ class Paper:
         if len(self.segments) > 0:
             last_segment = self.segments[-1]
             if last_segment.b == new_segment.a:
-                joint_angle = (last_segment.heading() + new_segment.heading()) / 2 + 90
+                joint_angle = self.calc_joint_angle(last_segment, new_segment)
                 last_segment.end_angle = joint_angle
                 new_segment.start_angle = joint_angle
 
         self.segments.append(new_segment)
+
+    @staticmethod
+    def calc_joint_angle(last_segment, new_segment):
+        if last_segment.width == new_segment.width:
+            return (last_segment.heading() + new_segment.heading()) / 2 + 90
 
     def to_svg_path(self):
         output = []
@@ -129,7 +136,7 @@ class Paper:
             last_a, last_b = seg.a, seg.b
         return ' '.join(output)
 
-    def to_svg_path_thick(self, stroke_width):
+    def to_svg_path_thick(self):
         p = Pen()
 
         def draw_segment_right(seg, first=False, last=False):
@@ -139,18 +146,18 @@ class Paper:
                 p.turn_to(seg.heading())
                 p.turn_right(seg.start_slant())
 
-                sw = seg.start_slant_width(stroke_width)
+                sw = seg.start_slant_width()
                 p.move_forward(-sw / 2)
                 p.stroke_forward(sw)
 
             # Draw along the length of the segment.
             p.turn_to(seg.heading())
-            p.stroke_forward(seg.length() + seg.extra_length(stroke_width))
+            p.stroke_forward(seg.length() + seg.extra_length())
 
             if last:
                 # Draw the ending thickness edge.
                 p.turn_left(180 - seg.end_slant())
-                p.stroke_forward(seg.end_slant_width(stroke_width))
+                p.stroke_forward(seg.end_slant_width())
 
         def draw_segment_left(seg, first=False, last=False):
             if first:
@@ -159,7 +166,7 @@ class Paper:
             else:
                 # Continue path back towards the beginning.
                 p.turn_to(seg.heading() + 180)
-                p.stroke_forward(seg.length() - seg.extra_length(stroke_width))
+                p.stroke_forward(seg.length() - seg.extra_length())
 
         if len(self.segments) == 1:
             seg = self.segments[0]
@@ -185,14 +192,12 @@ class Paper:
         return p.paper.to_svg_path()
 
 
-
 class Pen:
     def __init__(self):
         self.paper = Paper()
         self._heading = 0
         self._position = (0.0, 0.0)
         self._width = 1.0
-        self._slant = None # Perpendicular to heading.
 
     def move_to(self, point):
         self._position = point
@@ -218,19 +223,23 @@ class Pen:
             vec.rotate((distance, 0), math.radians(self._heading)),
         )
 
+    def set_width(self, width):
+        self._width = width
+
     def stroke_forward(self, distance, start_angle=None, end_angle=None):
         old_position = self._position
         self.move_forward(distance)
         self.paper.add_segment(
             old_position,
             self._position,
+            self._width,
             start_angle=start_angle,
             end_angle=end_angle,
         )
 
     def stroke_close(self):
         first_point = self.paper.segments[0].a
-        self.paper.add_segment(self._position, first_point)
+        self.paper.add_segment(self._position, first_point, self._width)
         self.move_to(first_point)
 
     @property
@@ -241,30 +250,30 @@ class Pen:
     def heading(self):
         return self._heading
 
+def cosine_rule(a, b, gamma):
+    """
+    Find C where {A, B, C} are the sides of a triangle, and gamma is
+    the angle opposite C.
+    """
+    return a**2 + b**2 - 2 * a * b * math.cos(gamma)
+
+
 if __name__ == '__main__':
+    #TODO: make multiple strokes on one Paper easier.
+
     path_data = ''
 
     p = Pen()
+    p.set_width(1.0)
     p.move_to((-3, 3))
     p.turn_to(0)
-    p.stroke_forward(6, start_angle=45, end_angle=30)
-    path_data += p.paper.to_svg_path_thick(stroke_width=1.0)
-    path_data += p.paper.to_svg_path()
-
-    p = Pen()
-    p.move_to((-3, 0))
-    p.turn_to(190)
-    p.stroke_forward(6, start_angle=90, end_angle=45)
-    path_data += p.paper.to_svg_path_thick(stroke_width=1.0)
-    path_data += p.paper.to_svg_path()
-
-    p = Pen()
-    p.move_to((-3, -3))
-    p.turn_to(0)
-    p.stroke_forward(6)
-    p.turn_right(60)
-    p.stroke_forward(6)
-    path_data += p.paper.to_svg_path_thick(stroke_width=1.0)
+    p.stroke_forward(6, start_angle=45)
+    p.turn_right(120)
+    p.stroke_forward(3)
+    p.turn_left(120)
+    p.set_width(0.5)
+    p.stroke_forward(2, end_angle=-30)
+    path_data += p.paper.to_svg_path_thick()
     path_data += p.paper.to_svg_path()
 
     from string import Template
