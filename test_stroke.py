@@ -5,7 +5,7 @@ from nose.tools import (
 )
 
 
-from stroke import Pen, Paper, sqrt2
+from stroke import Pen, Paper, Segment, sqrt2
 
 def assert_points_equal(a, b):
     xa, ya = a
@@ -14,8 +14,10 @@ def assert_points_equal(a, b):
     assert_almost_equal(ya, yb, places=12)
 
 def assert_segments_equal(s1, s2):
-    assert_points_equal(s1[0], s2[0])
-    assert_points_equal(s1[1], s2[1])
+    s1 = Segment(*s1)
+    s2 = Segment(*s2)
+    assert_points_equal(s1.a, s2.a)
+    assert_points_equal(s1.b, s2.b)
 
 def test_movement():
     p = Pen()
