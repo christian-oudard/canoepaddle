@@ -3,55 +3,115 @@ from collections import namedtuple
 
 import vec
 
-sqrt2 = 2.0**0.5
+sqrt2 = math.sqrt(2)
 
 Point = namedtuple('Point', 'x, y')
-
-stroke_width = 1
+Segment = namedtuple('Segment', 'a, b, start_angle, end_angle')
 
 class Paper:
+    precision = 12
+
     def __init__(self):
         self.segments = []
-        self.precision = 12
 
-    def add_segment(self, a, b):
-        self.segments.append((
+    def add_segment(self, a, b, start_angle=None, end_angle=None):
+        self.segments.append(Segment(
             Point(*a),
             Point(*b),
+            start_angle,
+            end_angle,
         ))
 
     def to_svg_path(self):
         output = []
         last_a = last_b = None
         first = self.segments[0][0]
-        for a, b in self.segments:
+        for seg in self.segments:
             # Start a new line segment if necessary.
-            if a != last_b:
-                output.append('M{:.{p}f},{:.{p}f}'.format(a.x, -a.y, p=self.precision))
+            if seg.a != last_b:
+                output.append('M{:.{p}f},{:.{p}f}'.format(
+                    seg.a.x, -seg.a.y, p=self.precision))
             # Close the path, or continue the current segment.
-            if b == first:
+            if seg.b == first:
                 output.append('z')
             else:
-                output.append('L{:.{p}f},{:.{p}f}'.format(b.x, -b.y, p=self.precision))
-            last_a, last_b = a, b
+                output.append('L{:.{p}f},{:.{p}f}'.format(
+                    seg.b.x, -seg.b.y, p=self.precision))
+            last_a, last_b = seg.a, seg.b
         return ' '.join(output)
+
+    @staticmethod
+    def calc_slant(heading, angle):
+        r"""
+        The slant of a stroke is defined as the angle between the
+        direction of the stroke and the start angle of the pen.
+
+        90 degree slant:
+         ___
+        |___|
+
+        60 degree slant:
+        ____
+        \___\
+
+        120 degree slant:
+         ____
+        /___/
+
+        """
+        if angle is None:
+            return 90
+        slant = (heading - angle) % 180
+        if slant > 179 or slant < 1:
+            raise ValueError('Slant angle is too steep')
+        return slant
+
+    @staticmethod
+    def calc_slant_width(width, slant):
+        return width / math.sin(math.radians(slant))
+
+    @staticmethod
+    def calc_extra_length(width, slant1, slant2):
+        return (width / 2) * (
+            math.tan(math.radians(slant1 - 90)) -
+            math.tan(math.radians(slant2 - 90))
+        )
 
     def to_svg_path_thick(self, width):
         p = Pen()
-        p.paper.precision = self.precision
-        halfwidth = width / 2
-        for a, b in self.segments:
-            segment_length = vec.dist(a, b)
-            p.move_to(a)
-            p.turn_towards(b)
-            p.turn_right(90)
-            p.move_forward(-halfwidth)
-            p.stroke_forward(width)
-            p.turn_left(90)
-            p.stroke_forward(segment_length)
-            p.turn_left(90)
-            p.stroke_forward(width)
+        for seg in self.segments:
+            segment_length = vec.dist(seg.a, seg.b)
+            segment_heading = math.degrees(vec.heading(vec.vfrom(seg.a, seg.b)))
+
+            start_slant = self.calc_slant(segment_heading, seg.start_angle)
+            slant_width = self.calc_slant_width(width, start_slant)
+
+            end_slant = self.calc_slant(segment_heading, seg.end_angle)
+            end_slant_width = self.calc_slant_width(width, end_slant)
+
+            extra_length = self.calc_extra_length(width, start_slant, end_slant)
+            if abs(extra_length) > segment_length:
+                raise ValueError('Slant is too extreme for the length and width of the segment.')
+
+            # Draw the starting thickness edge.
+            p.move_to(seg.a)
+            p.turn_to(segment_heading)
+            p.turn_right(start_slant)
+
+            p.move_forward(-slant_width / 2)
+            p.stroke_forward(slant_width)
+
+            # Draw along the length of the segment.
+            p.turn_left(start_slant)
+            p.stroke_forward(extra_length + segment_length)
+
+            # Draw the ending thicknes edge.
+            p.turn_left(180 - end_slant)
+            p.stroke_forward(end_slant_width)
+
+            # Close the path to finish.
             p.stroke_close()
+
         return p.paper.to_svg_path()
 
 
@@ -87,10 +147,15 @@ class Pen:
             vec.rotate((distance, 0), math.radians(self._heading)),
         )
 
-    def stroke_forward(self, distance):
+    def stroke_forward(self, distance, start_angle=None, end_angle=None):
         old_position = self._position
         self.move_forward(distance)
-        self.paper.add_segment(old_position, self._position)
+        self.paper.add_segment(
+            old_position,
+            self._position,
+            start_angle=start_angle,
+            end_angle=end_angle,
+        )
 
     def stroke_close(self):
         first_point = self.paper.segments[0][0]
@@ -106,15 +171,28 @@ class Pen:
         return self._heading
 
 if __name__ == '__main__':
+    path_data = ''
+
     p = Pen()
+    p.move_to((-3, 3))
+    p.turn_to(0)
+    p.stroke_forward(6, start_angle=45, end_angle=30)
+    path_data += p.paper.to_svg_path_thick(width=1.0)
+    path_data += p.paper.to_svg_path()
 
-    p.move_to((-5, 0))
+    p = Pen()
+    p.move_to((-3, 0))
     p.turn_to(-45)
-    p.stroke_forward(5)
-    p.turn_left(90)
-    p.stroke_forward(10)
+    p.stroke_forward(6, start_angle=90, end_angle=45)
+    path_data += p.paper.to_svg_path_thick(width=1.0)
+    path_data += p.paper.to_svg_path()
 
-    path_data = p.paper.to_svg_path_thick(width=1.0)
+    p = Pen()
+    p.move_to((-3, -3))
+    p.turn_to(0)
+    p.stroke_forward(10, start_angle=2)
+    path_data += p.paper.to_svg_path_thick(width=1.0)
+    path_data += p.paper.to_svg_path()
 
     from string import Template
     with open('template.svg') as f:
