@@ -3,6 +3,8 @@ from collections import namedtuple
 
 import vec
 
+SMOOTH_JOINTS = True
+
 sqrt2 = math.sqrt(2)
 
 Point = namedtuple('Point', 'x, y')
@@ -115,8 +117,18 @@ class Paper:
 
     @staticmethod
     def calc_joint_angle(last_segment, new_segment):
-        if last_segment.width == new_segment.width:
-            return (last_segment.heading() + new_segment.heading()) / 2 + 90
+        # Solve the parallelogram created by the previous stroke intersecting
+        # with the next stroke. The diagonal of this parallelogram is at the
+        # correct joint angle.
+        w1 = last_segment.width
+        w2 = new_segment.width
+        theta = (new_segment.heading() - last_segment.heading()) % 180
+        sin_theta = math.sin(math.radians(theta))
+        v1 = vec.vfrom(last_segment.a, last_segment.b)
+        v2 = vec.vfrom(new_segment.a, new_segment.b)
+        v1 = vec.norm(v1, w2 * sin_theta)
+        v2 = vec.norm(v2, w1 * sin_theta)
+        return math.degrees(vec.heading(vec.vfrom(v1, v2)))
 
     def to_svg_path(self):
         output = []
@@ -168,6 +180,12 @@ class Paper:
                 p.turn_to(seg.heading() + 180)
                 p.stroke_forward(seg.length() - seg.extra_length())
 
+        if SMOOTH_JOINTS == False:
+            for seg in self.segments:
+                draw_segment_right(seg, first=True, last=True)
+                draw_segment_left(seg, first=True, last=True)
+            return p.paper.to_svg_path()
+
         if len(self.segments) == 1:
             seg = self.segments[0]
             draw_segment_right(seg, first=True, last=True)
@@ -205,11 +223,10 @@ class Pen:
     def turn_to(self, heading):
         self._heading = heading % 360
 
-    def turn_towards(self, point):
-        self.turn_to(
-            math.degrees(
-                vec.heading(
-                    vec.vfrom(self._position, point))))
+    def turn_toward(self, point):
+        v = vec.vfrom(self._position, point)
+        heading = math.degrees(vec.heading(v))
+        self.turn_to(heading)
 
     def turn_left(self, angle):
         self.turn_to(self._heading + angle)

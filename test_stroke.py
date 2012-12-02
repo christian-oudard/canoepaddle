@@ -22,7 +22,7 @@ def test_movement():
     p = Pen()
 
     p.move_to((0, 0))
-    p.turn_towards((1, 1))
+    p.turn_toward((1, 1))
     assert_equal(p.heading, 45)
 
 def test_stroke():
@@ -108,4 +108,31 @@ def test_joint():
     assert_equal(
         path_data,
         'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',
+    )
+
+def test_offwidth_joint():
+    p = Pen()
+    p.set_width(1.0)
+    p.turn_to(0)
+    p.move_forward(-3)
+    p.stroke_forward(3)
+    p.set_width(0.5)
+    p.turn_left(90)
+    p.stroke_forward(3)
+    path_data = p.paper.to_svg_path_thick()
+    assert_equal(
+        path_data,
+        'M-3.00,-0.50 L-3.00,0.50 L0.25,0.50 L0.25,-3.00 L-0.25,-3.00 L-0.25,-0.50 z'
+    )
+
+def test_offwidth_joint_error():
+    p = Pen()
+    p.set_width(1.0)
+    p.turn_to(0)
+    p.stroke_forward(3)
+    p.set_width(0.5)
+    p.stroke_forward(3)
+    assert_raises(
+        ValueError,
+        lambda: p.paper.to_svg_path_thick(),
     )
