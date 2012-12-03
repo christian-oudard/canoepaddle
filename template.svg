@@ -18,7 +18,7 @@
             fill: #a00;
         }
     </style>
-    <path class="lines" d="
+    <path class="solid" d="
         $path_data
         " />
 </svg>

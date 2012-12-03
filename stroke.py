@@ -281,14 +281,16 @@ def cosine_rule(a, b, gamma):
 
 if __name__ == '__main__':
     p = Pen()
-    p.move_to((-3, 3))
+    p.set_width(1.0)
     p.turn_to(0)
-    p.stroke_forward(6)
-    p.move_to((-3, 0))
-    p.stroke_forward(6)
+    p.stroke_forward(3, end_angle=-45)
+    p.turn_right(45)
+    p.move_forward(0.5 * sqrt2 + 0.5)
+    p.turn_right(90)
+    p.stroke_forward(3, start_angle=-45)
 
     path_data = p.paper.to_svg_path_thick()
-    path_data += p.paper.to_svg_path()
+    #path_data += p.paper.to_svg_path()
 
     from string import Template
     with open('template.svg') as f:
