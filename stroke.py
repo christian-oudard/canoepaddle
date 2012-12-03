@@ -91,10 +91,8 @@ class Segment:
 
 
 class Paper:
-    precision = 12
-
     def __init__(self):
-        self.segments = []
+        self.strokes = []
 
     def add_segment(self, a, b, width, start_angle=None, end_angle=None):
         new_segment = Segment(
@@ -105,15 +103,24 @@ class Paper:
             end_angle,
         )
 
-        # Add a joint if necessary.
-        if len(self.segments) > 0:
-            last_segment = self.segments[-1]
+        # Check whether we are continuing the current stroke or starting a
+        # new one.
+        continuing = False
+        if len(self.strokes) > 0:
+            segments = self.strokes[-1]
+            last_segment = segments[-1]
             if last_segment.b == new_segment.a:
-                joint_angle = self.calc_joint_angle(last_segment, new_segment)
-                last_segment.end_angle = joint_angle
-                new_segment.start_angle = joint_angle
+                continuing = True
 
-        self.segments.append(new_segment)
+        if continuing:
+            self.strokes[-1].append(new_segment)
+            # Add a joint between successive segments.
+            joint_angle = self.calc_joint_angle(last_segment, new_segment)
+            last_segment.end_angle = joint_angle
+            new_segment.start_angle = joint_angle
+        else:
+            # Start a new stroke.
+            self.strokes.append([new_segment])
 
     @staticmethod
     def calc_joint_angle(last_segment, new_segment):
@@ -130,84 +137,81 @@ class Paper:
         v2 = vec.norm(v2, w1 * sin_theta)
         return math.degrees(vec.heading(vec.vfrom(v1, v2)))
 
-    def to_svg_path(self):
+    def to_svg_path(self, precision=12):
         output = []
-        last_a = last_b = None
-        first = self.segments[0].a
-        for seg in self.segments:
-            # Start a new line segment if necessary.
-            if seg.a != last_b:
-                output.append('M{:.{p}f},{:.{p}f}'.format(
-                    seg.a.x, -seg.a.y, p=self.precision))
-            # Close the path, or continue the current segment.
-            if seg.b == first:
-                output.append('z')
-            else:
-                output.append('L{:.{p}f},{:.{p}f}'.format(
-                    seg.b.x, -seg.b.y, p=self.precision))
-            last_a, last_b = seg.a, seg.b
+        for segments in self.strokes:
+            # Start a new stroke.
+            start_point = segments[0].a
+            output.append('M{:.{p}f},{:.{p}f}'.format(
+                start_point.x, -start_point.y, p=precision))
+            # Draw the rest of the stroke.
+            for seg in segments:
+                # Close the path, or continue the current segment.
+                if seg.b == start_point:
+                    output.append('z')
+                else:
+                    output.append('L{:.{p}f},{:.{p}f}'.format(
+                        seg.b.x, -seg.b.y, p=precision))
         return ' '.join(output)
 
-    def to_svg_path_thick(self):
-        p = Pen()
+    def to_svg_path_thick(self, precision=12):
+        pen = Pen()
+        for segments in self.strokes:
+            self.draw_stroke_thick(pen, segments)
+        return pen.paper.to_svg_path(precision=precision)
 
-        def draw_segment_right(seg, first=False, last=False):
-            if first:
-                # Draw the beginning edge.
-                p.move_to(seg.a)
-                p.turn_to(seg.heading())
-                p.turn_right(seg.start_slant())
-
-                sw = seg.start_slant_width()
-                p.move_forward(-sw / 2)
-                p.stroke_forward(sw)
-
-            # Draw along the length of the segment.
-            p.turn_to(seg.heading())
-            p.stroke_forward(seg.length() + seg.extra_length())
-
-            if last:
-                # Draw the ending thickness edge.
-                p.turn_left(180 - seg.end_slant())
-                p.stroke_forward(seg.end_slant_width())
-
-        def draw_segment_left(seg, first=False, last=False):
-            if first:
-                # Close the path to finish.
-                p.stroke_close()
-            else:
-                # Continue path back towards the beginning.
-                p.turn_to(seg.heading() + 180)
-                p.stroke_forward(seg.length() - seg.extra_length())
-
-        if SMOOTH_JOINTS == False:
-            for seg in self.segments:
-                draw_segment_right(seg, first=True, last=True)
-                draw_segment_left(seg, first=True, last=True)
-            return p.paper.to_svg_path()
-
-        if len(self.segments) == 1:
-            seg = self.segments[0]
-            draw_segment_right(seg, first=True, last=True)
-            draw_segment_left(seg, first=True, last=True)
+    def draw_stroke_thick(self, pen, segments):
+        if len(segments) == 1:
+            seg = segments[0]
+            self.draw_segment_right(pen, seg, first=True, last=True)
+            self.draw_segment_left(pen, seg, first=True, last=True)
         else:
             # Draw all the segments, going out along the right side, then back
             # along the left, treating the first and last segments specially.
-            first_seg = self.segments[0]
-            last_seg = self.segments[-1]
-            middle_segments = self.segments[1:-1]
+            first_seg = segments[0]
+            last_seg = segments[-1]
+            middle_segments = segments[1:-1]
 
-            draw_segment_right(first_seg, first=True)
+            self.draw_segment_right(pen, first_seg, first=True)
             for seg in middle_segments:
-                draw_segment_right(seg)
-            draw_segment_right(last_seg, last=True)
+                self.draw_segment_right(pen, seg)
+            self.draw_segment_right(pen, last_seg, last=True)
 
-            draw_segment_left(last_seg, last=True)
+            self.draw_segment_left(pen, last_seg, last=True)
             for seg in reversed(middle_segments):
-                draw_segment_left(seg)
-            draw_segment_left(first_seg, first=True)
+                self.draw_segment_left(pen, seg)
+            self.draw_segment_left(pen, first_seg, first=True)
 
-        return p.paper.to_svg_path()
+    @staticmethod
+    def draw_segment_right(pen, seg, first=False, last=False):
+        if first:
+            # Draw the beginning edge.
+            pen.move_to(seg.a)
+            pen.turn_to(seg.heading())
+            pen.turn_right(seg.start_slant())
+
+            sw = seg.start_slant_width()
+            pen.move_forward(-sw / 2)
+            pen.stroke_forward(sw)
+
+        # Draw along the length of the segment.
+        pen.turn_to(seg.heading())
+        pen.stroke_forward(seg.length() + seg.extra_length())
+
+        if last:
+            # Draw the ending thickness edge.
+            pen.turn_left(180 - seg.end_slant())
+            pen.stroke_forward(seg.end_slant_width())
+
+    @staticmethod
+    def draw_segment_left(pen, seg, first=False, last=False):
+        if first:
+            # Close the path to finish.
+            pen.stroke_close()
+        else:
+            # Continue path back towards the beginning.
+            pen.turn_to(seg.heading() + 180)
+            pen.stroke_forward(seg.length() - seg.extra_length())
 
 
 class Pen:
@@ -255,7 +259,7 @@ class Pen:
         )
 
     def stroke_close(self):
-        first_point = self.paper.segments[0].a
+        first_point = self.paper.strokes[-1][0].a
         self.paper.add_segment(self._position, first_point, self._width)
         self.move_to(first_point)
 
@@ -276,21 +280,14 @@ def cosine_rule(a, b, gamma):
 
 
 if __name__ == '__main__':
-    #TODO: make multiple strokes on one Paper easier.
-
-    path_data = ''
-
     p = Pen()
-    p.set_width(1.0)
     p.move_to((-3, 3))
     p.turn_to(0)
-    p.stroke_forward(6, start_angle=45)
-    p.turn_right(120)
-    p.stroke_forward(3)
-    p.turn_left(120)
-    p.set_width(0.5)
-    p.stroke_forward(2, end_angle=-30)
-    path_data += p.paper.to_svg_path_thick()
+    p.stroke_forward(6)
+    p.move_to((-3, 0))
+    p.stroke_forward(6)
+
+    path_data = p.paper.to_svg_path_thick()
     path_data += p.paper.to_svg_path()
 
     from string import Template
