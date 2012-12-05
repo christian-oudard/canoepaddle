@@ -215,15 +215,26 @@ class Paper:
             pen.stroke_forward(seg.length() - seg.extra_length())
 
 
+def flip_angle_x(angle):
+    return 180 - angle
+
 class Pen:
     def __init__(self, offset=(0, 0)):
         self.paper = Paper(offset)
         self._heading = 0
         self._position = (0.0, 0.0)
         self._width = 1.0
-        self.offset = offset
+        self.flipped_x = False
+
+    def flip_x(self):
+        """
+        Make turns behave in the x-opposite manner.
+        """
+        self.flipped_x = not self.flipped_x
 
     def turn_to(self, heading):
+        if self.flipped_x:
+            heading = flip_angle_x(heading)
         self._heading = heading % 360
 
     def turn_toward(self, point):
