@@ -233,6 +233,9 @@ class Pen:
         """
         self.flipped_x = not self.flipped_x
 
+    def set_width(self, width):
+        self._width = width
+
     def turn_to(self, heading):
         if self.flipped_x:
             heading = flip_angle_x(heading)
@@ -255,8 +258,21 @@ class Pen:
     def move_forward(self, distance):
         self._position = self._calc_forward_position(distance)
 
-    def set_width(self, width):
-        self._width = width
+    def move_to_y(self, y_target):
+        """
+        Move forward in the current orientation, until the y coordinate
+        equals the given value.
+        """
+        new_position = self._calc_forward_to_y(y_target)
+        self.move_to(new_position)
+
+    def move_to_x(self, x_target):
+        """
+        Move forward in the current orientation, until the x coordinate
+        equals the given value.
+        """
+        new_position = self._calc_forward_to_x(x_target)
+        self.move_to(new_position)
 
     def stroke_to(self, point, start_angle=None, end_angle=None):
         old_position = self._position
@@ -290,10 +306,7 @@ class Pen:
         Stroke forward in the current orientation, until the y coordinate
         equals the given value.
         """
-        x, y = self.position
-        y_diff = y_target - y
-        x_diff = y_diff / math.tan(math.radians(self.heading))
-        new_position = vec.add(self.position, (x_diff, y_diff))
+        new_position = self._calc_forward_to_y(y_target)
         self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
     def stroke_to_x(self, x_target, start_angle=None, end_angle=None):
@@ -301,10 +314,7 @@ class Pen:
         Stroke forward in the current orientation, until the x coordinate
         equals the given value.
         """
-        x, y = self.position
-        x_diff = x_target - x
-        y_diff = x_diff * math.tan(math.radians(self.heading))
-        new_position = vec.add(self.position, (x_diff, y_diff))
+        new_position = self._calc_forward_to_x(x_target)
         self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
     def last_slant_width(self):
@@ -327,6 +337,18 @@ class Pen:
             self.position,
             vec.rotate((distance, 0), math.radians(self.heading)),
         )
+
+    def _calc_forward_to_y(self, y_target):
+        x, y = self.position
+        y_diff = y_target - y
+        x_diff = y_diff / math.tan(math.radians(self.heading))
+        return vec.add(self.position, (x_diff, y_diff))
+
+    def _calc_forward_to_x(self, x_target):
+        x, y = self.position
+        x_diff = x_target - x
+        y_diff = x_diff * math.tan(math.radians(self.heading))
+        return vec.add(self.position, (x_diff, y_diff))
 
 
 def cosine_rule(a, b, gamma):
