@@ -4,7 +4,7 @@ from nose.tools import (
     assert_raises,
 )
 
-from stroke import Pen, Paper, Segment, sqrt2
+from canoepaddle import Pen, sqrt2
 
 def assert_points_equal(a, b):
     xa, ya = a
@@ -39,6 +39,19 @@ def test_stroke():
         ((0, 0), (sqrt2, sqrt2)),
     ]):
         assert_segments_equal(actual, target)
+
+def test_stroke_to_coordinate():
+    p = Pen()
+
+    p.move_to((0, 0))
+    p.turn_to(45)
+    p.stroke_to_y(3)
+    assert_points_equal(p.position, (3, 3))
+
+    p.move_to((0, 0))
+    p.turn_toward((2, 1))
+    p.stroke_to_x(8)
+    assert_points_equal(p.position, (8, 4))
 
 def test_svg_path_thick():
     p = Pen()

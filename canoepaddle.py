@@ -252,8 +252,8 @@ class Pen:
         self.move_to(point)
         self.paper.add_segment(
             old_position,
-            self._position,
-            self._width,
+            self.position,
+            self.width,
             start_angle=start_angle,
             end_angle=end_angle,
         )
@@ -263,16 +263,41 @@ class Pen:
         self.move_forward(distance)
         self.paper.add_segment(
             old_position,
-            self._position,
-            self._width,
+            self.position,
+            self.width,
             start_angle=start_angle,
             end_angle=end_angle,
         )
 
     def stroke_close(self):
         first_point = self.paper.strokes[-1][0].a
-        self.paper.add_segment(self._position, first_point, self._width)
-        self.move_to(first_point)
+        self.stroke_to(first_point)
+
+    def stroke_to_y(self, y_target, start_angle=None, end_angle=None):
+        """
+        Stroke forward in the current orientation, until the y coordinate
+        equals the given value.
+        """
+        x, y = self.position
+        y_diff = abs(y - y_target)
+        v_dir = vec.rotate((1, 0), math.radians(self._heading))
+        x_dir, y_dir = v_dir
+        v = vec.mul(v_dir, y_diff / y_dir)
+        new_position = vec.add(self.position, v)
+        self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
+
+    def stroke_to_x(self, x_target, start_angle=None, end_angle=None):
+        """
+        Stroke forward in the current orientation, until the x coordinate
+        equals the given value.
+        """
+        x, y = self.position
+        x_diff = abs(x - x_target)
+        v_dir = vec.rotate((1, 0), math.radians(self._heading))
+        x_dir, y_dir = v_dir
+        v = vec.mul(v_dir, x_diff / x_dir)
+        new_position = vec.add(self.position, v)
+        self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
     @property
     def position(self):
@@ -281,6 +306,11 @@ class Pen:
     @property
     def heading(self):
         return self._heading
+
+    @property
+    def width(self):
+        return self._width
+
 
 def cosine_rule(a, b, gamma):
     """
