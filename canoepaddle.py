@@ -216,7 +216,8 @@ class Paper:
 
 
 def flip_angle_x(angle):
-    return 180 - angle
+    if angle is not None:
+        return 180 - angle
 
 class Pen:
     def __init__(self, offset=(0, 0)):
@@ -252,10 +253,7 @@ class Pen:
         self._position = point
 
     def move_forward(self, distance):
-        self._position = vec.add(
-            self._position,
-            vec.rotate((distance, 0), math.radians(self.heading)),
-        )
+        self._position = self._calc_forward_position(distance)
 
     def set_width(self, width):
         self._width = width
@@ -263,6 +261,11 @@ class Pen:
     def stroke_to(self, point, start_angle=None, end_angle=None):
         old_position = self._position
         self.move_to(point)
+
+        if self.flipped_x:
+            start_angle = flip_angle_x(start_angle)
+            end_angle = flip_angle_x(end_angle)
+
         self.paper.add_segment(
             old_position,
             self.position,
@@ -272,12 +275,8 @@ class Pen:
         )
 
     def stroke_forward(self, distance, start_angle=None, end_angle=None):
-        old_position = self._position
-        self.move_forward(distance)
-        self.paper.add_segment(
-            old_position,
-            self.position,
-            self.width,
+        self.stroke_to(
+            self._calc_forward_position(distance),
             start_angle=start_angle,
             end_angle=end_angle,
         )
@@ -322,6 +321,12 @@ class Pen:
     @property
     def width(self):
         return self._width
+
+    def _calc_forward_position(self, distance):
+        return vec.add(
+            self.position,
+            vec.rotate((distance, 0), math.radians(self.heading)),
+        )
 
 
 def cosine_rule(a, b, gamma):
