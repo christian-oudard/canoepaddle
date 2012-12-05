@@ -1,10 +1,15 @@
+import math
+
 from nose.tools import (
     assert_equal,
     assert_almost_equal,
     assert_raises,
 )
 
-from canoepaddle import Pen, sqrt2
+from canoepaddle import Pen
+
+sqrt2 = math.sqrt(2)
+sqrt3 = math.sqrt(3)
 
 def assert_points_equal(a, b):
     xa, ya = a
@@ -42,16 +47,23 @@ def test_stroke():
 
 def test_stroke_to_coordinate():
     p = Pen()
-
     p.move_to((0, 0))
     p.turn_to(45)
     p.stroke_to_y(3)
     assert_points_equal(p.position, (3, 3))
 
-    p.move_to((0, 0))
-    p.turn_toward((2, 1))
-    p.stroke_to_x(8)
-    assert_points_equal(p.position, (8, 4))
+    for x, y in [
+        (2, 1),
+        (3, -4),
+        (-7, -5),
+        (-6, 6),
+    ]:
+        p = Pen()
+
+        p.move_to((0, 0))
+        p.turn_toward((x, y))
+        p.stroke_to_y(y * 2)
+        assert_points_equal(p.position, (x * 2, y * 2))
 
 def test_svg_path_thick():
     p = Pen()

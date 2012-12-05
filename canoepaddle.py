@@ -5,8 +5,6 @@ import vec
 
 SMOOTH_JOINTS = True
 
-sqrt2 = math.sqrt(2)
-
 Point = namedtuple('Point', 'x, y')
 
 class Segment:
@@ -230,7 +228,7 @@ class Pen:
         self.turn_to(heading)
 
     def turn_left(self, angle):
-        self.turn_to(self._heading + angle)
+        self.turn_to(self.heading + angle)
 
     def turn_right(self, angle):
         self.turn_left(-angle)
@@ -241,7 +239,7 @@ class Pen:
     def move_forward(self, distance):
         self._position = vec.add(
             self._position,
-            vec.rotate((distance, 0), math.radians(self._heading)),
+            vec.rotate((distance, 0), math.radians(self.heading)),
         )
 
     def set_width(self, width):
@@ -279,11 +277,9 @@ class Pen:
         equals the given value.
         """
         x, y = self.position
-        y_diff = abs(y - y_target)
-        v_dir = vec.rotate((1, 0), math.radians(self._heading))
-        x_dir, y_dir = v_dir
-        v = vec.mul(v_dir, y_diff / y_dir)
-        new_position = vec.add(self.position, v)
+        y_diff = y_target - y
+        x_diff = y_diff / math.tan(math.radians(self.heading))
+        new_position = vec.add(self.position, (x_diff, y_diff))
         self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
     def stroke_to_x(self, x_target, start_angle=None, end_angle=None):
@@ -292,11 +288,9 @@ class Pen:
         equals the given value.
         """
         x, y = self.position
-        x_diff = abs(x - x_target)
-        v_dir = vec.rotate((1, 0), math.radians(self._heading))
-        x_dir, y_dir = v_dir
-        v = vec.mul(v_dir, x_diff / x_dir)
-        new_position = vec.add(self.position, v)
+        x_diff = x_target - x
+        y_diff = x_diff * math.tan(math.radians(self.heading))
+        new_position = vec.add(self.position, (x_diff, y_diff))
         self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
     @property
@@ -321,6 +315,8 @@ def cosine_rule(a, b, gamma):
 
 
 if __name__ == '__main__':
+    sqrt2 = math.sqrt(2)
+
     p = Pen()
     p.set_width(1.0)
     p.turn_to(0)
