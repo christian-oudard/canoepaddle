@@ -65,6 +65,11 @@ def test_stroke_to_coordinate():
         p.stroke_to_y(y * 2)
         assert_points_equal(p.position, (x * 2, y * 2))
 
+        p.move_to((0, 0))
+        p.turn_toward((x, y))
+        p.stroke_to_x(x * 3)
+        assert_points_equal(p.position, (x * 3, y * 3))
+
 def test_svg_path_thick():
     p = Pen()
     p.set_width(1.0)
