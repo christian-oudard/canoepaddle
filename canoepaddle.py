@@ -297,6 +297,9 @@ class Pen:
         new_position = vec.add(self.position, (x_diff, y_diff))
         self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
+    def last_slant_width(self):
+        return self.paper.strokes[-1][-1].end_slant_width()
+
     @property
     def position(self):
         return self._position
