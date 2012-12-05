@@ -221,9 +221,6 @@ class Pen:
         self._position = (0.0, 0.0)
         self._width = 1.0
 
-    def move_to(self, point):
-        self._position = point
-
     def turn_to(self, heading):
         self._heading = heading % 360
 
@@ -238,6 +235,9 @@ class Pen:
     def turn_right(self, angle):
         self.turn_left(-angle)
 
+    def move_to(self, point):
+        self._position = point
+
     def move_forward(self, distance):
         self._position = vec.add(
             self._position,
@@ -246,6 +246,17 @@ class Pen:
 
     def set_width(self, width):
         self._width = width
+
+    def stroke_to(self, point, start_angle=None, end_angle=None):
+        old_position = self._position
+        self.move_to(point)
+        self.paper.add_segment(
+            old_position,
+            self._position,
+            self._width,
+            start_angle=start_angle,
+            end_angle=end_angle,
+        )
 
     def stroke_forward(self, distance, start_angle=None, end_angle=None):
         old_position = self._position
