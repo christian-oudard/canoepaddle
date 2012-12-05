@@ -89,7 +89,8 @@ class Segment:
 
 
 class Paper:
-    def __init__(self):
+    def __init__(self, offset):
+        self.offset = offset
         self.strokes = []
 
     def add_segment(self, a, b, width, start_angle=None, end_angle=None):
@@ -140,20 +141,22 @@ class Paper:
         for segments in self.strokes:
             # Start a new stroke.
             start_point = segments[0].a
+            point = Point(*vec.add(start_point, self.offset))
             output.append('M{:.{p}f},{:.{p}f}'.format(
-                start_point.x, -start_point.y, p=precision))
+                point.x, -point.y, p=precision))
             # Draw the rest of the stroke.
             for seg in segments:
                 # Close the path, or continue the current segment.
                 if seg.b == start_point:
                     output.append('z')
                 else:
+                    point = Point(*vec.add(seg.b, self.offset))
                     output.append('L{:.{p}f},{:.{p}f}'.format(
-                        seg.b.x, -seg.b.y, p=precision))
+                        point.x, -point.y, p=precision))
         return ' '.join(output)
 
     def to_svg_path_thick(self, precision=12):
-        pen = Pen()
+        pen = Pen(self.offset)
         for segments in self.strokes:
             self.draw_stroke_thick(pen, segments)
         return pen.paper.to_svg_path(precision=precision)
@@ -213,11 +216,12 @@ class Paper:
 
 
 class Pen:
-    def __init__(self):
-        self.paper = Paper()
+    def __init__(self, offset=(0, 0)):
+        self.paper = Paper(offset)
         self._heading = 0
         self._position = (0.0, 0.0)
         self._width = 1.0
+        self.offset = offset
 
     def turn_to(self, heading):
         self._heading = heading % 360
