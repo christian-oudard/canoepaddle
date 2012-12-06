@@ -153,6 +153,19 @@ class Paper:
         v2 = vec.norm(v2, w1 * sin_theta)
         return math.degrees(vec.heading(vec.vfrom(v1, v2))) % 180
 
+    def center_on_x(self, x_center):
+        x_values = []
+        for segments in self.strokes:
+            for seg in segments:
+                x_values.append(seg.a.x)
+                x_values.append(seg.b.x)
+        current_center = (max(x_values) + min(x_values)) / 2
+        offset = current_center - x_center
+        for segments in self.strokes:
+            for seg in segments:
+                seg.a = (seg.a.x - offset, seg.a.y)
+                seg.b = (seg.b.x - offset, seg.b.y)
+
     def to_svg_path(self, precision=12):
         output = []
         for segments in self.strokes:
@@ -349,6 +362,8 @@ class Pen:
 
     @property
     def heading(self):
+        if self.flipped_x:
+            return flip_angle_x(self._heading)
         return self._heading
 
     @property
@@ -358,19 +373,19 @@ class Pen:
     def _calc_forward_position(self, distance):
         return vec.add(
             self.position,
-            vec.rotate((distance, 0), math.radians(self.heading)),
+            vec.rotate((distance, 0), math.radians(self._heading)),
         )
 
     def _calc_forward_to_y(self, y_target):
         x, y = self.position
         y_diff = y_target - y
-        x_diff = y_diff / math.tan(math.radians(self.heading))
+        x_diff = y_diff / math.tan(math.radians(self._heading))
         return vec.add(self.position, (x_diff, y_diff))
 
     def _calc_forward_to_x(self, x_target):
         x, y = self.position
         x_diff = x_target - x
-        y_diff = x_diff * math.tan(math.radians(self.heading))
+        y_diff = x_diff * math.tan(math.radians(self._heading))
         return vec.add(self.position, (x_diff, y_diff))
 
 
