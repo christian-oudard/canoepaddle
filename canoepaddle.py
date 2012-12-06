@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import vec
 
-DEBUG_SHOW_JOINTS = True
+DEBUG_SHOW_JOINTS = False
 
 _epsilon = 10e-16
 
