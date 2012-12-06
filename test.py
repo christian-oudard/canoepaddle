@@ -6,7 +6,7 @@ from nose.tools import (
     assert_raises,
 )
 
-from canoepaddle import Pen
+from canoepaddle import Pen, Paper, Segment, Point
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -135,6 +135,54 @@ def test_joint():
         'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',
     )
 
+def test_straight_joint():
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    p.turn_to(-90)
+    p.stroke_forward(1)
+    p.stroke_forward(1)
+    path_data = p.paper.to_svg_path_thick(precision=2)
+    assert_equal(
+        path_data,
+        'M0.50,0.00 L-0.50,-0.00 L-0.50,1.00 L-0.50,2.00 L0.50,2.00 L0.50,1.00 z',
+    )
+
+    # Test for all quadrants.
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    for angle in range(0, 360, 15):
+        print(angle)
+        p.turn_to(angle)
+        p.stroke_forward(10)
+        p.stroke_forward(10)
+        path_data = p.paper.to_svg_path_thick(precision=2) # Doesn't crash.
+
+    # Test for very small angles.
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    for power in range(20):
+        angle = 10**-power
+        print(angle)
+        p.turn_to(angle)
+        p.stroke_forward(10)
+        p.stroke_forward(10)
+        path_data = p.paper.to_svg_path_thick(precision=2) # Doesn't crash.
+
+    # Make a line turn back on itself; it doesn't work.
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.stroke_forward(10)
+    p.turn_right(180)
+    assert_raises(
+        ValueError,
+        lambda: p.stroke_forward(10),
+    )
+
 def test_offwidth_joint():
     p = Pen()
     p.set_width(1.0)
@@ -156,11 +204,65 @@ def test_offwidth_joint_error():
     p.turn_to(0)
     p.stroke_forward(3)
     p.set_width(0.5)
-    p.stroke_forward(3)
     assert_raises(
         ValueError,
-        lambda: p.paper.to_svg_path_thick(),
+        lambda: p.stroke_forward(3)
     )
+
+def test_calc_joint_angle():
+    paper = Paper()
+
+    # 90 degree turn, same width.
+    assert_almost_equal(
+        paper.calc_joint_angle(
+            Segment(
+                Point(0, 0),
+                Point(10, 0),
+                width=1,
+            ),
+            Segment(
+                Point(10, 0),
+                Point(10, -10),
+                width=1,
+            ),
+        ),
+        45,
+    )
+
+    # 90 degree turn, different width.
+    assert_almost_equal(
+        paper.calc_joint_angle(
+            Segment(
+                Point(0, 0),
+                Point(10, 0),
+                width=1,
+            ),
+            Segment(
+                Point(10, 0),
+                Point(10, -10),
+                width=2,
+            ),
+        ),
+        math.degrees(math.atan2(1, 2)),
+    )
+
+    # Straight on to the right, same width.
+    assert_almost_equal(
+        paper.calc_joint_angle(
+            Segment(
+                Point(0, 0),
+                Point(10, 0),
+                width=1,
+            ),
+            Segment(
+                Point(10, 0),
+                Point(20, 0),
+                width=1,
+            ),
+        ),
+        90,
+    )
+
 
 def test_multiple_strokes():
     p = Pen()

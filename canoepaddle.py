@@ -5,6 +5,8 @@ import vec
 
 SMOOTH_JOINTS = True
 
+_epsilon = 10e-16
+
 Point = namedtuple('Point', 'x, y')
 
 class Segment:
@@ -18,6 +20,9 @@ class Segment:
     def __iter__(self):
         yield self.a
         yield self.b
+
+    def __repr__(self):
+        return '{}(a={a}, b={b}, width={width}, start_angle={start_angle}, end_angle={end_angle})'.format(self.__class__.__name__, **self.__dict__)
 
     def length(self):
         return vec.dist(self.a, self.b)
@@ -84,12 +89,14 @@ class Segment:
             math.tan(math.radians(self.end_slant() - 90))
         )
         if abs(extra_length) > self.length():
-            raise ValueError('Slant is too extreme for the length and width of the segment.')
+            raise ValueError(
+                'Slant is too extreme for the length and width of the segment: {}'.format(self)
+            )
         return extra_length
 
 
 class Paper:
-    def __init__(self, offset):
+    def __init__(self, offset=(0, 0)):
         self.offset = offset
         self.strokes = []
 
@@ -126,15 +133,24 @@ class Paper:
         # Solve the parallelogram created by the previous stroke intersecting
         # with the next stroke. The diagonal of this parallelogram is at the
         # correct joint angle.
-        w1 = last_segment.width
-        w2 = new_segment.width
-        theta = (new_segment.heading() - last_segment.heading()) % 180
-        sin_theta = math.sin(math.radians(theta))
+        v1_heading = last_segment.heading()
+        v2_heading = new_segment.heading()
+
+        if abs((v2_heading - v1_heading) % 360) < _epsilon:
+            if last_segment.width == new_segment.width:
+                return (v1_heading + 90) % 180
+            else:
+                raise ValueError('Impossible to straight-join two segments of different widths.')
+
         v1 = vec.vfrom(last_segment.a, last_segment.b)
         v2 = vec.vfrom(new_segment.a, new_segment.b)
+        theta = (v2_heading - v1_heading) % 180
+        sin_theta = math.sin(math.radians(theta))
+        w1 = last_segment.width
+        w2 = new_segment.width
         v1 = vec.norm(v1, w2 * sin_theta)
         v2 = vec.norm(v2, w1 * sin_theta)
-        return math.degrees(vec.heading(vec.vfrom(v1, v2)))
+        return math.degrees(vec.heading(vec.vfrom(v1, v2))) % 180
 
     def to_svg_path(self, precision=12):
         output = []
@@ -363,13 +379,13 @@ if __name__ == '__main__':
     sqrt2 = math.sqrt(2)
 
     p = Pen()
-    p.set_width(1.0)
+    p.move_to((-5, 0))
     p.turn_to(0)
-    p.stroke_forward(3, end_angle=-45)
-    p.turn_right(45)
-    p.move_forward(0.5 * sqrt2 + 0.5)
+    p.set_width(1.0)
+    p.stroke_forward(5)
     p.turn_right(90)
-    p.stroke_forward(3, start_angle=-45)
+    p.set_width(2.0)
+    p.stroke_forward(5)
 
     path_data = p.paper.to_svg_path_thick()
     #path_data += p.paper.to_svg_path()
