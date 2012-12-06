@@ -101,6 +101,8 @@ class Paper:
         self.strokes = []
 
     def add_segment(self, a, b, width, start_angle=None, end_angle=None):
+        if a == b:
+            return # Don't bother adding segments with zero length.
         new_segment = Segment(
             Point(*a),
             Point(*b),
