@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import vec
 
-SMOOTH_JOINTS = True
+DEBUG_SHOW_JOINTS = True
 
 _epsilon = 10e-16
 
@@ -132,18 +132,17 @@ class Paper:
 
     @staticmethod
     def calc_joint_angle(last_segment, new_segment):
-        # Solve the parallelogram created by the previous stroke intersecting
-        # with the next stroke. The diagonal of this parallelogram is at the
-        # correct joint angle.
         v1_heading = last_segment.heading()
         v2_heading = new_segment.heading()
 
-        if abs((v2_heading - v1_heading) % 360) < _epsilon:
-            if last_segment.width == new_segment.width:
-                return (v1_heading + 90) % 180
-            else:
-                raise ValueError('Impossible to straight-join two segments of different widths.')
+        # Special case for equal widths, more numerically stable around
+        # straight joints.
+        if abs(last_segment.width - new_segment.width) < _epsilon:
+            return ((v1_heading + v2_heading) / 2 + 90) % 180
 
+        # Solve the parallelogram created by the previous stroke intersecting
+        # with the next stroke. The diagonal of this parallelogram is at the
+        # correct joint angle.
         v1 = vec.vfrom(last_segment.a, last_segment.b)
         v2 = vec.vfrom(new_segment.a, new_segment.b)
         theta = (v2_heading - v1_heading) % 180
@@ -180,6 +179,12 @@ class Paper:
         return pen.paper.to_svg_path(precision=precision)
 
     def draw_stroke_thick(self, pen, segments):
+        if DEBUG_SHOW_JOINTS:
+            for seg in segments:
+                self.draw_segment_right(pen, seg, first=True, last=True)
+                self.draw_segment_left(pen, seg, first=True, last=True)
+            return
+
         if len(segments) == 1:
             seg = segments[0]
             self.draw_segment_right(pen, seg, first=True, last=True)
@@ -378,18 +383,18 @@ def cosine_rule(a, b, gamma):
 
 
 if __name__ == '__main__':
-    sqrt2 = math.sqrt(2)
-
+    path_data = ''
     p = Pen()
-    p.move_to((-5, 0))
-    p.turn_to(0)
     p.set_width(1.0)
-    p.stroke_forward(5)
-    p.turn_right(90)
-    p.set_width(2.0)
-    p.stroke_forward(5)
+    for angle in range(0, 360, 15):
+        p.move_to((0, 0))
+        p.turn_to(angle)
+        p.move_forward(5)
+        p.stroke_forward(3)
+        p.stroke_forward(3)
+        path_data += p.paper.to_svg_path_thick()
 
-    path_data = p.paper.to_svg_path_thick()
+    #path_data = p.paper.to_svg_path_thick()
     #path_data += p.paper.to_svg_path()
 
     from string import Template

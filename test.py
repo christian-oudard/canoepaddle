@@ -148,29 +148,6 @@ def test_straight_joint():
         'M0.50,0.00 L-0.50,-0.00 L-0.50,1.00 L-0.50,2.00 L0.50,2.00 L0.50,1.00 z',
     )
 
-    # Test for all quadrants.
-    p = Pen()
-    p.set_width(1.0)
-    p.move_to((0, 0))
-    for angle in range(0, 360, 15):
-        print(angle)
-        p.turn_to(angle)
-        p.stroke_forward(10)
-        p.stroke_forward(10)
-        path_data = p.paper.to_svg_path_thick(precision=2) # Doesn't crash.
-
-    # Test for very small angles.
-    p = Pen()
-    p.set_width(1.0)
-    p.move_to((0, 0))
-    for power in range(20):
-        angle = 10**-power
-        print(angle)
-        p.turn_to(angle)
-        p.stroke_forward(10)
-        p.stroke_forward(10)
-        path_data = p.paper.to_svg_path_thick(precision=2) # Doesn't crash.
-
     # Make a line turn back on itself; it doesn't work.
     p = Pen()
     p.set_width(1.0)
@@ -178,9 +155,10 @@ def test_straight_joint():
     p.turn_to(0)
     p.stroke_forward(10)
     p.turn_right(180)
+    p.stroke_forward(10)
     assert_raises(
         ValueError,
-        lambda: p.stroke_forward(10),
+        lambda: p.paper.to_svg_path_thick(),
     )
 
 def test_offwidth_joint():
@@ -263,6 +241,27 @@ def test_calc_joint_angle():
         90,
     )
 
+def test_calc_joint_angle_straight():
+    # The math in calc_joint_angle can get numerically unstable very close to
+    # straight joints at various headings.
+    for heading_angle in range(0, 360):
+        print(heading_angle)
+        p = Pen()
+        p.set_width(1.0)
+        p.move_to((0, 0))
+        p.turn_to(heading_angle)
+        p.stroke_forward(10)
+        p.stroke_forward(10)
+        path_data = p.paper.to_svg_path_thick(precision=2) # Doesn't crash.
+
+        # Check that the joint angle is 90 degrees from the heading.
+        strokes = p.paper.strokes
+        assert_equal(len(strokes), 1)
+        segments = strokes[0]
+        assert_equal(len(segments), 2)
+        a, b = segments
+        joint_angle = p.paper.calc_joint_angle(a, b)
+        assert_almost_equal(joint_angle % 180, (heading_angle + 90) % 180)
 
 def test_multiple_strokes():
     p = Pen()
