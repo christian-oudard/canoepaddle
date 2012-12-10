@@ -358,7 +358,7 @@ class Pen:
 
     @property
     def position(self):
-        return self._position
+        return Point(*self._position)
 
     @property
     def heading(self):
