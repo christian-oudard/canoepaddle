@@ -1,4 +1,6 @@
 CanoePaddle
 ===========
 
-Stroke based graphics, outputting to SVG
+You make strokes with it.
+
+Procedural stroke-based graphics library, outputting to SVG.
