@@ -280,6 +280,16 @@ def test_multiple_strokes():
         ),
     )
 
+def test_arc():
+    p = Pen()
+    p.move_to((0, 0))
+    p.arc_to((5, 5), 5)
+    path_data = p.paper.to_svg_path(precision=2)
+    assert_equal(
+        path_data,
+        'M0.00,0.00 A 5.00,5.00 0 0 0 5.00,-5.00',
+    )
+
 
 if __name__ == '__main__':
     import traceback

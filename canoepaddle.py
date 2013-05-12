@@ -16,6 +16,7 @@ class Segment:
         self.start_angle = start_angle
         self.end_angle = end_angle
         self.width = width
+        self.radius = None
 
     def __iter__(self):
         yield self.a
@@ -95,6 +96,13 @@ class Segment:
         return extra_length
 
 
+class ArcSegment:
+    def __init__(self, a, b, radius):
+        self.a = a
+        self.b = b
+        self.radius = radius
+
+
 class Paper:
     def __init__(self, offset=(0, 0)):
         self.offset = offset
@@ -129,6 +137,17 @@ class Paper:
         else:
             # Start a new stroke.
             self.strokes.append([new_segment])
+
+    def add_arc_segment(self, a, b, radius):
+        if a == b:
+            return # Don't bother adding segments with zero length.
+
+        new_segment = ArcSegment(
+            Point(*a),
+            Point(*b),
+            radius,
+        )
+        self.strokes.append([new_segment])
 
     @staticmethod
     def calc_joint_angle(last_segment, new_segment):
@@ -181,8 +200,28 @@ class Paper:
                     output.append('z')
                 else:
                     point = Point(*vec.add(seg.b, self.offset))
-                    output.append('L{:.{p}f},{:.{p}f}'.format(
-                        point.x, -point.y, p=precision))
+                    if seg.radius is None:
+                        output.append(
+                            'L{x:.{p}f},{y:.{p}f}'.format(
+                                x=point.x,
+                                y=-point.y,
+                                p=precision,
+                            )
+                        )
+                    else:
+                        output.append(
+                            (
+                                'A '
+                                '{r:.{p}f},{r:.{p}f} '
+                                '0 0 0 '
+                                '{x:.{p}f},{y:.{p}f}'
+                            ).format(
+                                x=point.x,
+                                y=-point.y,
+                                r=seg.radius,
+                                p=precision,
+                            )
+                        )
         return ' '.join(output)
 
     def to_svg_path_thick(self, precision=12):
@@ -353,6 +392,15 @@ class Pen:
         new_position = self._calc_forward_to_x(x_target)
         self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
+    def arc_to(self, point, radius):
+        old_position = self._position
+        self.move_to(point)
+        self.paper.add_arc_segment(
+            old_position,
+            self.position,
+            radius,
+        )
+
     def last_slant_width(self):
         return self.paper.strokes[-1][-1].end_slant_width()
 
@@ -398,19 +446,12 @@ def cosine_rule(a, b, gamma):
 
 
 if __name__ == '__main__':
-    path_data = ''
     p = Pen()
-    p.set_width(1.0)
-    for angle in range(0, 360, 15):
-        p.move_to((0, 0))
-        p.turn_to(angle)
-        p.move_forward(5)
-        p.stroke_forward(3)
-        p.stroke_forward(3)
-        path_data += p.paper.to_svg_path_thick()
+    p.move_to((0, 0))
+    p.arc_to((5, 5), 5)
 
     #path_data = p.paper.to_svg_path_thick()
-    #path_data += p.paper.to_svg_path()
+    path_data = p.paper.to_svg_path(precision=0)
 
     from string import Template
     with open('template.svg') as f:
