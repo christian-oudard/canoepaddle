@@ -140,7 +140,7 @@ class Paper:
             self.strokes.append([new_segment])
 
     def add_arc_segment(self, a, b, angle, radius):
-        if a == b:
+        if a == b or angle == 0:
             return # Don't bother adding segments with zero length.
 
         new_segment = ArcSegment(
@@ -229,7 +229,7 @@ class Paper:
     @staticmethod
     def format_arc(x, y, angle, radius, precision):
         direction_flag = int(angle < 0)
-        sweep_flag = int(abs(angle) > 180)
+        sweep_flag = int(abs(angle) % 360 > 180)
         return (
             'A '
             '{r:.{p}f},{r:.{p}f} '
@@ -481,18 +481,12 @@ def cosine_rule(a, b, gamma):
 
 if __name__ == '__main__':
     p = Pen()
-    p.move_to((-5, 0))
+    p.move_to((0, 0))
     p.turn_to(0)
-    p.arc_left(90, radius=5)
-    p.arc_right(270, radius=5)
-    p.move_to((-5, 0))
-    p.turn_to(0)
-    p.arc_right(90, radius=5)
-    p.arc_left(270, radius=5)
-    path_data = p.paper.to_svg_path(precision=0)
+    p.arc_left(360 + 90, radius=5)
 
     #path_data = p.paper.to_svg_path_thick()
-    #path_data = p.paper.to_svg_path()
+    path_data = p.paper.to_svg_path(precision=0)
 
     from string import Template
     with open('template.svg') as f:

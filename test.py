@@ -305,11 +305,31 @@ def test_arc():
     )
 
 
-def test_arc_error():
-    pass
-    # zero angle
-    # abs(angle) > 360
+def test_arc_zero():
+    # Zero-angle and zero-radius arcs have zero length, so they are not added.
+    p = Pen()
+    p.move_to((0, 0))
+    p.turn_to(0)
 
+    p.arc_left(0, radius=1)
+    assert_equal(p.paper.strokes, [])
+
+    p.arc_left(90, radius=0)
+    assert_equal(p.paper.strokes, [])
+
+
+def test_arc_normalize():
+    # Arc angles larger than 360 behave correctly.
+    p = Pen()
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_left(360 + 90, radius=5)
+
+    path_data = p.paper.to_svg_path(precision=0)
+    assert_equal(
+        path_data,
+        'M-5,0 A 5,5 0 0 0 0,-5'
+    )
 
 
 if __name__ == '__main__':
