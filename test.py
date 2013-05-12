@@ -280,15 +280,36 @@ def test_multiple_strokes():
         ),
     )
 
+
 def test_arc():
+    # Draw arcs with all four combinations of sweep and direction flags.
     p = Pen()
-    p.move_to((0, 0))
-    p.arc_to((5, 5), 5)
-    path_data = p.paper.to_svg_path(precision=2)
+
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_left(90, radius=5)
+    p.arc_right(270, radius=5)
+
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_right(90, radius=5)
+    p.arc_left(270, radius=5)
+
+    path_data = p.paper.to_svg_path(precision=0)
     assert_equal(
         path_data,
-        'M0.00,0.00 A 5.00,5.00 0 0 0 5.00,-5.00',
+        'M-5,0 A 5,5 0 0 0 0,-5 '
+        'M0,-5 A 5,5 0 1 1 5,-0 '
+        'M-5,0 A 5,5 0 0 1 0,5 '
+        'M0,5 A 5,5 0 1 0 5,-0'
     )
+
+
+def test_arc_error():
+    pass
+    # zero angle
+    # abs(angle) > 360
+
 
 
 if __name__ == '__main__':
@@ -311,7 +332,7 @@ if __name__ == '__main__':
 
     results = []
 
-    for value in globals().values():
+    for value in list(globals().values()):
         if hasattr(value, '__call__') and value.__name__.startswith('test_'):
             print(value.__name__)
             try:
@@ -325,6 +346,9 @@ if __name__ == '__main__':
             else:
                 results.append('OK')
             print(results[-1])
-    if all(r == 'OK' for r in results):
-        print('ALL PASS')
-
+    successes = len([r for r in results if r == 'OK'])
+    failures = len([r for r in results if r == 'FAIL'])
+    errors = len([r for r in results if r == 'ERROR'])
+    print(successes, 'successes')
+    print(failures, 'failures')
+    print(errors, 'errors')

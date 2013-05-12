@@ -97,9 +97,10 @@ class Segment:
 
 
 class ArcSegment:
-    def __init__(self, a, b, radius):
+    def __init__(self, a, b, angle, radius):
         self.a = a
         self.b = b
+        self.angle = angle
         self.radius = radius
 
 
@@ -138,13 +139,14 @@ class Paper:
             # Start a new stroke.
             self.strokes.append([new_segment])
 
-    def add_arc_segment(self, a, b, radius):
+    def add_arc_segment(self, a, b, angle, radius):
         if a == b:
             return # Don't bother adding segments with zero length.
 
         new_segment = ArcSegment(
             Point(*a),
             Point(*b),
+            angle,
             radius,
         )
         self.strokes.append([new_segment])
@@ -202,27 +204,45 @@ class Paper:
                     point = Point(*vec.add(seg.b, self.offset))
                     if seg.radius is None:
                         output.append(
-                            'L{x:.{p}f},{y:.{p}f}'.format(
-                                x=point.x,
-                                y=-point.y,
-                                p=precision,
+                            self.format_line(
+                                point.x,
+                                -point.y,
+                                precision,
                             )
                         )
                     else:
                         output.append(
-                            (
-                                'A '
-                                '{r:.{p}f},{r:.{p}f} '
-                                '0 0 0 '
-                                '{x:.{p}f},{y:.{p}f}'
-                            ).format(
-                                x=point.x,
-                                y=-point.y,
-                                r=seg.radius,
-                                p=precision,
+                            self.format_arc(
+                                point.x,
+                                -point.y,
+                                seg.angle,
+                                seg.radius,
+                                precision,
                             )
                         )
         return ' '.join(output)
+
+    @staticmethod
+    def format_line(x, y, precision):
+        return 'L{x:.{p}f},{y:.{p}f}'.format(x=x, y=y, p=precision)
+
+    @staticmethod
+    def format_arc(x, y, angle, radius, precision):
+        direction_flag = int(angle < 0)
+        sweep_flag = int(abs(angle) > 180)
+        return (
+            'A '
+            '{r:.{p}f},{r:.{p}f} '
+            '0 {sweep_flag} {direction_flag} '
+            '{x:.{p}f},{y:.{p}f}'
+        ).format(
+            x=x,
+            y=y,
+            direction_flag=direction_flag,
+            sweep_flag=sweep_flag,
+            r=abs(radius),
+            p=precision,
+        )
 
     def to_svg_path_thick(self, precision=12):
         pen = Pen(self.offset)
@@ -392,14 +412,28 @@ class Pen:
         new_position = self._calc_forward_to_x(x_target)
         self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
-    def arc_to(self, point, radius):
+    def arc_left(self, angle, radius):
+        # Create a radius vector, which is a vector from the arc center to the
+        # current position. Subtract to find the center, then rotate the radius
+        # vector to find the arc end point.
+        r = vec.rotate((radius, 0), math.radians(self._heading - 90))
+        center = vec.sub(self._position, r)
+        endpoint = vec.add(center, vec.rotate(r, math.radians(angle)))
+
         old_position = self._position
-        self.move_to(point)
+        old_heading = self._heading
+        self.move_to(endpoint)
+        self.turn_left(angle)
+
         self.paper.add_arc_segment(
             old_position,
-            self.position,
+            endpoint,
+            angle,
             radius,
         )
+
+    def arc_right(self, angle, radius):
+        self.arc_left(-angle, -radius)
 
     def last_slant_width(self):
         return self.paper.strokes[-1][-1].end_slant_width()
@@ -447,11 +481,18 @@ def cosine_rule(a, b, gamma):
 
 if __name__ == '__main__':
     p = Pen()
-    p.move_to((0, 0))
-    p.arc_to((5, 5), 5)
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_left(90, radius=5)
+    p.arc_right(270, radius=5)
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_right(90, radius=5)
+    p.arc_left(270, radius=5)
+    path_data = p.paper.to_svg_path(precision=0)
 
     #path_data = p.paper.to_svg_path_thick()
-    path_data = p.paper.to_svg_path(precision=0)
+    #path_data = p.paper.to_svg_path()
 
     from string import Template
     with open('template.svg') as f:
