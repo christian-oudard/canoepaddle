@@ -1,10 +1,10 @@
 import math
 
-from nose.tools import (
-    assert_equal,
-    assert_almost_equal,
-    assert_raises,
-)
+#from nose.tools import (
+#    assert_equal,
+#    assert_almost_equal,
+#    assert_raises,
+#)
 
 from canoepaddle import Pen, Paper, Segment, Point
 
@@ -245,7 +245,7 @@ def test_calc_joint_angle_straight():
     # The math in calc_joint_angle can get numerically unstable very close to
     # straight joints at various headings.
     for heading_angle in range(0, 360):
-        print(heading_angle)
+        #print(heading_angle)
         p = Pen()
         p.set_width(1.0)
         p.move_to((0, 0))
@@ -279,3 +279,42 @@ def test_multiple_strokes():
             'M0.00,-3.50 L-0.00,-2.50 L3.00,-2.50 L3.00,-3.50 z'
         ),
     )
+
+
+if __name__ == '__main__':
+    import traceback
+
+    def assert_equal(a, b):
+        assert a == b, '{} != {}'.format(a, b)
+
+    def assert_almost_equal(a, b, places=12):
+        _epsilon = 10**-places
+        assert abs(a - b) < _epsilon, '{} != {}'.format(a, b)
+
+    def assert_raises(exc_class, func):
+        try:
+            func()
+        except Exception as e:
+            assert isinstance(e, exc_class)
+        else:
+            raise AssertionError('No exception raised.')
+
+    results = []
+
+    for value in globals().values():
+        if hasattr(value, '__call__') and value.__name__.startswith('test_'):
+            print(value.__name__)
+            try:
+                value()
+            except AssertionError:
+                results.append('FAIL')
+                traceback.print_exc()
+            except:
+                results.append('ERROR')
+                traceback.print_exc()
+            else:
+                results.append('OK')
+            print(results[-1])
+    if all(r == 'OK' for r in results):
+        print('ALL PASS')
+
