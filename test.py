@@ -6,7 +6,11 @@ from nose.tools import (
     assert_raises,
 )
 
-from canoepaddle import Pen, Paper, LineSegment, Point, format_svg
+from canoepaddle import Pen, format_svg
+from canoepaddle.paper import Paper
+from canoepaddle.segment import LineSegment
+from canoepaddle.point import Point
+
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
