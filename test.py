@@ -28,10 +28,23 @@ def assert_segments_equal(s1, s2):
 
 def test_movement():
     p = Pen()
-
     p.move_to((0, 0))
     p.turn_toward((1, 1))
     assert_equal(p.heading, 45)
+
+
+def test_move_to_xy():
+    p = Pen()
+    p.move_to((0, 0))
+    p.turn_to(-45)
+    p.move_to_x(1)
+    assert_points_equal(p.position, (1, -1))
+
+    p = Pen()
+    p.move_to((0, 0))
+    p.turn_toward((3, 4))
+    p.move_to_y(8)
+    assert_points_equal(p.position, (6, 8))
 
 
 def test_stroke():

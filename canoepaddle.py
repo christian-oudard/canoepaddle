@@ -199,7 +199,6 @@ class Paper:
         return math.degrees(vec.heading(vec.vfrom(v1, v2))) % 180
 
     def center_on_x(self, x_center):
-        #XXX Uncovered
         x_values = []
         for segments in self.strokes:
             for seg in segments:
