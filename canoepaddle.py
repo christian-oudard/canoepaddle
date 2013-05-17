@@ -1,5 +1,7 @@
 import math
 from collections import namedtuple
+from textwrap import dedent
+from string import Template
 
 import vec
 
@@ -505,6 +507,33 @@ def cosine_rule(a, b, gamma):
     return a**2 + b**2 - 2 * a * b * math.cos(gamma)
 
 
+def format_svg(path_data, path_style):
+    svg_template = dedent('''\
+        <?xml version="1.0" standalone="no"?>
+        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+        <svg
+            xmlns="http://www.w3.org/2000/svg" version="1.1"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            viewBox="-10 -10 20 20"
+            width="400px" height="400px"
+        >
+            <style type="text/css">
+                path {
+                    $path_style
+                }
+            </style>
+            <path d="
+                $path_data
+                " />
+        </svg>
+    ''')
+    t = Template(svg_template)
+    return t.substitute(
+        path_data=path_data,
+        path_style=path_style,
+    )
+
+
 if __name__ == '__main__':
     p = Pen()
     p.set_width(1.0)
@@ -515,9 +544,13 @@ if __name__ == '__main__':
     p.turn_to(0)
     p.stroke_forward(p.width / 2)
     p.arc_left(90, radius=5)
+
     path_data = p.paper.to_svg_path_thick(precision=2)
 
-    from string import Template
-    with open('template.svg') as f:
-        t = Template(f.read())
-    print(t.substitute(path_data=path_data))
+    path_style = '''
+        stroke: black;
+        stroke-width: 0.1;
+        stroke-linecap: butt;
+        fill: #a00;
+    '''
+    print(format_svg(path_data, path_style))
