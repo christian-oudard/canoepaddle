@@ -499,14 +499,6 @@ class Pen:
         return vec.add(self.position, (x_diff, y_diff))
 
 
-def cosine_rule(a, b, gamma):
-    """
-    Find C where {A, B, C} are the sides of a triangle, and gamma is
-    the angle opposite C.
-    """
-    return a**2 + b**2 - 2 * a * b * math.cos(gamma)
-
-
 def format_svg(path_data, path_style):
     svg_template = dedent('''\
         <?xml version="1.0" standalone="no"?>
@@ -532,24 +524,3 @@ def format_svg(path_data, path_style):
         path_data=path_data,
         path_style=path_style,
     )
-
-
-if __name__ == '__main__':
-    p = Pen()
-    p.set_width(1.0)
-    p.flip_x()
-    p.turn_to(180)
-    p.move_forward(6)
-    p.turn_to(0)
-    p.stroke_forward(6)
-    p.turn_right(60)
-    p.stroke_forward(6)
-    path_data = p.paper.to_svg_path_thick(precision=2)
-
-    path_style = '''
-        stroke: black;
-        stroke-width: 0.1;
-        stroke-linecap: butt;
-        fill: #a00;
-    '''
-    print(format_svg(path_data, path_style))

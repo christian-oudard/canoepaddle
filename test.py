@@ -6,7 +6,7 @@ from nose.tools import (
     assert_raises,
 )
 
-from canoepaddle import Pen, Paper, LineSegment, Point
+from canoepaddle import Pen, Paper, LineSegment, Point, format_svg
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -87,6 +87,11 @@ def test_stroke_to_coordinate():
         p.turn_toward((x, y))
         p.stroke_to_x(x * 3)
         assert_points_equal(p.position, (x * 3, y * 3))
+
+
+def test_format_svg():
+    format_svg('', '')
+
 
 def test_svg_path_thick():
     p = Pen()
