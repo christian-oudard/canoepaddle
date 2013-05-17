@@ -160,6 +160,23 @@ def test_show_joints():
     )
 
 
+def test_flip_x():
+    p = Pen()
+    p.set_width(1.0)
+    p.flip_x()
+    p.turn_to(180)
+    p.move_forward(6)
+    p.turn_to(0)
+    p.stroke_forward(6)
+    p.turn_right(60)
+    p.stroke_forward(6)
+    path_data = p.paper.to_svg_path_thick(precision=2)
+    assert_equal(
+        path_data,
+        'M6.00,0.50 L6.00,-0.50 L-0.29,-0.50 L-3.43,4.95 L-2.57,5.45 L0.29,0.50 L6.00,0.50 z'
+    )
+
+
 def test_straight_joint():
     p = Pen()
     p.set_width(1.0)

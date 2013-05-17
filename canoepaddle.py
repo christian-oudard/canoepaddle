@@ -17,6 +17,11 @@ def points_equal(a, b):
     )
 
 
+def flip_angle_x(angle):
+    if angle is not None:
+        return 180 - angle
+
+
 class LineSegment:
     def __init__(self, a, b, width, start_angle=None, end_angle=None):
         self.a = a
@@ -339,10 +344,6 @@ class Paper:
             pen.arc_right(seg.arc_angle, seg.radius - seg.width / 2)
 
 
-def flip_angle_x(angle):
-    if angle is not None:
-        return 180 - angle
-
 class Pen:
     def __init__(self, offset=(0, 0)):
         self.paper = Paper(offset)
@@ -537,14 +538,13 @@ def format_svg(path_data, path_style):
 if __name__ == '__main__':
     p = Pen()
     p.set_width(1.0)
-    p.move_to((0, 0))
+    p.flip_x()
+    p.turn_to(180)
+    p.move_forward(6)
     p.turn_to(0)
-    p.arc_left(90, radius=5)
-    p.stroke_forward(p.width / 2)
-    p.turn_to(0)
-    p.stroke_forward(p.width / 2)
-    p.arc_left(90, radius=5)
-
+    p.stroke_forward(6)
+    p.turn_right(60)
+    p.stroke_forward(6)
     path_data = p.paper.to_svg_path_thick(precision=2)
 
     path_style = '''
