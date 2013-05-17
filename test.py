@@ -177,6 +177,19 @@ def test_flip_x():
     )
 
 
+def test_center_on_x():
+    p = Pen()
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.stroke_forward(4)
+    p.paper.center_on_x(0)
+    path_data = p.paper.to_svg_path(precision=0)
+    assert_equal(
+        path_data,
+        'M-2,0 L2,0',
+    )
+
+
 def test_straight_joint():
     p = Pen()
     p.set_width(1.0)
