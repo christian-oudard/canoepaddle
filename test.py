@@ -1,15 +1,16 @@
 import math
 
-#from nose.tools import (
-#    assert_equal,
-#    assert_almost_equal,
-#    assert_raises,
-#)
+from nose.tools import (
+    assert_equal,
+    assert_almost_equal,
+    assert_raises,
+)
 
-from canoepaddle import Pen, Paper, Segment, Point
+from canoepaddle import Pen, Paper, LineSegment, Point
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
+
 
 def assert_points_equal(a, b):
     xa, ya = a
@@ -17,11 +18,13 @@ def assert_points_equal(a, b):
     assert_almost_equal(xa, xb, places=12)
     assert_almost_equal(ya, yb, places=12)
 
+
 def assert_segments_equal(s1, s2):
     a1, b1 = s1
     a2, b2 = s2
     assert_points_equal(a1, a2)
     assert_points_equal(b1, b2)
+
 
 def test_movement():
     p = Pen()
@@ -29,6 +32,7 @@ def test_movement():
     p.move_to((0, 0))
     p.turn_toward((1, 1))
     assert_equal(p.heading, 45)
+
 
 def test_stroke():
     p = Pen()
@@ -44,6 +48,7 @@ def test_stroke():
         ((0, 0), (sqrt2, sqrt2)),
     ]):
         assert_segments_equal(actual, target)
+
 
 def test_stroke_to_coordinate():
     p = Pen()
@@ -78,7 +83,7 @@ def test_svg_path_thick():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M0.35,-0.35 L-0.35,0.35 L3.18,3.89 L3.89,3.18 z',
+        'M0.35,-0.35 L-0.35,0.35 L3.18,3.89 L3.89,3.18 L0.35,-0.35 z',
     )
 
 def test_angle():
@@ -90,7 +95,7 @@ def test_angle():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M-0.50,-0.50 L0.50,0.50 L9.13,0.50 L10.87,-0.50 z',
+        'M-0.50,-0.50 L0.50,0.50 L9.13,0.50 L10.87,-0.50 L-0.50,-0.50 z',
     )
 
     p = Pen()
@@ -101,7 +106,7 @@ def test_angle():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M0.00,-0.71 L-0.00,0.71 L6.72,7.42 L7.42,6.72 z',
+        'M0.00,-0.71 L0.00,0.71 L6.72,7.42 L7.42,6.72 L0.00,-0.71 z',
     )
 
 def test_angle_error():
@@ -132,8 +137,9 @@ def test_joint():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',
+        'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z',
     )
+
 
 def test_straight_joint():
     p = Pen()
@@ -145,7 +151,7 @@ def test_straight_joint():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M0.50,0.00 L-0.50,-0.00 L-0.50,1.00 L-0.50,2.00 L0.50,2.00 L0.50,1.00 z',
+        'M0.50,0.00 L-0.50,0.00 L-0.50,1.00 L-0.50,2.00 L0.50,2.00 L0.50,1.00 L0.50,0.00 z',
     )
 
     # Make a line turn back on itself; it doesn't work.
@@ -161,6 +167,7 @@ def test_straight_joint():
         lambda: p.paper.to_svg_path_thick(),
     )
 
+
 def test_offwidth_joint():
     p = Pen()
     p.set_width(1.0)
@@ -173,8 +180,9 @@ def test_offwidth_joint():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M-3.00,-0.50 L-3.00,0.50 L0.25,0.50 L0.25,-3.00 L-0.25,-3.00 L-0.25,-0.50 z'
+        'M-3.00,-0.50 L-3.00,0.50 L0.25,0.50 L0.25,-3.00 L-0.25,-3.00 L-0.25,-0.50 L-3.00,-0.50 z'
     )
+
 
 def test_offwidth_joint_error():
     p = Pen()
@@ -187,18 +195,19 @@ def test_offwidth_joint_error():
         lambda: p.stroke_forward(3)
     )
 
+
 def test_calc_joint_angle():
     paper = Paper()
 
     # 90 degree turn, same width.
     assert_almost_equal(
         paper.calc_joint_angle(
-            Segment(
+            LineSegment(
                 Point(0, 0),
                 Point(10, 0),
                 width=1,
             ),
-            Segment(
+            LineSegment(
                 Point(10, 0),
                 Point(10, -10),
                 width=1,
@@ -210,12 +219,12 @@ def test_calc_joint_angle():
     # 90 degree turn, different width.
     assert_almost_equal(
         paper.calc_joint_angle(
-            Segment(
+            LineSegment(
                 Point(0, 0),
                 Point(10, 0),
                 width=1,
             ),
-            Segment(
+            LineSegment(
                 Point(10, 0),
                 Point(10, -10),
                 width=2,
@@ -227,12 +236,12 @@ def test_calc_joint_angle():
     # Straight on to the right, same width.
     assert_almost_equal(
         paper.calc_joint_angle(
-            Segment(
+            LineSegment(
                 Point(0, 0),
                 Point(10, 0),
                 width=1,
             ),
-            Segment(
+            LineSegment(
                 Point(10, 0),
                 Point(20, 0),
                 width=1,
@@ -241,11 +250,11 @@ def test_calc_joint_angle():
         90,
     )
 
+
 def test_calc_joint_angle_straight():
     # The math in calc_joint_angle can get numerically unstable very close to
     # straight joints at various headings.
     for heading_angle in range(0, 360):
-        #print(heading_angle)
         p = Pen()
         p.set_width(1.0)
         p.move_to((0, 0))
@@ -263,6 +272,7 @@ def test_calc_joint_angle_straight():
         joint_angle = p.paper.calc_joint_angle(a, b)
         assert_almost_equal(joint_angle % 180, (heading_angle + 90) % 180)
 
+
 def test_multiple_strokes():
     p = Pen()
     p.set_width(1.0)
@@ -272,11 +282,12 @@ def test_multiple_strokes():
     p.move_to((0, 3))
     p.stroke_forward(3)
     path_data = p.paper.to_svg_path_thick(precision=2)
+
     assert_equal(
         path_data,
         (
-            'M0.00,-0.50 L-0.00,0.50 L3.00,0.50 L3.00,-0.50 z '
-            'M0.00,-3.50 L-0.00,-2.50 L3.00,-2.50 L3.00,-3.50 z'
+            'M0.00,-0.50 L0.00,0.50 L3.00,0.50 L3.00,-0.50 L0.00,-0.50 z '
+            'M0.00,-3.50 L0.00,-2.50 L3.00,-2.50 L3.00,-3.50 L0.00,-3.50 z'
         ),
     )
 
@@ -299,9 +310,9 @@ def test_arc():
     assert_equal(
         path_data,
         'M-5,0 A 5,5 0 0 0 0,-5 '
-        'M0,-5 A 5,5 0 1 1 5,-0 '
+        'A 5,5 0 1 1 5,0 '
         'M-5,0 A 5,5 0 0 1 0,5 '
-        'M0,5 A 5,5 0 1 0 5,-0'
+        'A 5,5 0 1 0 5,0'
     )
 
 
@@ -332,43 +343,24 @@ def test_arc_normalize():
     )
 
 
-if __name__ == '__main__':
-    import traceback
-
-    def assert_equal(a, b):
-        assert a == b, '{} != {}'.format(a, b)
-
-    def assert_almost_equal(a, b, places=12):
-        _epsilon = 10**-places
-        assert abs(a - b) < _epsilon, '{} != {}'.format(a, b)
-
-    def assert_raises(exc_class, func):
-        try:
-            func()
-        except Exception as e:
-            assert isinstance(e, exc_class)
-        else:
-            raise AssertionError('No exception raised.')
-
-    results = []
-
-    for value in list(globals().values()):
-        if hasattr(value, '__call__') and value.__name__.startswith('test_'):
-            print(value.__name__)
-            try:
-                value()
-            except AssertionError:
-                results.append('FAIL')
-                traceback.print_exc()
-            except:
-                results.append('ERROR')
-                traceback.print_exc()
-            else:
-                results.append('OK')
-            print(results[-1])
-    successes = len([r for r in results if r == 'OK'])
-    failures = len([r for r in results if r == 'FAIL'])
-    errors = len([r for r in results if r == 'ERROR'])
-    print(successes, 'successes')
-    print(failures, 'failures')
-    print(errors, 'errors')
+def test_thick_arc():
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.arc_left(90, radius=5)
+    p.stroke_forward(p.width / 2)
+    p.turn_to(0)
+    p.stroke_forward(p.width / 2)
+    p.arc_left(90, radius=5)
+    path_data = p.paper.to_svg_path_thick(precision=2)
+    assert_equal(
+        path_data,
+        'M0.00,-0.50 L0.00,0.50 '
+        'A 5.50,5.50 0 0 0 5.50,-5.00 '
+        'A 5.50,5.50 0 0 0 11.00,-10.50 '
+        'L10.00,-10.50 '
+        'A 4.50,4.50 0 0 1 5.50,-6.00 '
+        'L4.50,-6.00 L4.50,-5.00 '
+        'A 4.50,4.50 0 0 1 0.00,-0.50 z'
+    )

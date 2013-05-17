@@ -5,11 +5,19 @@ import vec
 
 DEBUG_SHOW_JOINTS = False
 
-_epsilon = 10e-16
+epsilon = 10e-15
 
 Point = namedtuple('Point', 'x, y')
 
-class Segment:
+
+def points_equal(a, b):
+    return all(
+        abs(da - db) <= epsilon
+        for (da, db) in zip(a, b)
+    )
+
+
+class LineSegment:
     def __init__(self, a, b, width, start_angle=None, end_angle=None):
         self.a = a
         self.b = b
@@ -30,6 +38,14 @@ class Segment:
 
     def heading(self):
         return math.degrees(vec.heading(vec.vfrom(self.a, self.b)))
+
+    @property
+    def start_heading(self):
+        return self.heading()
+
+    @property
+    def end_heading(self):
+        return self.heading()
 
     #TODO: make these into properties, and add caching.
 
@@ -97,11 +113,29 @@ class Segment:
 
 
 class ArcSegment:
-    def __init__(self, a, b, angle, radius):
+    def __init__(self, a, b, width, arc_angle, radius, start_heading, end_heading):
         self.a = a
         self.b = b
-        self.angle = angle
+        self.width = width
+        self.arc_angle = arc_angle
         self.radius = radius
+        self.start_heading = start_heading
+        self.end_heading = end_heading
+
+    def start_slant(self):
+        return 90  # Not yet implemented.
+
+    def end_slant(self):
+        return 90  # Not yet implemented.
+
+    def start_slant_width(self):
+        return self.width
+
+    def end_slant_width(self):
+        return self.width
+
+    def heading(self):
+        return self.start_heading
 
 
 class Paper:
@@ -109,16 +143,12 @@ class Paper:
         self.offset = offset
         self.strokes = []
 
-    def add_segment(self, a, b, width, start_angle=None, end_angle=None):
-        if a == b:
+    def add_segment(self, new_segment):
+        if points_equal(new_segment.a, new_segment.b):
             return # Don't bother adding segments with zero length.
-        new_segment = Segment(
-            Point(*a),
-            Point(*b),
-            width,
-            start_angle,
-            end_angle,
-        )
+
+        new_segment.a = Point(*new_segment.a)
+        new_segment.b = Point(*new_segment.b)
 
         # Check whether we are continuing the current stroke or starting a
         # new one.
@@ -126,7 +156,7 @@ class Paper:
         if len(self.strokes) > 0:
             segments = self.strokes[-1]
             last_segment = segments[-1]
-            if last_segment.b == new_segment.a:
+            if points_equal(last_segment.b, new_segment.a):
                 continuing = True
 
         if continuing:
@@ -139,26 +169,14 @@ class Paper:
             # Start a new stroke.
             self.strokes.append([new_segment])
 
-    def add_arc_segment(self, a, b, angle, radius):
-        if a == b or angle == 0:
-            return # Don't bother adding segments with zero length.
-
-        new_segment = ArcSegment(
-            Point(*a),
-            Point(*b),
-            angle,
-            radius,
-        )
-        self.strokes.append([new_segment])
-
     @staticmethod
     def calc_joint_angle(last_segment, new_segment):
-        v1_heading = last_segment.heading()
-        v2_heading = new_segment.heading()
+        v1_heading = last_segment.end_heading
+        v2_heading = new_segment.start_heading
 
         # Special case for equal widths, more numerically stable around
         # straight joints.
-        if abs(last_segment.width - new_segment.width) < _epsilon:
+        if abs(last_segment.width - new_segment.width) < epsilon:
             return ((v1_heading + v2_heading) / 2 + 90) % 180
 
         # Solve the parallelogram created by the previous stroke intersecting
@@ -197,51 +215,58 @@ class Paper:
                 point.x, -point.y, p=precision))
             # Draw the rest of the stroke.
             for seg in segments:
-                # Close the path, or continue the current segment.
-                if seg.b == start_point:
-                    output.append('z')
+                point = Point(*vec.add(seg.b, self.offset))
+                if seg.radius is None:
+                    output.append(
+                        self.format_line(
+                            point.x,
+                            -point.y,
+                            precision,
+                        )
+                    )
                 else:
-                    point = Point(*vec.add(seg.b, self.offset))
-                    if seg.radius is None:
-                        output.append(
-                            self.format_line(
-                                point.x,
-                                -point.y,
-                                precision,
-                            )
+                    output.append(
+                        self.format_arc(
+                            point.x,
+                            -point.y,
+                            seg.arc_angle,
+                            seg.radius,
+                            precision,
                         )
-                    else:
-                        output.append(
-                            self.format_arc(
-                                point.x,
-                                -point.y,
-                                seg.angle,
-                                seg.radius,
-                                precision,
-                            )
-                        )
+                    )
+            # Close the path if necessary.
+            if points_equal(seg.b, start_point):
+                output.append('z')
+
         return ' '.join(output)
 
     @staticmethod
-    def format_line(x, y, precision):
-        return 'L{x:.{p}f},{y:.{p}f}'.format(x=x, y=y, p=precision)
+    def format_number(n, precision):
+        # Handle numbers near zero formatting inconsistently as
+        # either "0.0" or "-0.0".
+        if abs(n) < 0.5 * 10**(-precision):
+            n = 0
+        return '{n:.{p}f}'.format(n=n, p=precision)
 
     @staticmethod
-    def format_arc(x, y, angle, radius, precision):
-        direction_flag = int(angle < 0)
-        sweep_flag = int(abs(angle) % 360 > 180)
+    def format_line(x, y, precision):
+        return 'L{x},{y}'.format(
+            x=Paper.format_number(x, precision),
+            y=Paper.format_number(y, precision),
+        )
+
+    @staticmethod
+    def format_arc(x, y, arc_angle, radius, precision):
+        direction_flag = int(arc_angle < 0)
+        sweep_flag = int(abs(arc_angle) % 360 > 180)
         return (
-            'A '
-            '{r:.{p}f},{r:.{p}f} '
-            '0 {sweep_flag} {direction_flag} '
-            '{x:.{p}f},{y:.{p}f}'
+            'A {r},{r} 0 {sweep_flag} {direction_flag} {x},{y}'
         ).format(
-            x=x,
-            y=y,
+            x=Paper.format_number(x, precision),
+            y=Paper.format_number(y, precision),
+            r=Paper.format_number(abs(radius), precision),
             direction_flag=direction_flag,
             sweep_flag=sweep_flag,
-            r=abs(radius),
-            p=precision,
         )
 
     def to_svg_path_thick(self, precision=12):
@@ -291,8 +316,11 @@ class Paper:
             pen.stroke_forward(sw)
 
         # Draw along the length of the segment.
-        pen.turn_to(seg.heading())
-        pen.stroke_forward(seg.length() + seg.extra_length())
+        pen.turn_to(seg.start_heading)
+        if seg.radius is None:
+            pen.stroke_forward(seg.length() + seg.extra_length())
+        else:
+            pen.arc_left(seg.arc_angle, seg.radius + seg.width / 2)
 
         if last:
             # Draw the ending thickness edge.
@@ -301,13 +329,12 @@ class Paper:
 
     @staticmethod
     def draw_segment_left(pen, seg, first=False, last=False):
-        if first:
-            # Close the path to finish.
-            pen.stroke_close()
-        else:
-            # Continue path back towards the beginning.
-            pen.turn_to(seg.heading() + 180)
+        # Continue path back towards the beginning.
+        pen.turn_to(seg.end_heading + 180)
+        if seg.radius is None:
             pen.stroke_forward(seg.length() - seg.extra_length())
+        else:
+            pen.arc_right(seg.arc_angle, seg.radius - seg.width / 2)
 
 
 def flip_angle_x(angle):
@@ -377,13 +404,13 @@ class Pen:
             start_angle = flip_angle_x(start_angle)
             end_angle = flip_angle_x(end_angle)
 
-        self.paper.add_segment(
+        self.paper.add_segment(LineSegment(
             old_position,
             self.position,
             self.width,
             start_angle=start_angle,
             end_angle=end_angle,
-        )
+        ))
 
     def stroke_forward(self, distance, start_angle=None, end_angle=None):
         self.stroke_to(
@@ -391,10 +418,6 @@ class Pen:
             start_angle=start_angle,
             end_angle=end_angle,
         )
-
-    def stroke_close(self):
-        first_point = self.paper.strokes[-1][0].a
-        self.stroke_to(first_point)
 
     def stroke_to_y(self, y_target, start_angle=None, end_angle=None):
         """
@@ -412,28 +435,31 @@ class Pen:
         new_position = self._calc_forward_to_x(x_target)
         self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
 
-    def arc_left(self, angle, radius):
+    def arc_left(self, arc_angle, radius):
         # Create a radius vector, which is a vector from the arc center to the
         # current position. Subtract to find the center, then rotate the radius
         # vector to find the arc end point.
         r = vec.rotate((radius, 0), math.radians(self._heading - 90))
         center = vec.sub(self._position, r)
-        endpoint = vec.add(center, vec.rotate(r, math.radians(angle)))
+        endpoint = vec.add(center, vec.rotate(r, math.radians(arc_angle)))
 
         old_position = self._position
         old_heading = self._heading
         self.move_to(endpoint)
-        self.turn_left(angle)
+        self.turn_left(arc_angle)
 
-        self.paper.add_arc_segment(
-            old_position,
-            endpoint,
-            angle,
-            radius,
-        )
+        self.paper.add_segment(ArcSegment(
+            a=old_position,
+            b=endpoint,
+            width=self.width,
+            arc_angle=arc_angle,
+            radius=radius,
+            start_heading=old_heading,
+            end_heading=self._heading,
+        ))
 
-    def arc_right(self, angle, radius):
-        self.arc_left(-angle, -radius)
+    def arc_right(self, arc_angle, radius):
+        self.arc_left(-arc_angle, -radius)
 
     def last_slant_width(self):
         return self.paper.strokes[-1][-1].end_slant_width()
@@ -481,12 +507,15 @@ def cosine_rule(a, b, gamma):
 
 if __name__ == '__main__':
     p = Pen()
+    p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
-    p.arc_left(360 + 90, radius=5)
-
-    #path_data = p.paper.to_svg_path_thick()
-    path_data = p.paper.to_svg_path(precision=0)
+    p.arc_left(90, radius=5)
+    p.stroke_forward(p.width / 2)
+    p.turn_to(0)
+    p.stroke_forward(p.width / 2)
+    p.arc_left(90, radius=5)
+    path_data = p.paper.to_svg_path_thick(precision=2)
 
     from string import Template
     with open('template.svg') as f:
