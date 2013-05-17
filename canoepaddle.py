@@ -5,8 +5,6 @@ from string import Template
 
 import vec
 
-DEBUG_SHOW_JOINTS = False
-
 epsilon = 10e-15
 
 Point = namedtuple('Point', 'x, y')
@@ -144,6 +142,7 @@ class Paper:
     def __init__(self, offset=(0, 0)):
         self.offset = offset
         self.strokes = []
+        self.show_joints = False
 
     def add_segment(self, new_segment):
         if points_equal(new_segment.a, new_segment.b):
@@ -195,6 +194,7 @@ class Paper:
         return math.degrees(vec.heading(vec.vfrom(v1, v2))) % 180
 
     def center_on_x(self, x_center):
+        #XXX Uncovered
         x_values = []
         for segments in self.strokes:
             for seg in segments:
@@ -278,7 +278,7 @@ class Paper:
         return pen.paper.to_svg_path(precision=precision)
 
     def draw_stroke_thick(self, pen, segments):
-        if DEBUG_SHOW_JOINTS:
+        if self.show_joints:
             for seg in segments:
                 self.draw_segment_right(pen, seg, first=True, last=True)
                 self.draw_segment_left(pen, seg, first=True, last=True)
