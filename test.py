@@ -363,6 +363,21 @@ def test_multiple_strokes():
     )
 
 
+def test_last_slant_width():
+    p = Pen()
+
+    p.move_to((0, 0))
+    p.turn_to(-45)
+    p.stroke_forward(1, end_angle=90)
+
+    assert_almost_equal(p.last_slant_width(), sqrt2)
+
+    p.move_to((0, 0))
+    p.turn_to(30)
+    p.stroke_forward(1, end_angle=90)
+    assert_almost_equal(p.last_slant_width(), 2 / sqrt3)
+
+
 def test_arc():
     # Draw arcs with all four combinations of sweep and direction flags.
     p = Pen()

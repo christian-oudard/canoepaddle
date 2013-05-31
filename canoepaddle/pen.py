@@ -133,7 +133,6 @@ class Pen:
         self.arc_left(-arc_angle, -radius)
 
     def last_slant_width(self):
-        #XXX Uncovered.
         return self.paper.strokes[-1][-1].end_slant_width()
 
     @property
