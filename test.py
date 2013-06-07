@@ -108,6 +108,7 @@ def test_svg_path_thick():
         'M0.35,-0.35 L-0.35,0.35 L3.18,3.89 L3.89,3.18 L0.35,-0.35 z',
     )
 
+
 def test_angle():
     p = Pen()
     p.set_width(1.0)
@@ -131,6 +132,7 @@ def test_angle():
         'M0.00,-0.71 L0.00,0.71 L6.72,7.42 L7.42,6.72 L0.00,-0.71 z',
     )
 
+
 def test_angle_error():
     p = Pen()
     p.set_width(1.0)
@@ -148,6 +150,7 @@ def test_angle_error():
         lambda: p.paper.to_svg_path_thick(),
     )
 
+
 def test_joint():
     p = Pen()
     p.set_width(1.0)
@@ -159,7 +162,10 @@ def test_joint():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z',
+        (
+            'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 '
+            'L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z'
+        ),
     )
 
 
@@ -195,7 +201,8 @@ def test_flip_x():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M6.00,0.50 L6.00,-0.50 L-0.29,-0.50 L-3.43,4.95 L-2.57,5.45 L0.29,0.50 L6.00,0.50 z'
+        'M6.00,0.50 L6.00,-0.50 L-0.29,-0.50 L-3.43,4.95 '
+        'L-2.57,5.45 L0.29,0.50 L6.00,0.50 z'
     )
 
 
@@ -222,7 +229,10 @@ def test_straight_joint():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M0.50,0.00 L-0.50,0.00 L-0.50,1.00 L-0.50,2.00 L0.50,2.00 L0.50,1.00 L0.50,0.00 z',
+        (
+            'M0.50,0.00 L-0.50,0.00 L-0.50,1.00 L-0.50,2.00 '
+            'L0.50,2.00 L0.50,1.00 L0.50,0.00 z'
+        ),
     )
 
     # Make a line turn back on itself; it doesn't work.
@@ -251,7 +261,10 @@ def test_offwidth_joint():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M-3.00,-0.50 L-3.00,0.50 L0.25,0.50 L0.25,-3.00 L-0.25,-3.00 L-0.25,-0.50 L-3.00,-0.50 z'
+        (
+            'M-3.00,-0.50 L-3.00,0.50 L0.25,0.50 L0.25,-3.00 '
+            'L-0.25,-3.00 L-0.25,-0.50 L-3.00,-0.50 z'
+        ),
     )
 
 
@@ -332,7 +345,7 @@ def test_calc_joint_angle_straight():
         p.turn_to(heading_angle)
         p.stroke_forward(10)
         p.stroke_forward(10)
-        path_data = p.paper.to_svg_path_thick(precision=2) # Doesn't crash.
+        p.paper.to_svg_path_thick(precision=2)  # Doesn't crash.
 
         # Check that the joint angle is 90 degrees from the heading.
         strokes = p.paper.strokes
@@ -395,10 +408,12 @@ def test_arc():
     path_data = p.paper.to_svg_path(precision=0)
     assert_equal(
         path_data,
-        'M-5,0 A 5,5 0 0 0 0,-5 '
-        'A 5,5 0 1 1 5,0 '
-        'M-5,0 A 5,5 0 0 1 0,5 '
-        'A 5,5 0 1 0 5,0'
+        (
+            'M-5,0 A 5,5 0 0 0 0,-5 '
+            'A 5,5 0 1 1 5,0 '
+            'M-5,0 A 5,5 0 0 1 0,5 '
+            'A 5,5 0 1 0 5,0'
+        ),
     )
 
 
@@ -442,11 +457,13 @@ def test_thick_arc():
     path_data = p.paper.to_svg_path_thick(precision=2)
     assert_equal(
         path_data,
-        'M0.00,-0.50 L0.00,0.50 '
-        'A 5.50,5.50 0 0 0 5.50,-5.00 '
-        'A 5.50,5.50 0 0 0 11.00,-10.50 '
-        'L10.00,-10.50 '
-        'A 4.50,4.50 0 0 1 5.50,-6.00 '
-        'L4.50,-6.00 L4.50,-5.00 '
-        'A 4.50,4.50 0 0 1 0.00,-0.50 z'
+        (
+            'M0.00,-0.50 L0.00,0.50 '
+            'A 5.50,5.50 0 0 0 5.50,-5.00 '
+            'A 5.50,5.50 0 0 0 11.00,-10.50 '
+            'L10.00,-10.50 '
+            'A 4.50,4.50 0 0 1 5.50,-6.00 '
+            'L4.50,-6.00 L4.50,-5.00 '
+            'A 4.50,4.50 0 0 1 0.00,-0.50 z'
+        ),
     )
