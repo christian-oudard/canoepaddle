@@ -3,6 +3,7 @@ from canoepaddle import Pen, format_svg
 p = Pen()
 p.set_width(1.0)
 
+
 def arm(inner=1.5, outer=3):
     p.move_forward(inner)
     p.turn_right(90)

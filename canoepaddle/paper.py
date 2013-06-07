@@ -13,7 +13,7 @@ class Paper:
 
     def add_segment(self, new_segment):
         if points_equal(new_segment.a, new_segment.b):
-            return # Don't bother adding segments with zero length.
+            return  # Don't bother adding segments with zero length.
 
         # Check whether we are continuing the current stroke or starting a
         # new one.
@@ -201,5 +201,3 @@ class Paper:
             pen.stroke_forward(seg.length() - seg.extra_length())
         else:
             pen.arc_right(seg.arc_angle, seg.radius - seg.width / 2)
-
-

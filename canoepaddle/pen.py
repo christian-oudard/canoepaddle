@@ -96,7 +96,11 @@ class Pen:
         equals the given value.
         """
         new_position = self._calc_forward_to_y(y_target)
-        self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
+        self.stroke_to(
+            new_position,
+            start_angle=start_angle,
+            end_angle=end_angle,
+        )
 
     def stroke_to_x(self, x_target, start_angle=None, end_angle=None):
         """
@@ -104,7 +108,11 @@ class Pen:
         equals the given value.
         """
         new_position = self._calc_forward_to_x(x_target)
-        self.stroke_to(new_position, start_angle=start_angle, end_angle=end_angle)
+        self.stroke_to(
+            new_position,
+            start_angle=start_angle,
+            end_angle=end_angle,
+        )
 
     def arc_left(self, arc_angle, radius):
         # Create a radius vector, which is a vector from the arc center to the

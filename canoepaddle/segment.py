@@ -19,7 +19,11 @@ class LineSegment:
         yield self.b
 
     def __repr__(self):
-        return '{}(a={a}, b={b}, width={width}, start_angle={start_angle}, end_angle={end_angle})'.format(self.__class__.__name__, **self.__dict__)
+        return (
+            '{}(a={a}, b={b}, width={width}, '
+            'start_angle={start_angle}, end_angle={end_angle})'
+            .format(self.__class__.__name__, **self.__dict__)
+        )
 
     def length(self):
         return vec.dist(self.a, self.b)
@@ -95,13 +99,16 @@ class LineSegment:
         )
         if abs(extra_length) > self.length():
             raise ValueError(
-                'Slant is too extreme for the length and width of the segment: {}'.format(self)
+                'Slant is too extreme for the length and width of the '
+                'segment: {}'.format(self)
             )
         return extra_length
 
 
 class ArcSegment:
-    def __init__(self, a, b, width, arc_angle, radius, start_heading, end_heading):
+    def __init__(
+        self, a, b, width, arc_angle, radius, start_heading, end_heading,
+    ):
         self.a = Point(*a)
         self.b = Point(*b)
         self.width = width
