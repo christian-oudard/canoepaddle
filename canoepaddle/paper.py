@@ -3,8 +3,7 @@ from textwrap import dedent
 from string import Template
 
 import vec
-from .point import Point, points_equal
-from .util import epsilon
+from .point import Point, points_equal, epsilon
 from .svg import path_move, path_close, path_line, path_arc
 
 

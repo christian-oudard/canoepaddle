@@ -1,6 +1,6 @@
 from collections import namedtuple
-from .util import epsilon
 
+epsilon = 10e-15
 
 Point = namedtuple('Point', 'x, y')
 
