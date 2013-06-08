@@ -1,15 +1,21 @@
 import math
+from textwrap import dedent
+from string import Template
 
 import vec
-from point import Point, points_equal
-from util import epsilon
+from .point import Point, points_equal
+from .util import epsilon
+from .svg import path_move, path_close, path_line, path_arc
 
 
 class Paper:
-    def __init__(self, offset=(0, 0)):
+    def __init__(self, offset=(0, 0), precision=12):
         self.offset = offset
+        self.precision = precision
         self.strokes = []
+        self.shapes = []
         self.show_joints = False
+        self.style = ''
 
     def add_segment(self, new_segment):
         if points_equal(new_segment.a, new_segment.b):
@@ -33,6 +39,9 @@ class Paper:
         else:
             # Start a new stroke.
             self.strokes.append([new_segment])
+
+    def add_shape(self, new_shape):
+        self.shapes.append(new_shape)
 
     @staticmethod
     def calc_joint_angle(last_segment, new_segment):
@@ -70,76 +79,91 @@ class Paper:
                 seg.a = (seg.a.x - offset, seg.a.y)
                 seg.b = (seg.b.x - offset, seg.b.y)
 
-    def to_svg_path(self, precision=12):
+    def set_style(self, style):
+        self.style = style
+
+    def set_precision(self, precision):
+        self.precision = precision
+
+    def format_svg(self, thick=False):
+        shapes = self.svg_shapes()
+        if thick:
+            path_data = self.svg_path_thick()
+        else:
+            path_data = self.svg_path()
+
+        svg_template = dedent('''\
+            <?xml version="1.0" standalone="no"?>
+            <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+                "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+            <svg
+                xmlns="http://www.w3.org/2000/svg" version="1.1"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="-10 -10 20 20"
+                width="400px" height="400px"
+            >
+                <style type="text/css">
+                    * {
+                        $style
+                    }
+                </style>
+                $shapes
+                <path d="
+                    $path_data
+                    " />
+            </svg>
+        ''')
+        t = Template(svg_template)
+        return t.substitute(
+            shapes=shapes,
+            path_data=path_data,
+            style=self.style,
+        )
+
+    def svg_shapes(self):
+        output = []
+        for shape in self.shapes:
+            output.append(shape.format(self.precision))
+        return '\n'.join(output)
+
+    def svg_path(self):
         output = []
         for segments in self.strokes:
             # Start a new stroke.
             start_point = segments[0].a
             point = Point(*vec.add(start_point, self.offset))
-            output.append('M{:.{p}f},{:.{p}f}'.format(
-                point.x, -point.y, p=precision))
+            output.append(path_move(point.x, point.y, self.precision))
+
             # Draw the rest of the stroke.
             for seg in segments:
                 point = Point(*vec.add(seg.b, self.offset))
                 if seg.radius is None:
-                    output.append(
-                        self.format_line(
-                            point.x,
-                            -point.y,
-                            precision,
-                        )
-                    )
+                    output.append(path_line(
+                        point.x,
+                        point.y,
+                        self.precision,
+                    ))
                 else:
-                    output.append(
-                        self.format_arc(
-                            point.x,
-                            -point.y,
-                            seg.arc_angle,
-                            seg.radius,
-                            precision,
-                        )
-                    )
+                    output.append(path_arc(
+                        point.x,
+                        point.y,
+                        seg.arc_angle,
+                        seg.radius,
+                        self.precision,
+                    ))
             # Close the path if necessary.
             if points_equal(seg.b, start_point):
-                output.append('z')
+                output.append(path_close())
 
         return ' '.join(output)
 
-    @staticmethod
-    def format_number(n, precision):
-        # Handle numbers near zero formatting inconsistently as
-        # either "0.0" or "-0.0".
-        if abs(n) < 0.5 * 10**(-precision):
-            n = 0
-        return '{n:.{p}f}'.format(n=n, p=precision)
-
-    @staticmethod
-    def format_line(x, y, precision):
-        return 'L{x},{y}'.format(
-            x=Paper.format_number(x, precision),
-            y=Paper.format_number(y, precision),
-        )
-
-    @staticmethod
-    def format_arc(x, y, arc_angle, radius, precision):
-        direction_flag = int(arc_angle < 0)
-        sweep_flag = int(abs(arc_angle) % 360 > 180)
-        return (
-            'A {r},{r} 0 {sweep_flag} {direction_flag} {x},{y}'
-        ).format(
-            x=Paper.format_number(x, precision),
-            y=Paper.format_number(y, precision),
-            r=Paper.format_number(abs(radius), precision),
-            direction_flag=direction_flag,
-            sweep_flag=sweep_flag,
-        )
-
-    def to_svg_path_thick(self, precision=12):
+    def svg_path_thick(self):
         from pen import Pen
         pen = Pen(self.offset)
+        pen.paper.precision = self.precision
         for segments in self.strokes:
             self.draw_stroke_thick(pen, segments)
-        return pen.paper.to_svg_path(precision=precision)
+        return pen.paper.svg_path()
 
     def draw_stroke_thick(self, pen, segments):
         if self.show_joints:

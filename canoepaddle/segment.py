@@ -1,7 +1,7 @@
 import math
 
 import vec
-from point import Point
+from .point import Point
 
 
 class LineSegment:

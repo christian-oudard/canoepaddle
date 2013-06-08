@@ -1,9 +1,10 @@
 import math
 
 import vec
-from paper import Paper
-from segment import LineSegment, ArcSegment
-from point import Point
+from .paper import Paper
+from .segment import LineSegment, ArcSegment
+from .shape import Circle
+from .point import Point
 
 
 def flip_angle_x(angle):
@@ -139,6 +140,12 @@ class Pen:
 
     def arc_right(self, arc_angle, radius):
         self.arc_left(-arc_angle, -radius)
+
+    def circle(self, radius):
+        self.paper.add_shape(Circle(
+            center=self._position,
+            radius=radius,
+        ))
 
     def last_slant_width(self):
         return self.paper.strokes[-1][-1].end_slant_width()

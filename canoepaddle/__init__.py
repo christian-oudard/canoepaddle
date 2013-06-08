@@ -1,4 +1,3 @@
-__all__ = ['Pen', 'format_svg']
+__all__ = ['Pen']
 
-from pen import Pen
-from util import format_svg
+from .pen import Pen
