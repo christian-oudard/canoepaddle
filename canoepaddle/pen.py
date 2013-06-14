@@ -69,7 +69,7 @@ class Pen:
         new_position = self._calc_forward_to_x(x_target)
         self.move_to(new_position)
 
-    def stroke_to(self, point, start_angle=None, end_angle=None):
+    def line_to(self, point, start_angle=None, end_angle=None):
         old_position = self._position
         self.move_to(point)
 
@@ -85,32 +85,32 @@ class Pen:
             end_angle=end_angle,
         ))
 
-    def stroke_forward(self, distance, start_angle=None, end_angle=None):
-        self.stroke_to(
+    def line_forward(self, distance, start_angle=None, end_angle=None):
+        self.line_to(
             self._calc_forward_position(distance),
             start_angle=start_angle,
             end_angle=end_angle,
         )
 
-    def stroke_to_y(self, y_target, start_angle=None, end_angle=None):
+    def line_to_y(self, y_target, start_angle=None, end_angle=None):
         """
-        Stroke forward in the current orientation, until the y coordinate
+        Draw a line, forward in the current orientation, until the y coordinate
         equals the given value.
         """
         new_position = self._calc_forward_to_y(y_target)
-        self.stroke_to(
+        self.line_to(
             new_position,
             start_angle=start_angle,
             end_angle=end_angle,
         )
 
-    def stroke_to_x(self, x_target, start_angle=None, end_angle=None):
+    def line_to_x(self, x_target, start_angle=None, end_angle=None):
         """
-        Stroke forward in the current orientation, until the x coordinate
+        Draw a line, forward in the current orientation, until the x coordinate
         equals the given value.
         """
         new_position = self._calc_forward_to_x(x_target)
-        self.stroke_to(
+        self.line_to(
             new_position,
             start_angle=start_angle,
             end_angle=end_angle,

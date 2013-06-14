@@ -202,25 +202,25 @@ class Paper:
 
             sw = seg.start_slant_width()
             pen.move_forward(-sw / 2)
-            pen.stroke_forward(sw)
+            pen.line_forward(sw)
 
         # Draw along the length of the segment.
         pen.turn_to(seg.start_heading)
         if seg.radius is None:
-            pen.stroke_forward(seg.length() + seg.extra_length())
+            pen.line_forward(seg.length() + seg.extra_length())
         else:
             pen.arc_left(seg.arc_angle, seg.radius + seg.width / 2)
 
         if last:
             # Draw the ending thickness edge.
             pen.turn_left(180 - seg.end_slant())
-            pen.stroke_forward(seg.end_slant_width())
+            pen.line_forward(seg.end_slant_width())
 
     @staticmethod
     def draw_segment_left(pen, seg, first=False, last=False):
         # Continue path back towards the beginning.
         pen.turn_to(seg.end_heading + 180)
         if seg.radius is None:
-            pen.stroke_forward(seg.length() - seg.extra_length())
+            pen.line_forward(seg.length() - seg.extra_length())
         else:
             pen.arc_right(seg.arc_angle, seg.radius - seg.width / 2)

@@ -57,7 +57,7 @@ def test_stroke():
 
     p.move_to((0, 0))
     p.turn_to(45)
-    p.stroke_forward(2.0)
+    p.line_forward(2.0)
 
     assert_points_equal(p.position, (sqrt2, sqrt2))
     assert_equal(len(p.paper.strokes), 1)
@@ -68,11 +68,11 @@ def test_stroke():
         assert_segments_equal(actual, target)
 
 
-def test_stroke_to_coordinate():
+def test_line_to_coordinate():
     p = Pen()
     p.move_to((0, 0))
     p.turn_to(45)
-    p.stroke_to_y(3)
+    p.line_to_y(3)
     assert_points_equal(p.position, (3, 3))
 
     for x, y in [
@@ -85,12 +85,12 @@ def test_stroke_to_coordinate():
 
         p.move_to((0, 0))
         p.turn_toward((x, y))
-        p.stroke_to_y(y * 2)
+        p.line_to_y(y * 2)
         assert_points_equal(p.position, (x * 2, y * 2))
 
         p.move_to((0, 0))
         p.turn_toward((x, y))
-        p.stroke_to_x(x * 3)
+        p.line_to_x(x * 3)
         assert_points_equal(p.position, (x * 3, y * 3))
 
 
@@ -106,7 +106,7 @@ def test_svg_path_thick():
     p = Pen()
     p.set_width(1.0)
     p.turn_to(-45)
-    p.stroke_forward(5)
+    p.line_forward(5)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
     assert_equal(
@@ -120,7 +120,7 @@ def test_angle():
     p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
-    p.stroke_forward(10, start_angle=-45, end_angle=30)
+    p.line_forward(10, start_angle=-45, end_angle=30)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
     assert_equal(
@@ -132,7 +132,7 @@ def test_angle():
     p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(-45)
-    p.stroke_forward(10, start_angle=90, end_angle=None)
+    p.line_forward(10, start_angle=90, end_angle=None)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
     assert_equal(
@@ -144,7 +144,7 @@ def test_angle():
 def test_angle_error():
     p = Pen()
     p.set_width(1.0)
-    p.stroke_forward(10, start_angle=0)
+    p.line_forward(10, start_angle=0)
     assert_raises(
         ValueError,
         lambda: p.paper.svg_path_thick(),
@@ -152,7 +152,7 @@ def test_angle_error():
 
     p = Pen()
     p.set_width(1.0)
-    p.stroke_forward(1, start_angle=40, end_angle=-40)
+    p.line_forward(1, start_angle=40, end_angle=-40)
     assert_raises(
         ValueError,
         lambda: p.paper.svg_path_thick(),
@@ -164,9 +164,9 @@ def test_joint():
     p.set_width(1.0)
     p.move_to((-6, 0))
     p.turn_to(0)
-    p.stroke_forward(6)
+    p.line_forward(6)
     p.turn_right(60)
-    p.stroke_forward(6)
+    p.line_forward(6)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
     assert_equal(
@@ -183,9 +183,9 @@ def test_show_joints():
     p.set_width(1.0)
     p.move_to((-6, 0))
     p.turn_to(0)
-    p.stroke_forward(6)
+    p.line_forward(6)
     p.turn_right(60)
-    p.stroke_forward(6)
+    p.line_forward(6)
     p.paper.show_joints = True
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
@@ -205,9 +205,9 @@ def test_flip_x():
     p.turn_to(180)
     p.move_forward(6)
     p.turn_to(0)
-    p.stroke_forward(6)
+    p.line_forward(6)
     p.turn_right(60)
-    p.stroke_forward(6)
+    p.line_forward(6)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
     assert_equal(
@@ -221,7 +221,7 @@ def test_center_on_x():
     p = Pen()
     p.move_to((0, 0))
     p.turn_to(0)
-    p.stroke_forward(4)
+    p.line_forward(4)
     p.paper.center_on_x(0)
     p.paper.set_precision(0)
     path_data = p.paper.svg_path()
@@ -236,8 +236,8 @@ def test_straight_joint():
     p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(-90)
-    p.stroke_forward(1)
-    p.stroke_forward(1)
+    p.line_forward(1)
+    p.line_forward(1)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
     assert_equal(
@@ -253,9 +253,9 @@ def test_straight_joint():
     p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
-    p.stroke_forward(10)
+    p.line_forward(10)
     p.turn_right(180)
-    p.stroke_forward(10)
+    p.line_forward(10)
     assert_raises(
         ValueError,
         lambda: p.paper.svg_path_thick(),
@@ -267,10 +267,10 @@ def test_offwidth_joint():
     p.set_width(1.0)
     p.turn_to(0)
     p.move_forward(-3)
-    p.stroke_forward(3)
+    p.line_forward(3)
     p.set_width(0.5)
     p.turn_left(90)
-    p.stroke_forward(3)
+    p.line_forward(3)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
     assert_equal(
@@ -286,11 +286,11 @@ def test_offwidth_joint_error():
     p = Pen()
     p.set_width(1.0)
     p.turn_to(0)
-    p.stroke_forward(3)
+    p.line_forward(3)
     p.set_width(0.5)
     assert_raises(
         ValueError,
-        lambda: p.stroke_forward(3)
+        lambda: p.line_forward(3)
     )
 
 
@@ -357,8 +357,8 @@ def test_calc_joint_angle_straight():
         p.set_width(1.0)
         p.move_to((0, 0))
         p.turn_to(heading_angle)
-        p.stroke_forward(10)
-        p.stroke_forward(10)
+        p.line_forward(10)
+        p.line_forward(10)
         p.paper.set_precision(2)
         p.paper.svg_path_thick()  # Doesn't crash.
 
@@ -377,9 +377,9 @@ def test_multiple_strokes():
     p.set_width(1.0)
     p.turn_to(0)
     p.move_to((0, 0))
-    p.stroke_forward(3)
+    p.line_forward(3)
     p.move_to((0, 3))
-    p.stroke_forward(3)
+    p.line_forward(3)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
 
@@ -397,13 +397,13 @@ def test_last_slant_width():
 
     p.move_to((0, 0))
     p.turn_to(-45)
-    p.stroke_forward(1, end_angle=90)
+    p.line_forward(1, end_angle=90)
 
     assert_almost_equal(p.last_slant_width(), sqrt2)
 
     p.move_to((0, 0))
     p.turn_to(30)
-    p.stroke_forward(1, end_angle=90)
+    p.line_forward(1, end_angle=90)
     assert_almost_equal(p.last_slant_width(), 2 / sqrt3)
 
 
@@ -526,9 +526,9 @@ def test_thick_arc():
     p.move_to((0, 0))
     p.turn_to(0)
     p.arc_left(90, radius=5)
-    p.stroke_forward(p.width / 2)
+    p.line_forward(p.width / 2)
     p.turn_to(0)
-    p.stroke_forward(p.width / 2)
+    p.line_forward(p.width / 2)
     p.arc_left(90, radius=5)
     p.paper.set_precision(2)
     path_data = p.paper.svg_path_thick()
