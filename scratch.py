@@ -1,21 +1,20 @@
 from canoepaddle import Pen
 
 p = Pen()
-
+p.set_width(1.0)
 p.move_to((0, 0))
 p.turn_to(0)
+p.arc_left(90, radius=5)
+#p.line_forward(p.width / 2)
+#p.turn_to(0)
+#p.line_forward(p.width / 2)
+#p.arc_left(90, radius=5)
 
-radius = 0.01
-
-for _ in range(100):
-    p.circle(radius)
-    p.turn_left(15)
-    new_radius = radius * 1.1
-    p.move_forward(radius + new_radius)
-    radius = new_radius
-
-p.paper.set_style('''
-    stroke: none;
-    fill: green;
-''')
-print(p.paper.format_svg())
+p.paper.set_style(
+    '''
+    stroke: black;
+    stroke-width: 0.15;
+    fill: red;
+    '''
+)
+print(p.paper.format_svg(thick=True))

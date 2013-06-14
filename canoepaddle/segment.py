@@ -6,13 +6,14 @@ from .point import Point
 
 class LineSegment:
 
-    def __init__(self, a, b, width, start_angle=None, end_angle=None):
+    def __init__(self, a, b, width=None, start_angle=None, end_angle=None):
         self.a = Point(*a)
         self.b = Point(*b)
-        self.start_angle = start_angle
-        self.end_angle = end_angle
         self.width = width
         self.radius = None
+
+        self.set_start_angle(start_angle)
+        self.set_end_angle(end_angle)
 
     def __iter__(self):
         yield self.a
@@ -21,31 +22,49 @@ class LineSegment:
     def __repr__(self):
         return (
             '{}(a={a}, b={b}, width={width}, '
-            'start_angle={start_angle}, end_angle={end_angle})'
+            'start_angle={_start_angle}, end_angle={_end_angle})'
             .format(self.__class__.__name__, **self.__dict__)
         )
 
     def length(self):
         return vec.dist(self.a, self.b)
 
-    def heading(self):
+    def _heading(self):
         return math.degrees(vec.heading(vec.vfrom(self.a, self.b)))
 
     @property
     def start_heading(self):
-        return self.heading()
+        return self._heading()
 
     @property
     def end_heading(self):
-        return self.heading()
-
-    #TODO: make these into properties, and add caching.
+        return self._heading()
 
     def start_slant(self):
-        return self.calc_slant(self.heading(), self.start_angle)
+        return self.calc_slant(self.start_heading, self._start_angle)
 
     def end_slant(self):
-        return self.calc_slant(self.heading(), self.end_angle)
+        return self.calc_slant(self.end_heading, self._end_angle)
+
+    def set_start_angle(self, start_angle):
+        self._start_angle = start_angle
+        if self.width is not None:
+            v = vec.from_heading(math.radians(self.start_heading))
+            v = vec.rotate(v, -math.radians(self.calc_slant(self.start_heading, start_angle)))
+            v = vec.norm(v, self.start_slant_width() / 2)
+            self.a_left = vec.sub(self.a, v)
+            self.a_right = vec.add(self.a, v)
+            self.check_degenerate_segment()
+
+    def set_end_angle(self, end_angle):
+        self._end_angle = end_angle
+        if self.width is not None:
+            v = vec.from_heading(math.radians(self.end_heading))
+            v = vec.rotate(v, -math.radians(self.calc_slant(self.end_heading, end_angle)))
+            v = vec.norm(v, self.end_slant_width() / 2)
+            self.b_left = vec.sub(self.b, v)
+            self.b_right = vec.add(self.b, v)
+            self.check_degenerate_segment()
 
     @staticmethod
     def calc_slant(heading, angle):
@@ -87,12 +106,17 @@ class LineSegment:
         """
         return stroke_width / math.sin(math.radians(slant))
 
-    def extra_length(self):
-        """
-        The extra length along the right side of the segment due to the angled
-        start and end. Note that the same value for the left side is the
-        negative of this.
-        """
+    def check_degenerate_segment(self):
+        # Check the extra length along the right side of the segment due to the
+        # angled start and end. Note that the same value for the left side is
+        # the negative of this. If the extra length goes negative on one side,
+        # this will draw an incorrect segment, so raise an exception.
+        if (
+            not hasattr(self, '_start_angle') or
+            not hasattr(self, '_end_angle')
+        ):
+            return
+
         extra_length = (self.width / 2) * (
             math.tan(math.radians(self.start_slant() - 90)) -
             math.tan(math.radians(self.end_slant() - 90))
@@ -102,20 +126,31 @@ class LineSegment:
                 'Slant is too extreme for the length and width of the '
                 'segment: {}'.format(self)
             )
-        return extra_length
 
 
-class ArcSegment:
+class ArcSegment(LineSegment):
     def __init__(
-        self, a, b, width, arc_angle, radius, start_heading, end_heading,
+        self, a, b, width, center, radius, arc_angle, start_heading, end_heading,
     ):
         self.a = Point(*a)
         self.b = Point(*b)
         self.width = width
         self.arc_angle = arc_angle
+        self.center = center
         self.radius = radius
-        self.start_heading = start_heading
-        self.end_heading = end_heading
+        self._start_heading = start_heading
+        self._end_heading = end_heading
+
+        self.set_start_angle(None)
+        self.set_end_angle(None)
+
+    @property
+    def start_heading(self):
+        return self._start_heading
+
+    @property
+    def end_heading(self):
+        return self._end_heading
 
     def start_slant(self):
         return 90  # Not yet implemented.
@@ -131,3 +166,6 @@ class ArcSegment:
 
     def heading(self):
         return self.start_heading
+
+    def check_degenerate_segment(self):
+        return #STUB

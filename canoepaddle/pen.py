@@ -19,7 +19,7 @@ class Pen:
         self.paper = Paper(offset)
         self._heading = 0
         self._position = (0.0, 0.0)
-        self._width = 1.0
+        self._width = None
         self.flipped_x = False
 
     def flip_x(self):
@@ -116,7 +116,7 @@ class Pen:
             end_angle=end_angle,
         )
 
-    def _arc(self, arc_angle, radius, endpoint):
+    def _arc(self, center, radius, endpoint, arc_angle):
         old_position = self._position
         old_heading = self._heading
         self.move_to(endpoint)
@@ -126,8 +126,9 @@ class Pen:
             a=old_position,
             b=endpoint,
             width=self.width,
-            arc_angle=arc_angle,
+            center=center,
             radius=radius,
+            arc_angle=arc_angle,
             start_heading=old_heading,
             end_heading=self._heading,
         ))
@@ -140,16 +141,17 @@ class Pen:
         center = vec.sub(self._position, v_radius)
         endpoint = vec.add(center, vec.rotate(v_radius, math.radians(arc_angle)))
 
-        self._arc(arc_angle, radius, endpoint)
+        self._arc(center, radius, endpoint, arc_angle)
 
     def arc_right(self, arc_angle, radius):
         self.arc_left(-arc_angle, -radius)
 
-    def arc_to(self, endpoint):
+    def arc_to(self, endpoint, center=None):
         """
         Draw an arc ending at the specified point, starting tangent to the
         current position and heading.
         """
+        # Handle unspecified center.
         # We need to find the center of the arc, so we can find its radius. The
         # center of this arc is uniquely defined by the intersection of two
         # lines:
@@ -158,15 +160,16 @@ class Pen:
         # 2. The second line is the perpendicular bisector of the pen position
         #    and the target arc end point.
         v_pen = self._vector()
-        v_perp = vec.perp(v_pen)
-        midpoint = vec.div(vec.add(self._position, endpoint), 2)
-        v_bisector = vec.perp(vec.vfrom(self._position, endpoint))
-        center = intersect_lines(
-            self._position,
-            vec.add(self._position, v_perp),
-            midpoint,
-            vec.add(midpoint, v_bisector),
-        )
+        v_perp = vec.perp(self._vector())
+        if center is None:
+            midpoint = vec.div(vec.add(self._position, endpoint), 2)
+            v_bisector = vec.perp(vec.vfrom(self._position, endpoint))
+            center = intersect_lines(
+                self._position,
+                vec.add(self._position, v_perp),
+                midpoint,
+                vec.add(midpoint, v_bisector),
+            )
 
         # Calculate the arc angle.
         # Construct two radii, one for the start and end of the arc, and find
@@ -180,7 +183,13 @@ class Pen:
         if vec.dot(v_radius_start, v_perp) > 0:
             arc_angle = -arc_angle
 
-        self._arc(arc_angle, vec.mag(v_radius_start), endpoint)
+        # Determine start heading. This may not be the same as the original pen
+        # heading if the "center" argument is specified.
+        start_heading = vec.heading(vec.perp(v_radius_start))
+        if arc_angle < 0:
+            start_heading = (start_heading + 180) % 360
+
+        self._arc(center, vec.mag(v_radius_start), endpoint, arc_angle)
 
     def circle(self, radius):
         self.paper.add_shape(Circle(
@@ -210,7 +219,7 @@ class Pen:
         Create a vector pointing in the same direction as the pen, with the
         specified length.
         """
-        return vec.rotate((length, 0), math.radians(self._heading))
+        return vec.from_heading(math.radians(self._heading), length)
 
     def _calc_forward_position(self, distance):
         return vec.add(

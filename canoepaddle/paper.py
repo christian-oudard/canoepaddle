@@ -31,10 +31,11 @@ class Paper:
 
         if continuing:
             self.strokes[-1].append(new_segment)
-            # Add a joint between successive segments.
-            joint_angle = self.calc_joint_angle(last_segment, new_segment)
-            last_segment.end_angle = joint_angle
-            new_segment.start_angle = joint_angle
+            if new_segment.width is not None:
+                # Add a joint between successive segments.
+                joint_angle = self.calc_joint_angle(last_segment, new_segment)
+                last_segment.set_end_angle(joint_angle)
+                new_segment.set_start_angle(joint_angle)
         else:
             # Start a new stroke.
             self.strokes.append([new_segment])
@@ -196,31 +197,25 @@ class Paper:
     def draw_segment_right(pen, seg, first=False, last=False):
         if first:
             # Draw the beginning edge.
-            pen.move_to(seg.a)
-            pen.turn_to(seg.heading())
-            pen.turn_right(seg.start_slant())
-
-            sw = seg.start_slant_width()
-            pen.move_forward(-sw / 2)
-            pen.line_forward(sw)
+            pen.move_to(seg.a_left)
+            pen.line_to(seg.a_right)
 
         # Draw along the length of the segment.
         pen.turn_to(seg.start_heading)
         if seg.radius is None:
-            pen.line_forward(seg.length() + seg.extra_length())
+            pen.line_to(seg.b_right)
         else:
-            pen.arc_left(seg.arc_angle, seg.radius + seg.width / 2)
+            pen.arc_to(seg.b_right, seg.center)
 
         if last:
             # Draw the ending thickness edge.
-            pen.turn_left(180 - seg.end_slant())
-            pen.line_forward(seg.end_slant_width())
+            pen.line_to(seg.b_left)
 
     @staticmethod
     def draw_segment_left(pen, seg, first=False, last=False):
         # Continue path back towards the beginning.
         pen.turn_to(seg.end_heading + 180)
         if seg.radius is None:
-            pen.line_forward(seg.length() - seg.extra_length())
+            pen.line_to(seg.a_left)
         else:
-            pen.arc_right(seg.arc_angle, seg.radius - seg.width / 2)
+            pen.arc_to(seg.a_left, seg.center)

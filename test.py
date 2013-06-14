@@ -68,6 +68,34 @@ def test_stroke():
         assert_segments_equal(actual, target)
 
 
+def test_line():
+    p = Pen()
+    p.set_width(2)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
+    p.paper.set_precision(0)
+    path_data = p.paper.svg_path()
+    assert_equal(
+        path_data,
+        'M0,0 L5,0',
+    )
+
+
+def test_line_thick():
+    p = Pen()
+    p.set_width(2)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
+    p.paper.set_precision(0)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        'M0,-1 L0,1 L5,1 L5,-1 L0,-1 z',
+    )
+
+
 def test_line_to_coordinate():
     p = Pen()
     p.move_to((0, 0))
@@ -142,20 +170,20 @@ def test_angle():
 
 
 def test_angle_error():
+    # Creating an angle close to 0 is not allowed.
     p = Pen()
     p.set_width(1.0)
-    p.line_forward(10, start_angle=0)
     assert_raises(
         ValueError,
-        lambda: p.paper.svg_path_thick(),
+        lambda: p.line_forward(10, start_angle=0)
     )
 
+    # A combination of angles can also create a degenerate segment.
     p = Pen()
     p.set_width(1.0)
-    p.line_forward(1, start_angle=40, end_angle=-40)
     assert_raises(
         ValueError,
-        lambda: p.paper.svg_path_thick(),
+        lambda: p.line_forward(1, start_angle=40, end_angle=-40),
     )
 
 
@@ -248,6 +276,8 @@ def test_straight_joint():
         ),
     )
 
+
+def test_turn_back():
     # Make a line turn back on itself; it doesn't work.
     p = Pen()
     p.set_width(1.0)
@@ -255,10 +285,9 @@ def test_straight_joint():
     p.turn_to(0)
     p.line_forward(10)
     p.turn_right(180)
-    p.line_forward(10)
     assert_raises(
         ValueError,
-        lambda: p.paper.svg_path_thick(),
+        lambda: p.line_forward(10),
     )
 
 
@@ -394,11 +423,11 @@ def test_multiple_strokes():
 
 def test_last_slant_width():
     p = Pen()
+    p.set_width(1.0)
 
     p.move_to((0, 0))
     p.turn_to(-45)
     p.line_forward(1, end_angle=90)
-
     assert_almost_equal(p.last_slant_width(), sqrt2)
 
     p.move_to((0, 0))

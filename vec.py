@@ -7,7 +7,7 @@ from __future__ import division
 
 __all__ = ['add', 'vfrom', 'dot', 'cross', 'mul', 'div', 'neg', 'mag2',
            'mag', 'dist2', 'dist', 'norm', 'avg', 'angle', 'rotate', 'perp',
-           'proj', 'heading']
+           'proj', 'heading', 'from_heading']
 
 from math import sqrt, acos, fsum, sin, cos, atan2
 try:
@@ -143,3 +143,10 @@ def heading(v):
         raise ValueError('A zero vector has no heading.')
     x, y = v
     return atan2(y, x)
+
+
+def from_heading(heading, c=1):
+    """
+    Create a two-dimensional vector with the specified heading of the specified magnitude.
+    """
+    return rotate((c, 0), heading)
