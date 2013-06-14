@@ -95,7 +95,10 @@ def test_stroke_to_coordinate():
 
 def test_format_svg():
     p = Pen()
-    p.paper.format_svg()
+    svg = p.paper.format_svg()
+    assert svg.startswith('<?xml')
+    svg = p.paper.format_svg(thick=True)
+    assert svg.startswith('<?xml')
 
 
 def test_svg_path_thick():
