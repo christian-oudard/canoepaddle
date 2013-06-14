@@ -116,14 +116,7 @@ class Pen:
             end_angle=end_angle,
         )
 
-    def arc_left(self, arc_angle, radius):
-        # Create a radius vector, which is a vector from the arc center to the
-        # current position. Subtract to find the center, then rotate the radius
-        # vector to find the arc end point.
-        r = vec.neg(vec.perp(self._vector(radius)))
-        center = vec.sub(self._position, r)
-        endpoint = vec.add(center, vec.rotate(r, math.radians(arc_angle)))
-
+    def _arc(self, arc_angle, radius, endpoint):
         old_position = self._position
         old_heading = self._heading
         self.move_to(endpoint)
@@ -139,50 +132,55 @@ class Pen:
             end_heading=self._heading,
         ))
 
+    def arc_left(self, arc_angle, radius):
+        # Create a radius vector, which is a vector from the arc center to the
+        # current position. Subtract to find the center, then rotate the radius
+        # vector to find the arc end point.
+        v_radius = vec.neg(vec.perp(self._vector(radius)))
+        center = vec.sub(self._position, v_radius)
+        endpoint = vec.add(center, vec.rotate(v_radius, math.radians(arc_angle)))
+
+        self._arc(arc_angle, radius, endpoint)
+
     def arc_right(self, arc_angle, radius):
         self.arc_left(-arc_angle, -radius)
 
-    def arc_to(self, point):
+    def arc_to(self, endpoint):
         """
         Draw an arc ending at the specified point, starting tangent to the
         current position and heading.
         """
         # We need to find the center of the arc, so we can find its radius. The
         # center of this arc is uniquely defined by the intersection of two
-        # lines. The first line is perpendicular to the pen heading, passing
-        # through the pen position. The second line is the perpendicular
-        # bisector of the pen position and the target arc end point.
-        print('currently at', self._position)
-        print('arcing to', point)
-        v_perp = vec.perp(self._vector())
-        midpoint = vec.div(vec.add(self._position, point), 2)
-        print('midpoint', midpoint)
-        v_bisector = vec.perp(vec.vfrom(self._position, point))
+        # lines:
+        # 1. The first line is perpendicular to the pen heading, passing
+        #    through the pen position.
+        # 2. The second line is the perpendicular bisector of the pen position
+        #    and the target arc end point.
+        v_pen = self._vector()
+        v_perp = vec.perp(v_pen)
+        midpoint = vec.div(vec.add(self._position, endpoint), 2)
+        v_bisector = vec.perp(vec.vfrom(self._position, endpoint))
         center = intersect_lines(
             self._position,
             vec.add(self._position, v_perp),
             midpoint,
             vec.add(midpoint, v_bisector),
         )
-        print('center', center)
 
         # Calculate the arc angle.
-        #STUB
+        # Construct two radii, one for the start and end of the arc, and find
+        # the angle between them. Check some dot products to determine which
+        # quadrant the arc angle is in.
+        v_radius_start = vec.vfrom(center, self._position)
+        v_radius_end = vec.vfrom(center, endpoint)
+        arc_angle = math.degrees(vec.angle(v_radius_start, v_radius_end))
+        if vec.dot(v_radius_end, v_pen) < 0:
+            arc_angle += 180
+        if vec.dot(v_radius_start, v_perp) > 0:
+            arc_angle = -arc_angle
 
-        old_position = self._position
-        old_heading = self._heading
-        self.move_to(point)
-        self.turn_left(arc_angle)
-
-        #self.paper.add_segment(ArcSegment(
-        #    a=old_position,
-        #    b=endpoint,
-        #    width=self.width,
-        #    arc_angle=arc_angle,
-        #    radius=radius,
-        #    start_heading=old_heading,
-        #    end_heading=self._heading,
-        #))
+        self._arc(arc_angle, vec.mag(v_radius_start), endpoint)
 
     def circle(self, radius):
         self.paper.add_shape(Circle(
