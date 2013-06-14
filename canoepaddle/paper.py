@@ -59,10 +59,10 @@ class Paper:
         v2 = vec.vfrom(new_segment.a, new_segment.b)
         theta = (v2_heading - v1_heading) % 180
         sin_theta = math.sin(math.radians(theta))
-        w1 = last_segment.width
-        w2 = new_segment.width
-        v1 = vec.norm(v1, w2 * sin_theta)
-        v2 = vec.norm(v2, w1 * sin_theta)
+        width1 = last_segment.width
+        width2 = new_segment.width
+        v1 = vec.norm(v1, width2 * sin_theta)
+        v2 = vec.norm(v2, width1 * sin_theta)
         return math.degrees(vec.heading(vec.vfrom(v1, v2))) % 180
 
     def center_on_x(self, x_center):
@@ -157,7 +157,7 @@ class Paper:
         return ' '.join(output)
 
     def svg_path_thick(self):
-        from pen import Pen
+        from .pen import Pen
         pen = Pen(self.offset)
         pen.paper.precision = self.precision
         for segments in self.strokes:

@@ -10,6 +10,7 @@ from canoepaddle import Pen
 from canoepaddle.paper import Paper
 from canoepaddle.segment import LineSegment
 from canoepaddle.point import Point
+from canoepaddle.geometry import intersect_lines
 
 
 sqrt2 = math.sqrt(2)
@@ -406,6 +407,27 @@ def test_last_slant_width():
     assert_almost_equal(p.last_slant_width(), 2 / sqrt3)
 
 
+def test_intersect_lines():
+    assert_points_equal(
+        intersect_lines(
+            (0, 0),
+            (10, 10),
+            (0, 10),
+            (10, 0),
+        ),
+        (5, 5),
+    )
+    assert_points_equal(
+        intersect_lines(
+            (0, 0),
+            (10, 0),
+            (5, 0),
+            (15, 0.01),
+        ),
+        (5, 0),
+    )
+
+
 def test_arc():
     # Draw arcs with all four combinations of sweep and direction flags.
     p = Pen()
@@ -419,6 +441,34 @@ def test_arc():
     p.turn_to(0)
     p.arc_right(90, radius=5)
     p.arc_left(270, radius=5)
+
+    p.paper.set_precision(0)
+    path_data = p.paper.svg_path()
+    assert_equal(
+        path_data,
+        (
+            'M-5,0 A 5,5 0 0 0 0,-5 '
+            'A 5,5 0 1 1 5,0 '
+            'M-5,0 A 5,5 0 0 1 0,5 '
+            'A 5,5 0 1 0 5,0'
+        ),
+    )
+
+
+def test_arc_to():
+    # Make the same arcs as test_arc, but using the destination points instead
+    # of the angles.
+    p = Pen()
+
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_to((0, 5))
+    p.arc_to((5, 0))
+
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_to((0, -5))
+    p.arc_to((5, 0))
 
     p.paper.set_precision(0)
     path_data = p.paper.svg_path()

@@ -117,9 +117,13 @@ def cross(v1, v2):
 
 
 def perp(v):
-    """Return a perpendicular to a two-dimensional vector."""
+    """
+    Return a perpendicular to a two-dimensional vector.
+
+    The direction of rotation is 90 degrees counterclockwise.
+    """
     x, y = v
-    return (y, -x)
+    return (-y, x)
 
 
 def proj(v1, v2):
