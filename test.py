@@ -426,6 +426,15 @@ def test_intersect_lines():
         ),
         (5, 0),
     )
+    assert_raises(
+        ValueError,
+        lambda: intersect_lines(
+            (0, 0),
+            (1, 0),
+            (0, 1),
+            (1, 1),
+        )
+    )
 
 
 def test_arc():
