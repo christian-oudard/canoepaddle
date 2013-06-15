@@ -4,26 +4,6 @@ import vec
 from .point import epsilon, points_equal
 
 
-def in_segment(p, a, b):
-    """
-    Check collision between a line segment a-b and a collinear point p.
-    """
-    px, py = p
-    ax, ay = a
-    bx, by = b
-    if ax != bx:  # Segment is not vertical.
-        if ax <= px and px <= bx:
-            return True
-        if ax >= px and px >= bx:
-            return True
-    else:  # Segment is vertical, so test y coordinate.
-        if ay <= py and py <= by:
-            return True
-        if ay >= py and py >= by:
-            return True
-    return False
-
-
 def intersect_lines(a, b, c, d, segment=False):
     """
     Find the intersection of lines a-b and c-d.
@@ -39,27 +19,7 @@ def intersect_lines(a, b, c, d, segment=False):
 
     u_perp_dot_v = vec.dot(vec.perp(u), v)
     if abs(u_perp_dot_v) < epsilon:
-        if not segment:
-            return None
-        # Segments are parallel. Determine whether they overlap.
-        if points_equal(a, b) and points_equal(c, d):
-            # Both segments are degenerate points.
-            if points_equal(a, c):
-                return a  # The points are the same.
-            else:
-                return None  # They are different points.
-        elif points_equal(a, b):
-            if in_segment(a, c, d):
-                return a  # Point a is in segment c-d.
-            else:
-                return None
-        elif points_equal(c, d):
-            if in_segment(c, a, b):
-                return c  # Point c is in segment a-b.
-            else:
-                return None
-        else:
-            return None  # We have collinear segments, no single intersection.
+        return None  # We have collinear segments, no single intersection.
 
     v_perp_dot_w = vec.dot(vec.perp(v), w)
     s = v_perp_dot_w / u_perp_dot_v
