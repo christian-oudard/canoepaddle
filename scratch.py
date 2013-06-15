@@ -4,16 +4,19 @@ p = Pen()
 p.set_width(1.0)
 p.move_to((0, 0))
 p.turn_to(0)
-p.arc_left(90, radius=5)
-#p.line_forward(p.width / 2)
-#p.turn_to(0)
-#p.line_forward(p.width / 2)
-#p.arc_left(90, radius=5)
+p.arc_left(90, radius=5, start_angle=45, end_angle=45)
 
+p.move_to((0, 0))
+p.turn_to(0)
+p.line_forward(5, start_angle=45)
+p.turn_left(90)
+p.line_forward(5, end_angle=45)
+
+p.paper.set_precision(2)
 p.paper.set_style(
     '''
     stroke: black;
-    stroke-width: 0.15;
+    stroke-width: 0.05;
     fill: red;
     '''
 )

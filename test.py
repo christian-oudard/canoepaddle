@@ -574,6 +574,22 @@ def test_thick_arc():
         ),
     )
 
+def test_arc_angle():
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.arc_left(90, radius=5, start_angle=45, end_angle=45)
+    p.paper.set_precision(2)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M0.53,-0.53 L-0.48,0.48 A 5.50,5.50 0 0 0 5.48,-5.48 '
+            'L4.47,-4.47 A 4.50,4.50 0 0 1 0.53,-0.53 z'
+        ),
+    )
+
 
 def test_circle():
     p = Pen()

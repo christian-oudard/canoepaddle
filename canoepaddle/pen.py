@@ -116,7 +116,7 @@ class Pen:
             end_angle=end_angle,
         )
 
-    def _arc(self, center, radius, endpoint, arc_angle):
+    def _arc(self, center, radius, endpoint, arc_angle, start_angle, end_angle):
         old_position = self._position
         old_heading = self._heading
         self.move_to(endpoint)
@@ -131,9 +131,11 @@ class Pen:
             arc_angle=arc_angle,
             start_heading=old_heading,
             end_heading=self._heading,
+            start_angle=start_angle,
+            end_angle=end_angle,
         ))
 
-    def arc_left(self, arc_angle, radius):
+    def arc_left(self, arc_angle, radius, start_angle=None, end_angle=None):
         # Create a radius vector, which is a vector from the arc center to the
         # current position. Subtract to find the center, then rotate the radius
         # vector to find the arc end point.
@@ -141,12 +143,19 @@ class Pen:
         center = vec.sub(self._position, v_radius)
         endpoint = vec.add(center, vec.rotate(v_radius, math.radians(arc_angle)))
 
-        self._arc(center, radius, endpoint, arc_angle)
+        self._arc(
+            center,
+            radius,
+            endpoint,
+            arc_angle,
+            start_angle=start_angle,
+            end_angle=end_angle,
+        )
 
-    def arc_right(self, arc_angle, radius):
-        self.arc_left(-arc_angle, -radius)
+    def arc_right(self, arc_angle, radius, start_angle=None, end_angle=None):
+        self.arc_left(-arc_angle, -radius, start_angle, end_angle)
 
-    def arc_to(self, endpoint, center=None):
+    def arc_to(self, endpoint, center=None, start_angle=None, end_angle=None):
         """
         Draw an arc ending at the specified point, starting tangent to the
         current position and heading.
@@ -189,7 +198,7 @@ class Pen:
         if arc_angle < 0:
             start_heading = (start_heading + 180) % 360
 
-        self._arc(center, vec.mag(v_radius_start), endpoint, arc_angle)
+        self._arc(center, vec.mag(v_radius_start), endpoint, arc_angle, start_angle, end_angle)
 
     def circle(self, radius):
         self.paper.add_shape(Circle(

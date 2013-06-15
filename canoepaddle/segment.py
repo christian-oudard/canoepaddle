@@ -2,6 +2,14 @@ import math
 
 import vec
 from .point import Point
+from .geometry import intersect_circle_line
+
+
+def closest_point_to(target, points):
+    return min(
+        points,
+        key=lambda p: vec.mag2(vec.vfrom(target, p))
+    )
 
 
 class LineSegment:
@@ -130,7 +138,8 @@ class LineSegment:
 
 class ArcSegment(LineSegment):
     def __init__(
-        self, a, b, width, center, radius, arc_angle, start_heading, end_heading,
+        self, a, b, width, center, radius, arc_angle,
+        start_heading, end_heading, start_angle, end_angle,
     ):
         self.a = Point(*a)
         self.b = Point(*b)
@@ -141,8 +150,8 @@ class ArcSegment(LineSegment):
         self._start_heading = start_heading
         self._end_heading = end_heading
 
-        self.set_start_angle(None)
-        self.set_end_angle(None)
+        self.set_start_angle(start_angle)
+        self.set_end_angle(end_angle)
 
     @property
     def start_heading(self):
@@ -158,5 +167,48 @@ class ArcSegment(LineSegment):
     def end_slant_width(self):
         return self.width
 
+    def set_start_angle(self, start_angle):
+        self._start_angle = start_angle
+        if self.width is not None:
+            v = vec.from_heading(math.radians(self.start_heading))
+            v = vec.rotate(v, -math.radians(self.calc_slant(self.start_heading, start_angle)))
+            points = intersect_circle_line(
+                self.center,
+                self.radius - self.width / 2,
+                self.a,
+                vec.add(self.a, v),
+            )
+            self.a_left = closest_point_to(self.a, points)
+            points = intersect_circle_line(
+                self.center,
+                self.radius + self.width / 2,
+                self.a,
+                vec.add(self.a, v),
+            )
+            self.a_right = closest_point_to(self.a, points)
+            self.check_degenerate_segment()
+
+    def set_end_angle(self, end_angle):
+        self._end_angle = end_angle
+        if self.width is not None:
+            v = vec.from_heading(math.radians(self.end_heading))
+            v = vec.rotate(v, -math.radians(self.calc_slant(self.end_heading, end_angle)))
+            points = intersect_circle_line(
+                self.center,
+                self.radius - self.width / 2,
+                self.b,
+                vec.add(self.b, v),
+            )
+            self.b_left = closest_point_to(self.b, points)
+            points = intersect_circle_line(
+                self.center,
+                self.radius + self.width / 2,
+                self.b,
+                vec.add(self.b, v),
+            )
+            self.b_right = closest_point_to(self.b, points)
+            self.check_degenerate_segment()
+
     def check_degenerate_segment(self):
         return #STUB
+
