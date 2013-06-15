@@ -1,7 +1,77 @@
 from math import sqrt
 
 import vec
-from .point import epsilon
+from .point import epsilon, points_equal
+
+
+def in_segment(p, a, b):
+    """
+    Check collision between a line segment a-b and a collinear point p.
+    """
+    px, py = p
+    ax, ay = a
+    bx, by = b
+    if ax != bx:  # Segment is not vertical.
+        if ax <= px and px <= bx:
+            return True
+        if ax >= px and px >= bx:
+            return True
+    else:  # Segment is vertical, so test y coordinate.
+        if ay <= py and py <= by:
+            return True
+        if ay >= py and py >= by:
+            return True
+    return False
+
+
+def intersect_lines(a, b, c, d, segment=False):
+    """
+    Find the intersection of lines a-b and c-d.
+
+    If the "segment" argument is true, treat the lines as segments, and check
+    whether the intersection point is off the end of either segment.
+    """
+    # Reference:
+    # http://geomalgorithms.com/a05-_intersect-1.html
+    u = vec.vfrom(a, b)
+    v = vec.vfrom(c, d)
+    w = vec.vfrom(c, a)
+
+    u_perp_dot_v = vec.dot(vec.perp(u), v)
+    if abs(u_perp_dot_v) < epsilon:
+        if not segment:
+            return None
+        # Segments are parallel. Determine whether they overlap.
+        if points_equal(a, b) and points_equal(c, d):
+            # Both segments are degenerate points.
+            if points_equal(a, c):
+                return a  # The points are the same.
+            else:
+                return None  # They are different points.
+        elif points_equal(a, b):
+            if in_segment(a, c, d):
+                return a  # Point a is in segment c-d.
+            else:
+                return None
+        elif points_equal(c, d):
+            if in_segment(c, a, b):
+                return c  # Point c is in segment a-b.
+            else:
+                return None
+        else:
+            return None  # We have collinear segments, no single intersection.
+
+    v_perp_dot_w = vec.dot(vec.perp(v), w)
+    s = v_perp_dot_w / u_perp_dot_v
+    if segment and (s < 0 or s > 1):
+        return None
+
+    u_perp_dot_w = vec.dot(vec.perp(u), w)
+    t = u_perp_dot_w / u_perp_dot_v
+    if segment and (t < 0 or t > 1):
+        return None
+
+    return vec.add(a, vec.mul(u, s))
 
 
 def quadratic_formula(a, b, c):
@@ -19,23 +89,6 @@ def quadratic_formula(a, b, c):
             2*c / d,
             d / 2*a,
         )
-
-
-def intersect_lines(a, b, c, d):
-    """
-    Find the intersection of lines a-b and c-d.
-    """
-    # Reference:
-    # http://geomalgorithms.com/a05-_intersect-1.html
-    u = vec.vfrom(a, b)
-    v = vec.vfrom(c, d)
-    w = vec.vfrom(c, a)
-    u_perp_dot_v = vec.dot(vec.perp(u), v)
-    if abs(u_perp_dot_v) < epsilon:
-        raise ValueError('No intersection point.')
-    v_perp_dot_w = vec.dot(vec.perp(v), w)
-    s = v_perp_dot_w / u_perp_dot_v
-    return vec.add(a, vec.mul(u, s))
 
 
 def intersect_circle_line(center, radius, line_start, line_end):

@@ -2,7 +2,7 @@ import math
 
 import vec
 from .point import Point
-from .geometry import intersect_circle_line
+from .geometry import intersect_lines, intersect_circle_line
 
 
 def closest_point_to(target, points):
@@ -96,8 +96,6 @@ class LineSegment:
         if angle is None:
             return 90
         slant = (heading - angle) % 180
-        if slant > 179 or slant < 1:
-            raise ValueError('Slant angle is too steep')
         return slant
 
     def start_slant_width(self):
@@ -112,28 +110,26 @@ class LineSegment:
         The distance between the leading corners of the stroke can be longer if
         the stroke start is angled.
         """
+        if slant == 0:
+            raise ValueError('Slant angle is too steep')
         return stroke_width / math.sin(math.radians(slant))
 
     def check_degenerate_segment(self):
-        # Check the extra length along the right side of the segment due to the
-        # angled start and end. Note that the same value for the left side is
-        # the negative of this. If the extra length goes negative on one side,
-        # this will draw an incorrect segment, so raise an exception.
         if (
             not hasattr(self, '_start_angle') or
             not hasattr(self, '_end_angle')
         ):
             return
 
-        extra_length = (self.width / 2) * (
-            math.tan(math.radians(self.start_slant() - 90)) -
-            math.tan(math.radians(self.end_slant() - 90))
+        # Check whether the endcap lines intersect. If so, this will cause
+        # graphical glitches when drawing the segment.
+        intersection = intersect_lines(
+            self.a_left, self.a_right,
+            self.b_left, self.b_right,
+            segment=True,
         )
-        if abs(extra_length) > self.length():
-            raise ValueError(
-                'Slant is too extreme for the length and width of the '
-                'segment: {}'.format(self)
-            )
+        if intersection is not None:
+            raise ValueError('Degenerate segment, endcaps cross each other.')
 
 
 class ArcSegment(LineSegment):
@@ -208,7 +204,3 @@ class ArcSegment(LineSegment):
             )
             self.b_right = closest_point_to(self.b, points)
             self.check_degenerate_segment()
-
-    def check_degenerate_segment(self):
-        return #STUB
-

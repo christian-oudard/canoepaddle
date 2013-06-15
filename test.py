@@ -277,7 +277,7 @@ def test_straight_joint():
     )
 
 
-def test_turn_back():
+def test_turn_back_error():
     # Make a line turn back on itself; it doesn't work.
     p = Pen()
     p.set_width(1.0)
@@ -455,14 +455,14 @@ def test_intersect_lines():
         ),
         (5, 0),
     )
-    assert_raises(
-        ValueError,
-        lambda: intersect_lines(
+    assert_equal(
+        intersect_lines(
             (0, 0),
             (1, 0),
             (0, 1),
             (1, 1),
-        )
+        ),
+        None,
     )
 
 
@@ -549,32 +549,6 @@ def test_arc_normalize():
     )
 
 
-def test_thick_arc():
-    p = Pen()
-    p.set_width(1.0)
-    p.move_to((0, 0))
-    p.turn_to(0)
-    p.arc_left(90, radius=5)
-    p.line_forward(p.width / 2)
-    p.turn_to(0)
-    p.line_forward(p.width / 2)
-    p.arc_left(90, radius=5)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
-    assert_equal(
-        path_data,
-        (
-            'M0.00,-0.50 L0.00,0.50 '
-            'A 5.50,5.50 0 0 0 5.50,-5.00 '
-            'A 5.50,5.50 0 0 0 11.00,-10.50 '
-            'L10.00,-10.50 '
-            'A 4.50,4.50 0 0 1 5.50,-6.00 '
-            'L4.50,-6.00 L4.50,-5.00 '
-            'A 4.50,4.50 0 0 1 0.00,-0.50 z'
-        ),
-    )
-
-
 def test_arc_angle():
     p = Pen()
     p.set_width(1.0)
@@ -600,6 +574,23 @@ def test_arc_angle_error():
     assert_raises(
         ValueError,
         lambda: p.arc_left(90, radius=5, start_angle=25)
+    )
+
+
+def test_degenerate_arc():
+    p = Pen()
+    p.set_width(2.0)
+
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    assert_raises(
+        ValueError,
+        lambda: p.arc_to(
+            (5, 0),
+            center=(0, -200),
+            start_angle=-5,
+            end_angle=5,
+        )
     )
 
 

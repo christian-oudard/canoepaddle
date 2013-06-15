@@ -1,13 +1,12 @@
 from canoepaddle import Pen
 
 p = Pen()
-p.set_width(1.0)
-p.move_to((0, 0))
+p.set_width(0.5)
+
+p.move_to((-5, 0))
 p.turn_to(0)
-p.arc_left(90, radius=5, start_angle=26, end_angle=45)
+p.arc_to((5, 0), center=(0, -200), start_angle=-5, end_angle=5)
 
-
-p.paper.set_precision(2)
 p.paper.set_style(
     '''
     stroke: black;
