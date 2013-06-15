@@ -152,20 +152,11 @@ class ArcSegment(LineSegment):
     def end_heading(self):
         return self._end_heading
 
-    def start_slant(self):
-        return 90  # Not yet implemented.
-
-    def end_slant(self):
-        return 90  # Not yet implemented.
-
     def start_slant_width(self):
         return self.width
 
     def end_slant_width(self):
         return self.width
-
-    def heading(self):
-        return self.start_heading
 
     def check_degenerate_segment(self):
         return #STUB
