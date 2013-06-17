@@ -13,8 +13,12 @@ class Paper:
         self.precision = precision
         self.strokes = []
         self.shapes = []
-        self.show_joints = False
         self.style = ''
+
+        # Debug switches.
+        self.show_joints = False
+        self.show_bones = False
+        self.show_nodes = False
 
     def add_segment(self, new_segment):
         if points_equal(new_segment.a, new_segment.b):
@@ -100,7 +104,7 @@ class Paper:
                 xmlns="http://www.w3.org/2000/svg" version="1.1"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
                 viewBox="-10 -10 20 20"
-                width="400px" height="400px"
+                width="800px" height="800px"
             >
                 <style type="text/css">
                     * {
@@ -121,9 +125,19 @@ class Paper:
         )
 
     def svg_shapes(self):
+        # Debug switch to show the joint nodes between bones.
+        nodes = []
+        if self.show_nodes:
+            from shape import Circle
+            for segments in self.strokes:
+                for seg in segments:
+                    nodes.append(Circle(seg.a, seg.width / 4))
+                    nodes.append(Circle(seg.b, seg.width / 6))
+
         output = []
-        for shape in self.shapes:
+        for shape in self.shapes + nodes:
             output.append(shape.format(self.precision))
+
         return '\n'.join(output)
 
     def svg_path(self):
@@ -163,7 +177,10 @@ class Paper:
         pen.paper.precision = self.precision
         for segments in self.strokes:
             self.draw_stroke_thick(pen, segments)
-        return pen.paper.svg_path()
+        path_data = pen.paper.svg_path()
+        if self.show_bones:
+            path_data += self.svg_path()
+        return path_data
 
     def draw_stroke_thick(self, pen, segments):
         if self.show_joints:
