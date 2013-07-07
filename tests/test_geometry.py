@@ -136,8 +136,8 @@ def test_intersect_circles():
     # Two points.
     assert_equal(
         intersect_circles(
-            (1, 0), sqrt2,
             (-1, 0), sqrt2,
+            (1, 0), sqrt2,
         ),
         [(0, 1), (0, -1)],
     )

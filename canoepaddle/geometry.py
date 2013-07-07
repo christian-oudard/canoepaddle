@@ -126,4 +126,30 @@ def intersect_circles(center1, radius1, center2, radius2):
 
     # If we've reached this point, we know that the two circles intersect
     # in two distinct points.
-    raise NotImplementedError
+    # Reference:
+    # http://mathworld.wolfram.com/Circle-CircleIntersection.html
+
+    # Pretend that the circles are arranged along the x-axis.
+    # Find the x-value of the intersection points, which is the same for both
+    # points. Then find the chord length "a" between the two intersection
+    # points, and use vector math to find the points.
+    dist2 = vec.mag2(transverse)
+    x = (dist2 - radius1**2 + radius2**2) / (2 * dist)
+    a = (
+        (1 / dist) *
+        sqrt(
+            (-dist + radius1 - radius2) *
+            (-dist - radius1 + radius2) *
+            (-dist + radius1 + radius2) *
+            (dist + radius1 + radius2)
+        )
+    )
+    chord_middle = vec.add(
+        center1,
+        vec.norm(transverse, x),
+    )
+    perp = vec.perp(transverse)
+    return [
+        vec.add(chord_middle, vec.norm(perp, a / 2)),
+        vec.add(chord_middle, vec.norm(perp, -a / 2)),
+    ]
