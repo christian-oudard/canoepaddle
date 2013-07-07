@@ -7,11 +7,22 @@ from util import assert_points_equal
 from canoepaddle.geometry import (
     intersect_lines,
     intersect_circle_line,
+    intersect_circles,
     quadratic_formula,
 )
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
+
+
+def test_quadratic_formula():
+    x1, x2 = quadratic_formula(2, 4, -4)
+    assert_almost_equal(x1, (-1 - sqrt3))
+    assert_almost_equal(x2, (-1 + sqrt3))
+
+    x1, x2 = quadratic_formula(-2, -4, 4)
+    assert_almost_equal(x1, (-1 + sqrt3))
+    assert_almost_equal(x2, (-1 - sqrt3))
 
 
 def test_intersect_lines():
@@ -55,6 +66,7 @@ def test_intersect_lines():
 
 
 def test_intersect_circle_line():
+    # Two points.
     assert_equal(
         intersect_circle_line(
             (0, 0), sqrt2,
@@ -62,7 +74,7 @@ def test_intersect_circle_line():
         ),
         [(1, 1), (1, -1)],
     )
-
+    # Single point.
     assert_equal(
         intersect_circle_line(
             (0, 0), sqrt2,
@@ -70,7 +82,7 @@ def test_intersect_circle_line():
         ),
         [(1, 1)],
     )
-
+    # No intersection.
     assert_equal(
         intersect_circle_line(
             (0, 0), sqrt2,
@@ -80,11 +92,52 @@ def test_intersect_circle_line():
     )
 
 
-def test_quadratic_formula():
-    x1, x2 = quadratic_formula(2, 4, -4)
-    assert_almost_equal(x1, (-1 - sqrt3))
-    assert_almost_equal(x2, (-1 + sqrt3))
-
-    x1, x2 = quadratic_formula(-2, -4, 4)
-    assert_almost_equal(x1, (-1 + sqrt3))
-    assert_almost_equal(x2, (-1 - sqrt3))
+def test_intersect_circles():
+    # Coincident circles, no single intersection point.
+    assert_equal(
+        intersect_circles(
+            (0, 0), 1,
+            (0, 0), 1,
+        ),
+        [],
+    )
+    # No intersection, separated circles.
+    assert_equal(
+        intersect_circles(
+            (0, 0), 1,
+            (5, 0), 1,
+        ),
+        [],
+    )
+    # No intersection, concentric circles.
+    assert_equal(
+        intersect_circles(
+            (0, 0), 1,
+            (0, 0), 2,
+        ),
+        [],
+    )
+    # One point, exterior tangent.
+    assert_equal(
+        intersect_circles(
+            (0, 0), 1,
+            (2, 0), 1,
+        ),
+        [(1, 0)],
+    )
+    # One point, interior tangent.
+    assert_equal(
+        intersect_circles(
+            (0, 0), 2,
+            (1, 0), 1,
+        ),
+        [(2, 0)],
+    )
+    # Two points.
+    assert_equal(
+        intersect_circles(
+            (1, 0), sqrt2,
+            (-1, 0), sqrt2,
+        ),
+        [(0, 1), (0, -1)],
+    )

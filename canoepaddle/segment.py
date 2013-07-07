@@ -1,7 +1,7 @@
 import math
 
 import vec
-from .point import Point, epsilon, points_equal
+from .point import Point, float_equal, points_equal
 from .geometry import intersect_lines, intersect_circle_line
 
 
@@ -115,7 +115,7 @@ class LineSegment(Segment):
             raise ValueError('Turned too sharply.')
 
         # Special case equal widths.
-        if abs(self.width - other.width) < epsilon:
+        if float_equal(self.width, other.width):
             # When joints between segments of equal width are straight or
             # almost straight, the line-intersection method becomes very
             # numerically unstable, so we'll use another method instead.
@@ -261,7 +261,10 @@ class LineSegment(Segment):
 
 class ArcSegment(Segment):
 
-    repr_fields = ['a', 'b', 'width', 'start_angle', 'end_angle', 'center', 'radius', 'start_heading', 'end_heading']
+    repr_fields = [
+        'a', 'b', 'width', 'start_angle', 'end_angle',
+        'center', 'radius', 'start_heading', 'end_heading',
+    ]
 
     def __init__(
         self, a, b, width, start_angle, end_angle,

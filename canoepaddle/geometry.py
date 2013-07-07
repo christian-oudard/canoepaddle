@@ -1,7 +1,7 @@
 from math import sqrt
 
 import vec
-from .point import epsilon
+from .point import float_equal, points_equal
 
 
 def intersect_lines(a, b, c, d, segment=False):
@@ -18,7 +18,7 @@ def intersect_lines(a, b, c, d, segment=False):
     w = vec.vfrom(c, a)
 
     u_perp_dot_v = vec.dot(vec.perp(u), v)
-    if abs(u_perp_dot_v) < epsilon:
+    if float_equal(u_perp_dot_v, 0):
         return None  # We have collinear segments, no single intersection.
 
     v_perp_dot_w = vec.dot(vec.perp(v), w)
@@ -63,8 +63,8 @@ def intersect_circle_line(center, radius, line_start, line_end):
     v = vec.perp(vec.vfrom(line_start, line_end))
     d = vec.proj(r, v)
     dist = vec.mag(d)
-    if abs(dist - radius) < epsilon:
-        # Shortest distance is exactly the radius.
+    if float_equal(dist, radius):
+        # Single intersection point, because the circle and line are tangent.
         point = vec.add(center, d)
         return [point]
     elif dist > radius:
@@ -94,3 +94,36 @@ def intersect_circle_line(center, radius, line_start, line_end):
             y0 + line_y * t1,
         ),
     ]
+
+
+def intersect_circles(center1, radius1, center2, radius2):
+    transverse = vec.vfrom(center1, center2)
+    dist = vec.mag(transverse)
+
+    # Check for identical or concentric circles. These will have either
+    # no points in common or all points in common, and in either case, we
+    # return an empty list.
+    if points_equal(center1, center2):
+        return []
+
+    # Check for exterior or interior tangent.
+    radius_sum = radius1 + radius2
+    radius_difference = abs(radius1 - radius2)
+    if (
+        float_equal(dist, radius_sum) or
+        float_equal(dist, radius_difference)
+    ):
+        return [
+            vec.add(
+                center1,
+                vec.norm(transverse, radius1)
+            ),
+        ]
+
+    # Check for non intersecting circles.
+    if dist > radius_sum or dist < radius_difference:
+        return []
+
+    # If we've reached this point, we know that the two circles intersect
+    # in two distinct points.
+    raise NotImplementedError
