@@ -1,3 +1,5 @@
+#TODO: remove offset argument, and re-implement it in the output to svg instead.
+
 from textwrap import dedent
 from string import Template
 

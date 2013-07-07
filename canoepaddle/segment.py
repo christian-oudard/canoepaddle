@@ -1,6 +1,3 @@
-#TODO Maybe we can make set_end_angle just set the b_left and b_right
-# directly. Do we even need to keep around the end angle?
-
 import math
 
 import vec
@@ -19,6 +16,15 @@ def closest_point_to(target, points):
 
 
 class Segment:
+    def __init__(self, a, b, width=None):
+        self.a = Point(*a)
+        self.b = Point(*b)
+        self.width = width
+        self.a_left = None
+        self.a_right = None
+        self.b_left = None
+        self.b_right = None
+
     def join_with(self, other):
         if self.width is None or other.width is None:
             return
@@ -53,10 +59,9 @@ class Segment:
         return slant
 
     def check_degenerate_segment(self):
-        #TODO: make this check go off of a_left, a_right, etc. directly instead.
-        if (
-            not hasattr(self, '_start_angle') or
-            not hasattr(self, '_end_angle')
+        if any(
+            p is None for p in
+            [self.a_left, self.a_right, self.b_left, self.b_right],
         ):
             return
 
@@ -74,9 +79,7 @@ class Segment:
 class LineSegment(Segment):
 
     def __init__(self, a, b, width, start_angle, end_angle):
-        self.a = Point(*a)
-        self.b = Point(*b)
-        self.width = width
+        super().__init__(a, b, width)
 
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
@@ -253,9 +256,8 @@ class ArcSegment(Segment):
         self, a, b, width, start_angle, end_angle,
         center, radius, arc_angle, start_heading, end_heading,
     ):
-        self.a = Point(*a)
-        self.b = Point(*b)
-        self.width = width
+        super().__init__(a, b, width)
+
         self.arc_angle = arc_angle
         self.center = center
         self.radius = radius
