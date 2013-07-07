@@ -194,15 +194,13 @@ class Paper:
             pen.line_to(seg.a_right)
 
         # Draw along the length of the segment.
-        pen.turn_to(seg.start_heading)
         seg.draw_right(pen)
 
+    @staticmethod
+    def draw_segment_left(pen, seg, first=False, last=False):
         if last:
             # Draw the ending thickness edge.
             pen.line_to(seg.b_left)
 
-    @staticmethod
-    def draw_segment_left(pen, seg, first=False, last=False):
         # Continue path back towards the beginning.
-        pen.turn_to(seg.end_heading + 180)
         seg.draw_left(pen)

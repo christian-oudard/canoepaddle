@@ -1,11 +1,12 @@
 import math
 
 import vec
-from .point import Point, epsilon
+from .point import Point
 from .geometry import intersect_lines, intersect_circle_line, calc_joint_angle
 
 
-#TODO Maybe we can make set_end_angle just set the b_left and b_right directly. Do we even need to keep around the end angle?
+#TODO Maybe we can make set_end_angle just set the b_left and b_right
+# directly. Do we even need to keep around the end angle?
 
 
 def closest_point_to(target, points):
@@ -54,7 +55,6 @@ class Segment:
             return 90
         slant = (heading - angle) % 180
         return slant
-
 
     def check_degenerate_segment(self):
         #TODO: make this check go off of a_left, a_right, etc. directly instead.
@@ -117,9 +117,11 @@ class LineSegment(Segment):
         return self.calc_slant(self.end_heading, self._end_angle)
 
     def draw_right(self, pen):
+        pen.turn_to(self.start_heading)
         pen.line_to(self.b_right)
 
     def draw_left(self, pen):
+        pen.turn_to(self.end_heading + 180)
         pen.line_to(self.a_left)
 
     def set_start_angle(self, start_angle):
@@ -198,9 +200,11 @@ class ArcSegment(Segment):
         return self.width
 
     def draw_right(self, pen):
+        pen.turn_to(self.start_heading)
         pen.arc_to(self.b_right, self.center)
 
     def draw_left(self, pen):
+        pen.turn_to(self.end_heading + 180)
         pen.arc_to(self.a_left, self.center)
 
     def set_start_angle(self, start_angle):
