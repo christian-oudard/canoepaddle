@@ -6,10 +6,13 @@ from nose.tools import (
     assert_raises,
 )
 
+import vec
 from canoepaddle import Pen
 from canoepaddle.segment import LineSegment
 from canoepaddle.point import Point
 from canoepaddle.geometry import intersect_lines, calc_joint_angle
+
+#TODO: Test offset calculations in drawing.
 
 
 sqrt2 = math.sqrt(2)
@@ -387,9 +390,9 @@ def test_calc_joint_angle():
     )
 
 
-def test_calc_joint_angle_straight():
-    # The math in calc_joint_angle can get numerically unstable very close to
-    # straight joints at various headings.
+def test_straight_joint_headings():
+    # The math in calculating joint geometry can get numerically unstable very
+    # close to straight joints at various headings.
     for heading_angle in range(0, 360):
         p = Pen()
         p.set_width(1.0)
@@ -405,9 +408,15 @@ def test_calc_joint_angle_straight():
         assert_equal(len(strokes), 1)
         segments = strokes[0]
         assert_equal(len(segments), 2)
-        a, b = segments
-        joint_angle = calc_joint_angle(a, b)
-        assert_almost_equal(joint_angle % 180, (heading_angle + 90) % 180)
+        s0, s1 = segments
+
+        target_angle = (heading_angle + 90) % 180
+
+        joint_angle = math.degrees(vec.heading(vec.vfrom(s0.b_right, s0.b_left)))
+        assert_almost_equal(joint_angle % 180, target_angle)
+
+        joint_angle = math.degrees(vec.heading(vec.vfrom(s1.a_right, s1.a_left)))
+        assert_almost_equal(joint_angle % 180, target_angle)
 
 
 def test_multiple_strokes():

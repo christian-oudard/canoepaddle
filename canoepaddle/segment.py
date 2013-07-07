@@ -18,19 +18,10 @@ def closest_point_to(target, points):
 
 class Segment:
     def join_with(self, other):
-        #STUB, TODO
-        #if isinstance(other, LineSegment):
-            #self.set_end_angle(None)
-            #other.set_start_angle(None)
-
-            #self.b_left = None
-            #self.b_right = None
-            #other.a_left = None
-            #other.a_right = None
-
-        joint_angle = calc_joint_angle(self, other)
-        self.set_end_angle(joint_angle)
-        other.set_start_angle(joint_angle)
+        if other.is_line():
+            self.join_with_line(other)
+        elif other.is_arc():
+            self.join_with_arc(other)
 
     @staticmethod
     def calc_slant(heading, angle):
@@ -95,6 +86,20 @@ class LineSegment(Segment):
             'start_angle={_start_angle}, end_angle={_end_angle})'
             .format(self.__class__.__name__, **self.__dict__)
         )
+
+    def is_line(self):
+        return True
+
+    def is_arc(self):
+        return False
+
+    def join_with_line(self, other):
+        joint_angle = calc_joint_angle(self, other)
+        self.set_end_angle(joint_angle)
+        other.set_start_angle(joint_angle)
+
+    def join_with_arc(self, other):
+        raise NotImplementedError
 
     def length(self):
         return vec.dist(self.a, self.b)
@@ -183,6 +188,18 @@ class ArcSegment(Segment):
 
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
+
+    def is_line(self):
+        return False
+
+    def is_arc(self):
+        return True
+
+    def join_with_line(self, other):
+        raise NotImplementedError
+
+    def join_with_arc(self, other):
+        raise NotImplementedError
 
     @property
     def start_heading(self):
