@@ -1,20 +1,22 @@
 from canoepaddle import Pen
 
 p = Pen()
+p.set_width(2.0)
 
-p.move_to((0, 0))
-p.turn_to(0)
+p.move_to((3, 0))
+p.turn_to(90)
+p.arc_left(270, 3)
 
-p.line_forward(2)
-p.arc_left(45, 2)
-p.turn_left(135)
-p.line_forward(2)
-p.arc_to((p.position.x, -p.position.y), center=(0, 0))
+p.paper.set_precision(0)
 
-p.paper.set_style('''
+#p.paper.show_joints = True
+p.paper.show_bones = True
+p.paper.show_nodes = True
+p.paper.set_style(
+    '''
     stroke: black;
-    stroke-width: 0.25;
-    stroke-linecap: round;
+    stroke-width: 0.05;
     fill: none;
-''')
-print(p.paper.format_svg(thick=False))
+    '''
+)
+print(p.paper.format_svg(thick=True))

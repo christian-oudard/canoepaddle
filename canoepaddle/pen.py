@@ -193,7 +193,7 @@ class Pen:
         v_radius_perp = vec.perp(v_radius_start)
         if vec.dot(v_radius_perp, v_pen) < 0:
             v_radius_perp = vec.neg(v_radius_perp)
-        start_heading = vec.heading(v_radius_perp)
+        start_heading = math.degrees(vec.heading(v_radius_perp))
         self.turn_to(start_heading)
         v_pen = self._vector()
 

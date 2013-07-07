@@ -615,6 +615,22 @@ def test_arc_joint():
     )
 
 
+def test_arc_sweep_bug():
+    p = Pen()
+    p.set_width(2.0)
+
+    p.move_to((3, 0))
+    p.turn_to(90)
+    p.arc_left(270, 3)
+
+    p.paper.set_precision(0)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        'M2,0 L4,0 A 4,4 0 1 0 0,4 L0,2 A 2,2 0 1 1 2,0 z'
+    )
+
+
 def test_circle():
     p = Pen()
     p.circle(1)

@@ -25,6 +25,19 @@ class Segment:
         self.b_left = None
         self.b_right = None
 
+    def __iter__(self):
+        yield self.a
+        yield self.b
+
+    def __repr__(self):
+        strings = []
+        for field in self.repr_fields:
+            value = getattr(self, field)
+            if value is None:
+                continue
+            strings.append('{}={}'.format(field, value))
+        return '{}({})'.format(self.__class__.__name__, ', '.join(strings))
+
     def join_with(self, other):
         assert points_equal(self.b, other.a)
         if self.width is None or other.width is None:
@@ -79,22 +92,13 @@ class Segment:
 
 class LineSegment(Segment):
 
+    repr_fields = ['a', 'b', 'width', 'start_angle', 'end_angle']
+
     def __init__(self, a, b, width, start_angle, end_angle):
         super().__init__(a, b, width)
 
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
-
-    def __iter__(self):
-        yield self.a
-        yield self.b
-
-    def __repr__(self):
-        return (
-            '{}(a={a}, b={b}, width={width}, '
-            'start_angle={_start_angle}, end_angle={_end_angle})'
-            .format(self.__class__.__name__, **self.__dict__)
-        )
 
     def is_line(self):
         return True
@@ -199,10 +203,10 @@ class LineSegment(Segment):
         return self._heading()
 
     def start_slant(self):
-        return self.calc_slant(self.start_heading, self._start_angle)
+        return self.calc_slant(self.start_heading, self.start_angle)
 
     def end_slant(self):
-        return self.calc_slant(self.end_heading, self._end_angle)
+        return self.calc_slant(self.end_heading, self.end_angle)
 
     def draw_right(self, pen):
         pen.turn_to(self.start_heading)
@@ -213,7 +217,7 @@ class LineSegment(Segment):
         pen.line_to(self.a_left)
 
     def set_start_angle(self, start_angle):
-        self._start_angle = start_angle
+        self.start_angle = start_angle
         if self.width is not None:
             v = vec.from_heading(math.radians(self.start_heading))
             v = vec.rotate(
@@ -229,7 +233,7 @@ class LineSegment(Segment):
             self.check_degenerate_segment()
 
     def set_end_angle(self, end_angle):
-        self._end_angle = end_angle
+        self.end_angle = end_angle
         if self.width is not None:
             v = vec.from_heading(math.radians(self.end_heading))
             v = vec.rotate(v, -math.radians(self.calc_slant(self.end_heading, end_angle)))
@@ -256,6 +260,9 @@ class LineSegment(Segment):
 
 
 class ArcSegment(Segment):
+
+    repr_fields = ['a', 'b', 'width', 'start_angle', 'end_angle', 'center', 'radius', 'start_heading', 'end_heading']
+
     def __init__(
         self, a, b, width, start_angle, end_angle,
         center, radius, arc_angle, start_heading, end_heading,
@@ -325,7 +332,7 @@ class ArcSegment(Segment):
         pen.arc_to(self.a_left, self.center)
 
     def set_start_angle(self, start_angle):
-        self._start_angle = start_angle
+        self.start_angle = start_angle
         if self.width is not None:
             v = vec.from_heading(math.radians(self.start_heading))
             v = vec.rotate(
@@ -357,7 +364,7 @@ class ArcSegment(Segment):
             self.check_degenerate_segment()
 
     def set_end_angle(self, end_angle):
-        self._end_angle = end_angle
+        self.end_angle = end_angle
         if self.width is not None:
             v = vec.from_heading(math.radians(self.end_heading))
             v = vec.rotate(
