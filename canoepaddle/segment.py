@@ -1,12 +1,14 @@
+#TODO Maybe we can make set_end_angle just set the b_left and b_right
+# directly. Do we even need to keep around the end angle?
+
 import math
 
 import vec
-from .point import Point
-from .geometry import intersect_lines, intersect_circle_line, calc_joint_angle
+from .point import Point, points_equal
+from .geometry import intersect_lines, intersect_circle_line
 
 
-#TODO Maybe we can make set_end_angle just set the b_left and b_right
-# directly. Do we even need to keep around the end angle?
+MAX_TURN_ANGLE = 179
 
 
 def closest_point_to(target, points):
@@ -18,6 +20,9 @@ def closest_point_to(target, points):
 
 class Segment:
     def join_with(self, other):
+        if self.width is None or other.width is None:
+            return
+
         if other.is_line():
             self.join_with_line(other)
         elif other.is_arc():
@@ -94,12 +99,56 @@ class LineSegment(Segment):
         return False
 
     def join_with_line(self, other):
-        joint_angle = calc_joint_angle(self, other)
-        self.set_end_angle(joint_angle)
-        other.set_start_angle(joint_angle)
+        v_self = vec.vfrom(self.a, self.b)
+        v_other = vec.vfrom(other.a, other.b)
+        angle = math.degrees(vec.angle(v_self, v_other))
+        if abs(angle) > MAX_TURN_ANGLE:
+            raise ValueError('Turned too sharply.')
+
+        # Left side.
+        a, b = self.offset_line_left()
+        c, d = other.offset_line_left()
+        if points_equal(b, c):
+            p = b
+        else:
+            p = intersect_lines(a, b, c, d)
+        self.b_left = other.a_left = p
+
+        # Right side.
+        a, b = self.offset_line_right()
+        c, d = other.offset_line_right()
+        if points_equal(b, c):
+            p = b
+        else:
+            p = intersect_lines(a, b, c, d)
+        assert p is not None
+        self.b_right = other.a_right = p
 
     def join_with_arc(self, other):
         raise NotImplementedError
+
+    # The offset_line_* functions create a copy of the centerline of a
+    # segment, but offset to the right or left by half the segment width.
+
+    def offset_line_left(self):
+        w = self._width_vector()
+        return (
+            vec.add(self.a, w),
+            vec.add(self.b, w),
+        )
+
+    def offset_line_right(self):
+        w = vec.neg(self._width_vector())
+        return (
+            vec.add(self.a, w),
+            vec.add(self.b, w),
+        )
+
+    def _width_vector(self):
+        v = vec.vfrom(self.a, self.b)
+        v = vec.perp(v)
+        v = vec.norm(v, self.width / 2)
+        return v
 
     def length(self):
         return vec.dist(self.a, self.b)

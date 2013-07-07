@@ -1,30 +1,7 @@
-from math import sqrt, sin, radians, degrees
+from math import sqrt
 
 import vec
-from .point import epsilon, points_equal
-
-
-def calc_joint_angle(last_segment, new_segment):
-    v1_heading = last_segment.end_heading
-    v2_heading = new_segment.start_heading
-
-    # Special case for equal widths, more numerically stable around
-    # straight joints.
-    if abs(last_segment.width - new_segment.width) < epsilon:
-        return ((v1_heading + v2_heading) / 2 + 90) % 180
-
-    # Solve the parallelogram created by the previous stroke intersecting
-    # with the next stroke. The diagonal of this parallelogram is at the
-    # correct joint angle.
-    v1 = vec.vfrom(last_segment.a, last_segment.b)
-    v2 = vec.vfrom(new_segment.a, new_segment.b)
-    theta = (v2_heading - v1_heading) % 180
-    sin_theta = sin(radians(theta))
-    width1 = last_segment.width
-    width2 = new_segment.width
-    v1 = vec.norm(v1, width2 * sin_theta)
-    v2 = vec.norm(v2, width1 * sin_theta)
-    return degrees(vec.heading(vec.vfrom(v1, v2))) % 180
+from .point import epsilon
 
 
 def intersect_lines(a, b, c, d, segment=False):
@@ -83,7 +60,7 @@ def intersect_circle_line(center, radius, line_start, line_end):
     xc, yc = center
     x0, y0 = line_start
     x1, y1 = line_end
-    line_x, line_y = (x1 - x0), (y1 - y0) # f g
+    line_x, line_y = (x1 - x0), (y1 - y0)  # f, g
     dx, dy = (x0 - xc), (y0 - yc)
 
     a = line_x**2 + line_y**2

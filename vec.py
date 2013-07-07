@@ -1,3 +1,4 @@
+#TODO: replace with pip installed version.
 """A set of simple vector utility functions.
 
 All functions take constant arguments, and return a result; nothing

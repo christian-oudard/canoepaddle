@@ -8,9 +8,7 @@ from nose.tools import (
 
 import vec
 from canoepaddle import Pen
-from canoepaddle.segment import LineSegment
-from canoepaddle.point import Point
-from canoepaddle.geometry import intersect_lines, calc_joint_angle
+from canoepaddle.geometry import intersect_lines
 
 #TODO: Test offset calculations in drawing.
 
@@ -322,71 +320,6 @@ def test_offwidth_joint_error():
     assert_raises(
         ValueError,
         lambda: p.line_forward(3)
-    )
-
-
-def test_calc_joint_angle():
-    # 90 degree turn, same width.
-    assert_almost_equal(
-        calc_joint_angle(
-            LineSegment(
-                Point(0, 0),
-                Point(10, 0),
-                width=1,
-                start_angle=None,
-                end_angle=None,
-            ),
-            LineSegment(
-                Point(10, 0),
-                Point(10, -10),
-                width=1,
-                start_angle=None,
-                end_angle=None,
-            ),
-        ),
-        45,
-    )
-
-    # 90 degree turn, different width.
-    assert_almost_equal(
-        calc_joint_angle(
-            LineSegment(
-                Point(0, 0),
-                Point(10, 0),
-                width=1,
-                start_angle=None,
-                end_angle=None,
-            ),
-            LineSegment(
-                Point(10, 0),
-                Point(10, -10),
-                width=2,
-                start_angle=None,
-                end_angle=None,
-            ),
-        ),
-        math.degrees(math.atan2(1, 2)),
-    )
-
-    # Straight on to the right, same width.
-    assert_almost_equal(
-        calc_joint_angle(
-            LineSegment(
-                Point(0, 0),
-                Point(10, 0),
-                width=1,
-                start_angle=None,
-                end_angle=None,
-            ),
-            LineSegment(
-                Point(10, 0),
-                Point(20, 0),
-                width=1,
-                start_angle=None,
-                end_angle=None,
-            ),
-        ),
-        90,
     )
 
 
