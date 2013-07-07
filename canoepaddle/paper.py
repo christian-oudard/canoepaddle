@@ -1,9 +1,8 @@
-import math
 from textwrap import dedent
 from string import Template
 
 import vec
-from .point import Point, points_equal, epsilon
+from .point import Point, points_equal
 from .svg import path_move, path_close, path_line, path_arc
 
 
@@ -37,38 +36,13 @@ class Paper:
             self.strokes[-1].append(new_segment)
             if new_segment.width is not None:
                 # Add a joint between successive segments.
-                joint_angle = self.calc_joint_angle(last_segment, new_segment)
-                last_segment.set_end_angle(joint_angle)
-                new_segment.set_start_angle(joint_angle)
+                last_segment.join_with(new_segment)
         else:
             # Start a new stroke.
             self.strokes.append([new_segment])
 
     def add_shape(self, new_shape):
         self.shapes.append(new_shape)
-
-    @staticmethod
-    def calc_joint_angle(last_segment, new_segment):
-        v1_heading = last_segment.end_heading
-        v2_heading = new_segment.start_heading
-
-        # Special case for equal widths, more numerically stable around
-        # straight joints.
-        if abs(last_segment.width - new_segment.width) < epsilon:
-            return ((v1_heading + v2_heading) / 2 + 90) % 180
-
-        # Solve the parallelogram created by the previous stroke intersecting
-        # with the next stroke. The diagonal of this parallelogram is at the
-        # correct joint angle.
-        v1 = vec.vfrom(last_segment.a, last_segment.b)
-        v2 = vec.vfrom(new_segment.a, new_segment.b)
-        theta = (v2_heading - v1_heading) % 180
-        sin_theta = math.sin(math.radians(theta))
-        width1 = last_segment.width
-        width2 = new_segment.width
-        v1 = vec.norm(v1, width2 * sin_theta)
-        v2 = vec.norm(v2, width1 * sin_theta)
-        return math.degrees(vec.heading(vec.vfrom(v1, v2))) % 180
 
     def center_on_x(self, x_center):
         x_values = []
@@ -128,7 +102,7 @@ class Paper:
         # Debug switch to show the joint nodes between bones.
         nodes = []
         if self.show_nodes:
-            from shape import Circle
+            from .shape import Circle
             for segments in self.strokes:
                 for seg in segments:
                     nodes.append(Circle(seg.a, seg.width / 4))

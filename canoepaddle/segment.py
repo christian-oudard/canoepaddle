@@ -1,8 +1,8 @@
 import math
 
 import vec
-from .point import Point
-from .geometry import intersect_lines, intersect_circle_line
+from .point import Point, epsilon
+from .geometry import intersect_lines, intersect_circle_line, calc_joint_angle
 
 
 def closest_point_to(target, points):
@@ -34,6 +34,11 @@ class LineSegment:
             .format(self.__class__.__name__, **self.__dict__)
         )
 
+    def join_with(self, other):
+        joint_angle = calc_joint_angle(self, other)
+        self.set_end_angle(joint_angle)
+        other.set_start_angle(joint_angle)
+
     def length(self):
         return vec.dist(self.a, self.b)
 
@@ -58,7 +63,13 @@ class LineSegment:
         self._start_angle = start_angle
         if self.width is not None:
             v = vec.from_heading(math.radians(self.start_heading))
-            v = vec.rotate(v, -math.radians(self.calc_slant(self.start_heading, start_angle)))
+            v = vec.rotate(
+                v,
+                -math.radians(self.calc_slant(
+                    self.start_heading,
+                    start_angle,
+                ))
+            )
             v = vec.norm(v, self.start_slant_width() / 2)
             self.a_left = vec.sub(self.a, v)
             self.a_right = vec.add(self.a, v)
@@ -167,7 +178,13 @@ class ArcSegment(LineSegment):
         self._start_angle = start_angle
         if self.width is not None:
             v = vec.from_heading(math.radians(self.start_heading))
-            v = vec.rotate(v, -math.radians(self.calc_slant(self.start_heading, start_angle)))
+            v = vec.rotate(
+                v,
+                -math.radians(self.calc_slant(
+                    self.start_heading,
+                    start_angle,
+                ))
+            )
             points = intersect_circle_line(
                 self.center,
                 self.radius - self.width / 2,

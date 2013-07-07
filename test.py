@@ -10,7 +10,7 @@ from canoepaddle import Pen
 from canoepaddle.paper import Paper
 from canoepaddle.segment import LineSegment
 from canoepaddle.point import Point
-from canoepaddle.geometry import intersect_lines
+from canoepaddle.geometry import intersect_lines, calc_joint_angle
 
 
 sqrt2 = math.sqrt(2)
@@ -324,11 +324,9 @@ def test_offwidth_joint_error():
 
 
 def test_calc_joint_angle():
-    paper = Paper()
-
     # 90 degree turn, same width.
     assert_almost_equal(
-        paper.calc_joint_angle(
+        calc_joint_angle(
             LineSegment(
                 Point(0, 0),
                 Point(10, 0),
@@ -345,7 +343,7 @@ def test_calc_joint_angle():
 
     # 90 degree turn, different width.
     assert_almost_equal(
-        paper.calc_joint_angle(
+        calc_joint_angle(
             LineSegment(
                 Point(0, 0),
                 Point(10, 0),
@@ -362,7 +360,7 @@ def test_calc_joint_angle():
 
     # Straight on to the right, same width.
     assert_almost_equal(
-        paper.calc_joint_angle(
+        calc_joint_angle(
             LineSegment(
                 Point(0, 0),
                 Point(10, 0),
@@ -397,7 +395,7 @@ def test_calc_joint_angle_straight():
         segments = strokes[0]
         assert_equal(len(segments), 2)
         a, b = segments
-        joint_angle = p.paper.calc_joint_angle(a, b)
+        joint_angle = calc_joint_angle(a, b)
         assert_almost_equal(joint_angle % 180, (heading_angle + 90) % 180)
 
 
