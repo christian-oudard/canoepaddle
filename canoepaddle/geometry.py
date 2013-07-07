@@ -40,14 +40,14 @@ def quadratic_formula(a, b, c):
     if b >= 0:
         d = -b - sqrt(b**2 - 4*a*c)
         return (
-            d / 2*a,
-            2*c / d,
+            d / (2 * a),
+            (2 * c) / d,
         )
     else:
         d = -b + sqrt(b**2 - 4*a*c)
         return (
-            2*c / d,
-            d / 2*a,
+            (2 * c) / d,
+            d / (2 * a),
         )
 
 
@@ -55,6 +55,22 @@ def intersect_circle_line(center, radius, line_start, line_end):
     """
     Find the intersection of a circle with a line.
     """
+    # First check whether the line is too far away, or if we have a
+    # single point of contact.
+    # Reference:
+    # http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
+    r = vec.vfrom(center, line_start)
+    v = vec.perp(vec.vfrom(line_start, line_end))
+    d = vec.proj(r, v)
+    dist = vec.mag(d)
+    if abs(dist - radius) < epsilon:
+        # Shortest distance is exactly the radius.
+        point = vec.add(center, d)
+        return [point]
+    elif dist > radius:
+        return []
+
+    # Set up parametric equations for the line and the circle, and solve them.
     # Reference:
     # http://www.cs.cf.ac.uk/Dave/CM0268/PDF/circle_line_intersect_proof.pdf
     xc, yc = center
@@ -68,7 +84,7 @@ def intersect_circle_line(center, radius, line_start, line_end):
     c = dx**2 + dy**2 - radius**2
     t0, t1 = quadratic_formula(a, b, c)
 
-    return (
+    return [
         (
             x0 + line_x * t0,
             y0 + line_y * t0,
@@ -77,4 +93,4 @@ def intersect_circle_line(center, radius, line_start, line_end):
             x0 + line_x * t1,
             y0 + line_y * t1,
         ),
-    )
+    ]
