@@ -5,6 +5,9 @@ from .point import Point, epsilon
 from .geometry import intersect_lines, intersect_circle_line, calc_joint_angle
 
 
+#TODO Maybe we can make set_end_angle just set the b_left and b_right directly. Do we even need to keep around the end angle?
+
+
 def closest_point_to(target, points):
     return min(
         points,
@@ -12,7 +15,67 @@ def closest_point_to(target, points):
     )
 
 
-class LineSegment:
+class Segment:
+    def join_with(self, other):
+        #STUB, TODO
+        #if isinstance(other, LineSegment):
+            #self.set_end_angle(None)
+            #other.set_start_angle(None)
+
+            #self.b_left = None
+            #self.b_right = None
+            #other.a_left = None
+            #other.a_right = None
+
+        joint_angle = calc_joint_angle(self, other)
+        self.set_end_angle(joint_angle)
+        other.set_start_angle(joint_angle)
+
+    @staticmethod
+    def calc_slant(heading, angle):
+        r"""
+        The slant of a stroke is defined as the angle between the
+        direction of the stroke and the start angle of the pen.
+
+        90 degree slant:
+         ___
+        |___|
+
+        60 degree slant:
+        ____
+        \___\
+
+        120 degree slant:
+         ____
+        /___/
+
+        """
+        if angle is None:
+            return 90
+        slant = (heading - angle) % 180
+        return slant
+
+
+    def check_degenerate_segment(self):
+        #TODO: make this check go off of a_left, a_right, etc. directly instead.
+        if (
+            not hasattr(self, '_start_angle') or
+            not hasattr(self, '_end_angle')
+        ):
+            return
+
+        # Check whether the endcap lines intersect. If so, this will cause
+        # graphical glitches when drawing the segment.
+        intersection = intersect_lines(
+            self.a_left, self.a_right,
+            self.b_left, self.b_right,
+            segment=True,
+        )
+        if intersection is not None:
+            raise ValueError('Degenerate segment, endcaps cross each other.')
+
+
+class LineSegment(Segment):
 
     def __init__(self, a, b, width=None, start_angle=None, end_angle=None):
         self.a = Point(*a)
@@ -33,11 +96,6 @@ class LineSegment:
             'start_angle={_start_angle}, end_angle={_end_angle})'
             .format(self.__class__.__name__, **self.__dict__)
         )
-
-    def join_with(self, other):
-        joint_angle = calc_joint_angle(self, other)
-        self.set_end_angle(joint_angle)
-        other.set_start_angle(joint_angle)
 
     def length(self):
         return vec.dist(self.a, self.b)
@@ -85,30 +143,6 @@ class LineSegment:
             self.b_right = vec.add(self.b, v)
             self.check_degenerate_segment()
 
-    @staticmethod
-    def calc_slant(heading, angle):
-        r"""
-        The slant of a stroke is defined as the angle between the
-        direction of the stroke and the start angle of the pen.
-
-        90 degree slant:
-         ___
-        |___|
-
-        60 degree slant:
-        ____
-        \___\
-
-        120 degree slant:
-         ____
-        /___/
-
-        """
-        if angle is None:
-            return 90
-        slant = (heading - angle) % 180
-        return slant
-
     def start_slant_width(self):
         return self.calc_slant_width(self.width, self.start_slant())
 
@@ -125,25 +159,8 @@ class LineSegment:
             raise ValueError('Slant angle is too steep')
         return stroke_width / math.sin(math.radians(slant))
 
-    def check_degenerate_segment(self):
-        if (
-            not hasattr(self, '_start_angle') or
-            not hasattr(self, '_end_angle')
-        ):
-            return
 
-        # Check whether the endcap lines intersect. If so, this will cause
-        # graphical glitches when drawing the segment.
-        intersection = intersect_lines(
-            self.a_left, self.a_right,
-            self.b_left, self.b_right,
-            segment=True,
-        )
-        if intersection is not None:
-            raise ValueError('Degenerate segment, endcaps cross each other.')
-
-
-class ArcSegment(LineSegment):
+class ArcSegment(Segment):
     def __init__(
         self, a, b, width, center, radius, arc_angle,
         start_heading, end_heading, start_angle, end_angle,

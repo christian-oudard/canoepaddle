@@ -4,6 +4,7 @@ from string import Template
 import vec
 from .point import Point, points_equal
 from .svg import path_move, path_close, path_line, path_arc
+from .segment import LineSegment, ArcSegment
 
 
 class Paper:
@@ -125,13 +126,14 @@ class Paper:
             # Draw the rest of the stroke.
             for seg in segments:
                 point = Point(*vec.add(seg.b, self.offset))
-                if seg.radius is None:
+                #TODO: tell, don't ask
+                if isinstance(seg, LineSegment):
                     output.append(path_line(
                         point.x,
                         point.y,
                         self.precision,
                     ))
-                else:
+                elif isinstance(seg, ArcSegment):
                     output.append(path_arc(
                         point.x,
                         point.y,
