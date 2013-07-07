@@ -15,8 +15,9 @@ def flip_angle_x(angle):
 
 class Pen:
 
-    def __init__(self, offset=(0, 0)):
-        self.paper = Paper(offset)
+    def __init__(self):
+        self.paper = Paper()
+        #TODO: require explicit initial heading and position?
         self._heading = 0
         self._position = (0.0, 0.0)
         self._width = None

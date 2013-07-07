@@ -1,5 +1,3 @@
-#TODO: remove offset argument, and re-implement it in the output to svg instead.
-
 from textwrap import dedent
 from string import Template
 
@@ -10,8 +8,7 @@ from .segment import LineSegment, ArcSegment
 
 
 class Paper:
-    def __init__(self, offset=(0, 0), precision=12):
-        self.offset = offset
+    def __init__(self, precision=12):
         self.precision = precision
         self.strokes = []
         self.shapes = []
@@ -120,24 +117,23 @@ class Paper:
         output = []
         for segments in self.strokes:
             # Start a new stroke.
-            start_point = segments[0].a
-            point = Point(*vec.add(start_point, self.offset))
-            output.append(path_move(point.x, point.y, self.precision))
+            start_point = p = Point(*segments[0].a)
+            output.append(path_move(p.x, p.y, self.precision))
 
             # Draw the rest of the stroke.
             for seg in segments:
-                point = Point(*vec.add(seg.b, self.offset))
+                p = Point(*seg.b)
                 #TODO: tell, don't ask
                 if isinstance(seg, LineSegment):
                     output.append(path_line(
-                        point.x,
-                        point.y,
+                        p.x,
+                        p.y,
                         self.precision,
                     ))
                 elif isinstance(seg, ArcSegment):
                     output.append(path_arc(
-                        point.x,
-                        point.y,
+                        p.x,
+                        p.y,
                         seg.arc_angle,
                         seg.radius,
                         self.precision,
@@ -150,7 +146,7 @@ class Paper:
 
     def svg_path_thick(self):
         from .pen import Pen
-        pen = Pen(self.offset)
+        pen = Pen()
         pen.paper.precision = self.precision
         for segments in self.strokes:
             self.draw_stroke_thick(pen, segments)
