@@ -415,6 +415,26 @@ def test_intersect_lines():
         ),
         None,
     )
+    assert_equal(
+        intersect_lines(
+            (0, 0),
+            (1, 0),
+            (2, 1),
+            (2, -1),
+            segment=True,
+        ),
+        None,
+    )
+    assert_equal(
+        intersect_lines(
+            (2, 1),
+            (2, -1),
+            (0, 0),
+            (1, 0),
+            segment=True,
+        ),
+        None,
+    )
 
 
 def test_arc():
