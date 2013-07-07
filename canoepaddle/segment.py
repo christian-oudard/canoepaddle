@@ -4,7 +4,7 @@
 import math
 
 import vec
-from .point import Point, points_equal
+from .point import Point, epsilon, points_equal
 from .geometry import intersect_lines, intersect_circle_line
 
 
@@ -99,29 +99,56 @@ class LineSegment(Segment):
         return False
 
     def join_with_line(self, other):
+        assert points_equal(self.b, other.a)
+
+        # Check turn angle, and don't turn close to straight back.
         v_self = vec.vfrom(self.a, self.b)
         v_other = vec.vfrom(other.a, other.b)
         angle = math.degrees(vec.angle(v_self, v_other))
         if abs(angle) > MAX_TURN_ANGLE:
             raise ValueError('Turned too sharply.')
 
+        # Special case equal widths.
+        if abs(self.width - other.width) < epsilon:
+            # When joints between segments of equal width are straight or
+            # almost straight, the line-intersection method becomes very
+            # numerically unstable, so we'll use another method instead.
+
+            # For each segment, get a vector perpendicular to the
+            # segment, then add them. This is an angle bisector for
+            # the angle of the joint.
+            w_self = self._width_vector()
+            w_other = other._width_vector()
+            v_bisect = vec.add(w_self, w_other)
+
+            # Make the bisector have the correct length.
+            half_angle = vec.angle(v_other, v_bisect)
+            v_bisect = vec.norm(
+                v_bisect,
+                (self.width / 2) / math.sin(half_angle)
+            )
+
+            # Determine the left and right joint spots.
+            self.b_left = vec.add(self.b, v_bisect)
+            self.b_right = vec.sub(self.b, v_bisect)
+            other.a_left = vec.add(other.a, v_bisect)
+            other.a_right = vec.sub(other.a, v_bisect)
+            return
+
         # Left side.
         a, b = self.offset_line_left()
         c, d = other.offset_line_left()
-        if points_equal(b, c):
-            p = b
-        else:
-            p = intersect_lines(a, b, c, d)
+        p = intersect_lines(a, b, c, d)
+        if p is None:
+            raise ValueError('Joint not well defined.')
         self.b_left = other.a_left = p
 
         # Right side.
         a, b = self.offset_line_right()
         c, d = other.offset_line_right()
-        if points_equal(b, c):
-            p = b
-        else:
-            p = intersect_lines(a, b, c, d)
-        assert p is not None
+        p = intersect_lines(a, b, c, d)
+        if p is None:
+            raise ValueError('Joint not well defined.')
         self.b_right = other.a_right = p
 
     def join_with_arc(self, other):

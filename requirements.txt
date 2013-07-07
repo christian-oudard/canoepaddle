@@ -1,0 +1,1 @@
+-e git+git@github.com:christian-oudard/vec.git#egg=vec

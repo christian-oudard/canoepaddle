@@ -324,8 +324,8 @@ def test_offwidth_joint_error():
 
 
 def test_straight_joint_headings():
-    # The math in calculating joint geometry can get numerically unstable very
-    # close to straight joints at various headings.
+    # The math in calculating joint geometry can get numerically unstable
+    # very close to straight joints at various headings.
     for heading_angle in range(0, 360):
         p = Pen()
         p.set_width(1.0)

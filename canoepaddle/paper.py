@@ -34,10 +34,9 @@ class Paper:
                 continuing = True
 
         if continuing:
+            # Add a joint between successive segments.
             self.strokes[-1].append(new_segment)
-            if new_segment.width is not None:
-                # Add a joint between successive segments.
-                last_segment.join_with(new_segment)
+            last_segment.join_with(new_segment)
         else:
             # Start a new stroke.
             self.strokes.append([new_segment])
