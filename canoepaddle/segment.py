@@ -26,6 +26,7 @@ class Segment:
         self.b_right = None
 
     def join_with(self, other):
+        assert points_equal(self.b, other.a)
         if self.width is None or other.width is None:
             return
 
@@ -102,8 +103,6 @@ class LineSegment(Segment):
         return False
 
     def join_with_line(self, other):
-        assert points_equal(self.b, other.a)
-
         # Check turn angle, and don't turn close to straight back.
         v_self = vec.vfrom(self.a, self.b)
         v_other = vec.vfrom(other.a, other.b)
@@ -155,7 +154,15 @@ class LineSegment(Segment):
         self.b_right = other.a_right = p
 
     def join_with_arc(self, other):
-        raise NotImplementedError
+        a, b = self.offset_line_left()
+        center, radius = other.offset_circle_left()
+        points = intersect_circle_line(center, radius, a, b)
+        self.b_left = other.a_left = closest_point_to(self.b, points)
+
+        a, b = self.offset_line_right()
+        center, radius = other.offset_circle_right()
+        points = intersect_circle_line(center, radius, a, b)
+        self.b_right = other.a_right = closest_point_to(self.b, points)
 
     # The offset_line_* functions create a copy of the centerline of a
     # segment, but offset to the right or left by half the segment width.
@@ -179,9 +186,6 @@ class LineSegment(Segment):
         v = vec.perp(v)
         v = vec.norm(v, self.width / 2)
         return v
-
-    def length(self):
-        return vec.dist(self.a, self.b)
 
     def _heading(self):
         return math.degrees(vec.heading(vec.vfrom(self.a, self.b)))
@@ -274,10 +278,35 @@ class ArcSegment(Segment):
         return True
 
     def join_with_line(self, other):
-        raise NotImplementedError
+        a, b = other.offset_line_left()
+        center, radius = self.offset_circle_left()
+        points = intersect_circle_line(center, radius, a, b)
+        self.b_left = other.a_left = closest_point_to(self.b, points)
+
+        a, b = other.offset_line_right()
+        center, radius = self.offset_circle_right()
+        points = intersect_circle_line(center, radius, a, b)
+        self.b_right = other.a_right = closest_point_to(self.b, points)
 
     def join_with_arc(self, other):
         raise NotImplementedError
+
+    # Since positive radius is defined as "left-arcing", and negative
+    # radius is defined as "right-arcing", adding to or subtracting from
+    # the radius will offset the curve to the right or left,
+    # respectively.
+
+    def offset_circle_left(self):
+        return (
+            self.center,
+            self.radius - self.width / 2
+        )
+
+    def offset_circle_right(self):
+        return (
+            self.center,
+            self.radius + self.width / 2,
+        )
 
     @property
     def start_heading(self):
@@ -286,13 +315,6 @@ class ArcSegment(Segment):
     @property
     def end_heading(self):
         return self._end_heading
-
-    def start_slant_width(self):
-        # Do these need to exist?
-        return self.width
-
-    def end_slant_width(self):
-        return self.width
 
     def draw_right(self, pen):
         pen.turn_to(self.start_heading)
@@ -313,39 +335,55 @@ class ArcSegment(Segment):
                     start_angle,
                 ))
             )
+
+            center, radius = self.offset_circle_left()
             points = intersect_circle_line(
-                self.center,
-                self.radius - self.width / 2,
+                center,
+                radius,
                 self.a,
                 vec.add(self.a, v),
             )
             self.a_left = closest_point_to(self.a, points)
+
+            center, radius = self.offset_circle_right()
             points = intersect_circle_line(
-                self.center,
-                self.radius + self.width / 2,
+                center,
+                radius,
                 self.a,
                 vec.add(self.a, v),
             )
             self.a_right = closest_point_to(self.a, points)
+
             self.check_degenerate_segment()
 
     def set_end_angle(self, end_angle):
         self._end_angle = end_angle
         if self.width is not None:
             v = vec.from_heading(math.radians(self.end_heading))
-            v = vec.rotate(v, -math.radians(self.calc_slant(self.end_heading, end_angle)))
+            v = vec.rotate(
+                v,
+                -math.radians(self.calc_slant(
+                    self.end_heading,
+                    end_angle,
+                ))
+            )
+
+            center, radius = self.offset_circle_left()
             points = intersect_circle_line(
-                self.center,
-                self.radius - self.width / 2,
+                center,
+                radius,
                 self.b,
                 vec.add(self.b, v),
             )
             self.b_left = closest_point_to(self.b, points)
+
+            center, radius = self.offset_circle_right()
             points = intersect_circle_line(
-                self.center,
-                self.radius + self.width / 2,
+                center,
+                radius,
                 self.b,
                 vec.add(self.b, v),
             )
             self.b_right = closest_point_to(self.b, points)
+
             self.check_degenerate_segment()

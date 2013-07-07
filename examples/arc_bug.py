@@ -12,7 +12,7 @@ p.turn_left(90)
 p.arc_left(180, 3)
 p.line_forward(3)
 
-#p.paper.show_joints = True
+p.paper.show_joints = True
 p.paper.show_bones = True
 p.paper.show_nodes = True
 p.paper.set_style(

@@ -563,6 +563,28 @@ def test_degenerate_arc():
     )
 
 
+def test_arc_joint():
+    p = Pen()
+    p.set_width(1.0)
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(3)
+    p.turn_left(90)
+    p.arc_left(180, 3)
+
+    p.paper.set_precision(3)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M0.000,-0.500 L0.000,0.500 L3.464,0.500 '
+            'A 3.500,3.500 0 1 0 -3.500,0.000 L-2.500,0.000 '
+            'A 2.500,2.500 0 0 1 2.449,-0.500 L0.000,-0.500 z'
+        ),
+    )
+
+
 def test_circle():
     p = Pen()
     p.circle(1)

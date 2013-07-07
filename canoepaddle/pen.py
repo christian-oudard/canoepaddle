@@ -153,6 +153,8 @@ class Pen:
         )
 
     def arc_right(self, arc_angle, radius, start_angle=None, end_angle=None):
+        # We define a positive radius to be arcing to the left, and a
+        # negative radius to be arcing to the right.
         self.arc_left(-arc_angle, -radius, start_angle, end_angle)
 
     def arc_to(self, endpoint, center=None, start_angle=None, end_angle=None):
@@ -182,21 +184,25 @@ class Pen:
 
         # Calculate the arc angle.
         # Construct two radii, one for the start and end of the arc, and find
-        # the angle between them. Check some dot products to determine which
-        # quadrant the arc angle is in.
+        # the angle between them.
         v_radius_start = vec.vfrom(center, self._position)
         v_radius_end = vec.vfrom(center, endpoint)
+
+        # Determine true start heading. This may not be the same as the
+        # original pen heading if the "center" argument is specified.
+        v_radius_perp = vec.perp(v_radius_start)
+        if vec.dot(v_radius_perp, v_pen) < 0:
+            v_radius_perp = vec.neg(v_radius_perp)
+        start_heading = vec.heading(v_radius_perp)
+        self.turn_to(start_heading)
+        v_pen = self._vector()
+
+        # Check some dot products to determine which quadrant the arc angle is in.
         arc_angle = math.degrees(vec.angle(v_radius_start, v_radius_end))
         if vec.dot(v_radius_end, v_pen) < 0:
             arc_angle += 180
         if vec.dot(v_radius_start, v_perp) > 0:
             arc_angle = -arc_angle
-
-        # Determine start heading. This may not be the same as the original pen
-        # heading if the "center" argument is specified.
-        start_heading = vec.heading(vec.perp(v_radius_start))
-        if arc_angle < 0:
-            start_heading = (start_heading + 180) % 360
 
         self._arc(
             center,
