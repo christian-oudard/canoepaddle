@@ -126,13 +126,13 @@ class Pen:
             a=old_position,
             b=endpoint,
             width=self.width,
+            start_angle=start_angle,
+            end_angle=end_angle,
             center=center,
             radius=radius,
             arc_angle=arc_angle,
             start_heading=old_heading,
             end_heading=self._heading,
-            start_angle=start_angle,
-            end_angle=end_angle,
         ))
 
     def arc_left(self, arc_angle, radius, start_angle=None, end_angle=None):

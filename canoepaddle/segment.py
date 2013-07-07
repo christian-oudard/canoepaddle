@@ -77,11 +77,10 @@ class Segment:
 
 class LineSegment(Segment):
 
-    def __init__(self, a, b, width=None, start_angle=None, end_angle=None):
+    def __init__(self, a, b, width, start_angle, end_angle):
         self.a = Point(*a)
         self.b = Point(*b)
         self.width = width
-        self.radius = None
 
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
@@ -116,6 +115,12 @@ class LineSegment(Segment):
 
     def end_slant(self):
         return self.calc_slant(self.end_heading, self._end_angle)
+
+    def draw_right(self, pen):
+        pen.line_to(self.b_right)
+
+    def draw_left(self, pen):
+        pen.line_to(self.a_left)
 
     def set_start_angle(self, start_angle):
         self._start_angle = start_angle
@@ -162,8 +167,8 @@ class LineSegment(Segment):
 
 class ArcSegment(Segment):
     def __init__(
-        self, a, b, width, center, radius, arc_angle,
-        start_heading, end_heading, start_angle, end_angle,
+        self, a, b, width, start_angle, end_angle,
+        center, radius, arc_angle, start_heading, end_heading,
     ):
         self.a = Point(*a)
         self.b = Point(*b)
@@ -186,10 +191,17 @@ class ArcSegment(Segment):
         return self._end_heading
 
     def start_slant_width(self):
+        # Do these need to exist?
         return self.width
 
     def end_slant_width(self):
         return self.width
+
+    def draw_right(self, pen):
+        pen.arc_to(self.b_right, self.center)
+
+    def draw_left(self, pen):
+        pen.arc_to(self.a_left, self.center)
 
     def set_start_angle(self, start_angle):
         self._start_angle = start_angle

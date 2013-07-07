@@ -7,7 +7,6 @@ from nose.tools import (
 )
 
 from canoepaddle import Pen
-from canoepaddle.paper import Paper
 from canoepaddle.segment import LineSegment
 from canoepaddle.point import Point
 from canoepaddle.geometry import intersect_lines, calc_joint_angle
@@ -331,11 +330,15 @@ def test_calc_joint_angle():
                 Point(0, 0),
                 Point(10, 0),
                 width=1,
+                start_angle=None,
+                end_angle=None,
             ),
             LineSegment(
                 Point(10, 0),
                 Point(10, -10),
                 width=1,
+                start_angle=None,
+                end_angle=None,
             ),
         ),
         45,
@@ -348,11 +351,15 @@ def test_calc_joint_angle():
                 Point(0, 0),
                 Point(10, 0),
                 width=1,
+                start_angle=None,
+                end_angle=None,
             ),
             LineSegment(
                 Point(10, 0),
                 Point(10, -10),
                 width=2,
+                start_angle=None,
+                end_angle=None,
             ),
         ),
         math.degrees(math.atan2(1, 2)),
@@ -365,11 +372,15 @@ def test_calc_joint_angle():
                 Point(0, 0),
                 Point(10, 0),
                 width=1,
+                start_angle=None,
+                end_angle=None,
             ),
             LineSegment(
                 Point(10, 0),
                 Point(20, 0),
                 width=1,
+                start_angle=None,
+                end_angle=None,
             ),
         ),
         90,

@@ -195,10 +195,7 @@ class Paper:
 
         # Draw along the length of the segment.
         pen.turn_to(seg.start_heading)
-        if seg.radius is None:
-            pen.line_to(seg.b_right)
-        else:
-            pen.arc_to(seg.b_right, seg.center)
+        seg.draw_right(pen)
 
         if last:
             # Draw the ending thickness edge.
@@ -208,7 +205,4 @@ class Paper:
     def draw_segment_left(pen, seg, first=False, last=False):
         # Continue path back towards the beginning.
         pen.turn_to(seg.end_heading + 180)
-        if seg.radius is None:
-            pen.line_to(seg.a_left)
-        else:
-            pen.arc_to(seg.a_left, seg.center)
+        seg.draw_left(pen)
