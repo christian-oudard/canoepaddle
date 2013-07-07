@@ -17,7 +17,6 @@ class Pen:
 
     def __init__(self):
         self.paper = Paper()
-        #TODO: require explicit initial heading and position?
         self._heading = 0
         self._position = (0.0, 0.0)
         self._width = None
@@ -199,7 +198,14 @@ class Pen:
         if arc_angle < 0:
             start_heading = (start_heading + 180) % 360
 
-        self._arc(center, vec.mag(v_radius_start), endpoint, arc_angle, start_angle, end_angle)
+        self._arc(
+            center,
+            vec.mag(v_radius_start),
+            endpoint,
+            arc_angle,
+            start_angle,
+            end_angle,
+        )
 
     def circle(self, radius):
         self.paper.add_shape(Circle(

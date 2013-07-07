@@ -10,8 +10,6 @@ import vec
 from canoepaddle import Pen
 from canoepaddle.geometry import intersect_lines
 
-#TODO: Test offset calculations in drawing.
-
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
