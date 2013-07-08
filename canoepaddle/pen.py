@@ -13,6 +13,11 @@ def flip_angle_x(angle):
         return 180 - angle
 
 
+def flip_angle_y(angle):
+    if angle is not None:
+        return -angle
+
+
 class Pen:
 
     def __init__(self):
@@ -197,16 +202,19 @@ class Pen:
         self.turn_to(start_heading)
         v_pen = self._vector()
 
-        # Check some dot products to determine which quadrant the arc angle is in.
+        # Check some dot products to determine which quadrant the arc
+        # angle is in, and whether the radius is positive or negative.
         arc_angle = math.degrees(vec.angle(v_radius_start, v_radius_end))
+        radius = vec.mag(v_radius_start)
         if vec.dot(v_radius_end, v_pen) < 0:
             arc_angle += 180
         if vec.dot(v_radius_start, v_perp) > 0:
             arc_angle = -arc_angle
+            radius = -radius
 
         self._arc(
             center,
-            vec.mag(v_radius_start),
+            radius,
             endpoint,
             arc_angle,
             start_angle,

@@ -55,6 +55,8 @@ def intersect_circle_line(center, radius, line_start, line_end):
     """
     Find the intersection of a circle with a line.
     """
+    radius = abs(radius)
+
     # First check whether the line is too far away, or if we have a
     # single point of contact.
     # Reference:
@@ -97,6 +99,9 @@ def intersect_circle_line(center, radius, line_start, line_end):
 
 
 def intersect_circles(center1, radius1, center2, radius2):
+    radius1 = abs(radius1)
+    radius2 = abs(radius2)
+
     transverse = vec.vfrom(center1, center2)
     dist = vec.mag(transverse)
 
@@ -134,7 +139,7 @@ def intersect_circles(center1, radius1, center2, radius2):
     # points. Then find the chord length "a" between the two intersection
     # points, and use vector math to find the points.
     dist2 = vec.mag2(transverse)
-    x = (dist2 - radius1**2 + radius2**2) / (2 * dist)
+    x = (dist2 - radius2**2 + radius1**2) / (2 * dist)
     a = (
         (1 / dist) *
         sqrt(

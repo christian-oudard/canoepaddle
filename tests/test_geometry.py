@@ -74,6 +74,14 @@ def test_intersect_circle_line():
         ),
         [(1, 1), (1, -1)],
     )
+    # Two points, negative radius
+    assert_equal(
+        intersect_circle_line(
+            (0, 0), -sqrt2,
+            (1, 2), (1, -2),
+        ),
+        [(1, 1), (1, -1)],
+    )
     # Single point.
     assert_equal(
         intersect_circle_line(
@@ -133,7 +141,7 @@ def test_intersect_circles():
         ),
         [(2, 0)],
     )
-    # Two points.
+    # Two points, same size circles.
     assert_equal(
         intersect_circles(
             (-1, 0), sqrt2,
@@ -141,3 +149,10 @@ def test_intersect_circles():
         ),
         [(0, 1), (0, -1)],
     )
+    # Two points, different size circles.
+    p1, p2 = intersect_circles(
+        (0, 0), sqrt2,
+        (1, 0), 1,
+    )
+    assert_points_equal(p1, (1, 1))
+    assert_points_equal(p2, (1, -1))

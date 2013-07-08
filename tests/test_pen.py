@@ -7,6 +7,7 @@ from nose.tools import (
 from util import assert_segments_equal, assert_points_equal
 import vec
 from canoepaddle import Pen
+from canoepaddle.pen import flip_angle_y
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -496,7 +497,7 @@ def test_degenerate_arc():
     )
 
 
-def test_arc_joint():
+def test_arc_line_joint():
     p = Pen()
     p.set_width(1.0)
 
@@ -532,6 +533,156 @@ def test_arc_sweep_bug():
         path_data,
         'M2,0 L4,0 A 4,4 0 1 0 0,4 L0,2 A 2,2 0 1 1 2,0 z'
     )
+
+
+def test_arc_arc_joint():
+    top = (0, 5)
+    left = (-2, 0)
+    right = (2, 0)
+
+    # Convex-convex.
+    p = Pen()
+    p.set_width(1.0)
+
+    p.move_to(left)
+    p.turn_toward(top)
+    p.turn_left(5)
+    p.arc_to(top, start_angle=0)
+    p.turn_toward(right)
+    p.turn_left(5)
+    p.arc_to(right, end_angle=0)
+
+    p.paper.set_precision(3)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M-2.522,0.000 L-1.477,0.000 '
+            'A 30.394,30.394 0 0 1 0.000,-3.853 '
+            'A 30.394,30.394 0 0 1 1.477,0.000 '
+            'L2.522,0.000 '
+            'A 31.394,31.394 0 0 0 0.000,-6.076 '
+            'A 31.394,31.394 0 0 0 -2.522,0.000 z'
+        )
+    )
+
+    # Concave-concave.
+    p = Pen()
+    p.set_width(1.0)
+
+    p.move_to(left)
+    p.turn_toward(top)
+    p.turn_right(5)
+    p.arc_to(top, start_angle=0)
+    p.turn_toward(right)
+    p.turn_right(5)
+    p.arc_to(right, end_angle=0)
+
+    p.paper.set_precision(3)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M-2.561,0.000 L-1.441,0.000 '
+            'A 31.394,31.394 0 0 0 0.000,-3.400 '
+            'A 31.394,31.394 0 0 0 1.441,0.000 '
+            'L2.561,0.000 '
+            'A 30.394,30.394 0 0 1 0.000,-6.923 '
+            'A 30.394,30.394 0 0 1 -2.561,0.000 z'
+        )
+    )
+
+    # Convex-concave.
+    p = Pen()
+    p.set_width(1.0)
+
+    p.move_to(left)
+    p.turn_toward(top)
+    p.turn_left(5)
+    p.arc_to(top, start_angle=0)
+    p.turn_toward(right)
+    p.turn_right(5)
+    p.arc_to(right, end_angle=0)
+
+    p.paper.set_precision(3)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M-2.522,0.000 L-1.477,0.000 '
+            'A 30.394,30.394 0 0 1 -0.090,-3.656 '
+            'A 31.394,31.394 0 0 0 1.441,0.000 '
+            'L2.561,0.000 '
+            'A 30.394,30.394 0 0 1 0.144,-6.339 '
+            'A 31.394,31.394 0 0 0 -2.522,0.000 z'
+        )
+    )
+
+    # Concave-convex.
+    p = Pen()
+    p.set_width(1.0)
+
+    p.move_to(left)
+    p.turn_toward(top)
+    p.turn_right(5)
+    p.arc_to(top, start_angle=0)
+    p.turn_toward(right)
+    p.turn_left(5)
+    p.arc_to(right, end_angle=0)
+
+    p.paper.set_precision(3)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M-2.561,0.000 L-1.441,0.000 '
+            'A 31.394,31.394 0 0 0 0.090,-3.656 '
+            'A 30.394,30.394 0 0 1 1.477,0.000 '
+            'L2.522,0.000 '
+            'A 31.394,31.394 0 0 0 -0.144,-6.339 '
+            'A 30.394,30.394 0 0 1 -2.561,0.000 z'
+        )
+    )
+
+
+def test_arc_line_joint_bug():
+    # When using arc_to, sometimes the b_left and b_right would get
+    # reversed.
+    p = Pen()
+    p.set_width(1.0)
+
+    p.move_to((0, 0))
+    p.turn_to(90)
+    p.arc_to((5, 5))
+    p.turn_to(-90)
+    p.line_forward(5)
+
+    p.paper.set_precision(3)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M-0.500,0.000 L0.500,0.000 '
+            'A 4.500,4.500 0 0 1 4.500,-4.472 '
+            'L4.500,0.000 L5.500,0.000 L5.500,-5.477 '
+            'A 5.500,5.500 0 0 0 -0.500,0.000 z'
+        )
+    )
+
+
+#def test_arc_to_stability():
+#    # When doing certain arc joints, it will create thick arc pieces all
+#    # over the place, seemingly unrelated to the strokes we are trying to
+#    # create.
+#    p = Pen()
+#    p.set_width(1.0)
+#
+#    p.move_to((-1, 0))
+#    p.turn_to(90)
+#    p.arc_to((0, 5))
+#    p.turn_to(flip_angle_y(p.heading))
+#    p.arc_to((-1, 0))
+#    assert False
 
 
 def test_circle():

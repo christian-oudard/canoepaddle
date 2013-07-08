@@ -155,6 +155,13 @@ class Paper:
         return path_data
 
     def draw_stroke_thick(self, pen, segments):
+        for seg in segments:
+            if seg.width is None:
+                raise ValueError(
+                    'Cannot draw a thick segment without a width '
+                    'specified.'
+                )
+
         if self.show_joints:
             for seg in segments:
                 self.draw_segment_right(pen, seg, first=True, last=True)

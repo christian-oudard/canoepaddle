@@ -2,7 +2,11 @@ import math
 
 import vec
 from .point import Point, float_equal, points_equal
-from .geometry import intersect_lines, intersect_circle_line
+from .geometry import (
+    intersect_lines,
+    intersect_circle_line,
+    intersect_circles,
+)
 
 
 MAX_TURN_ANGLE = 179
@@ -97,6 +101,8 @@ class LineSegment(Segment):
     def __init__(self, a, b, width, start_angle, end_angle):
         super().__init__(a, b, width)
 
+        self.start_angle = None
+        self.end_angle = None
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
 
@@ -278,6 +284,8 @@ class ArcSegment(Segment):
         self._start_heading = start_heading
         self._end_heading = end_heading
 
+        self.start_angle = None
+        self.end_angle = None
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
 
@@ -299,7 +307,15 @@ class ArcSegment(Segment):
         self.b_right = other.a_right = closest_point_to(self.b, points)
 
     def join_with_arc(self, other):
-        raise NotImplementedError
+        c1, r1 = self.offset_circle_left()
+        c2, r2 = other.offset_circle_left()
+        points = intersect_circles(c1, r1, c2, r2)
+        self.b_left = other.a_left = closest_point_to(self.b, points)
+
+        c1, r1 = self.offset_circle_right()
+        c2, r2 = other.offset_circle_right()
+        points = intersect_circles(c1, r1, c2, r2)
+        self.b_right = other.a_right = closest_point_to(self.b, points)
 
     # Since positive radius is defined as "left-arcing", and negative
     # radius is defined as "right-arcing", adding to or subtracting from
