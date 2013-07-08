@@ -749,6 +749,37 @@ def test_arc_line_joint_bug():
     )
 
 
+def test_width_error():
+    p = Pen()
+    # Don't set width.
+    p.line_forward(1)
+    assert_raises(
+        ValueError,
+        lambda: p.paper.svg_path_thick()
+    )
+
+
+def test_repr():
+    p = Pen()
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(1)
+    p.arc_left(90, 1)
+    stroke = p.paper.strokes[0]
+    line, arc = stroke
+    assert_equal(
+        repr(line),
+        'LineSegment(a=Point(x=0, y=0), b=Point(x=1.0, y=0.0))'
+    )
+    assert_equal(
+        repr(arc),
+        (
+            'ArcSegment(a=Point(x=1.0, y=0.0), b=Point(x=2.0, y=0.9999999999999999), '
+            'center=(1.0, 1.0), radius=1, start_heading=0, end_heading=90)'
+        )
+    )
+
+
 def test_circle():
     p = Pen()
     p.circle(1)
@@ -757,14 +788,4 @@ def test_circle():
     assert_equal(
         p.paper.svg_shapes(),
         '<ellipse cx="0" cy="0" rx="1" ry="1" />',
-    )
-
-
-def test_width_error():
-    p = Pen()
-    # Don't set width.
-    p.line_forward(1)
-    assert_raises(
-        ValueError,
-        lambda: p.paper.svg_path_thick()
     )
