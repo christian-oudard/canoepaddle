@@ -8,6 +8,7 @@ from nose.tools import (
 from util import assert_segments_equal, assert_points_equal
 import vec
 from canoepaddle import Pen
+from canoepaddle.error import SegmentError
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -174,13 +175,13 @@ def test_angle_error():
     p = Pen()
     p.set_width(1.0)
     assert_raises(
-        ValueError,
+        SegmentError,
         lambda: p.line_forward(10, start_angle=0)
     )
     p = Pen()
     p.set_width(1.0)
     assert_raises(
-        ValueError,
+        SegmentError,
         lambda: p.line_forward(10, end_angle=0)
     )
 
@@ -188,8 +189,8 @@ def test_angle_error():
     p = Pen()
     p.set_width(1.0)
     assert_raises(
-        ValueError,
-        lambda: p.line_forward(1, start_angle=40, end_angle=-40),
+        SegmentError,
+        lambda: p.line_forward(1, start_angle=40, end_angle=-40)
     )
 
 
@@ -353,7 +354,7 @@ def test_turn_back_error():
     p.line_forward(10)
     p.turn_right(180)
     assert_raises(
-        ValueError,
+        SegmentError,
         lambda: p.line_forward(10),
     )
 
@@ -385,7 +386,7 @@ def test_offwidth_joint_error():
     p.line_forward(3)
     p.set_width(0.5)
     assert_raises(
-        ValueError,
+        SegmentError,
         lambda: p.line_forward(3)
     )
 
@@ -558,13 +559,37 @@ def test_arc_angle():
 
 
 def test_arc_angle_error():
+    # Endpoints with certain angles do not go all the way across the
+    # stroke, and are disallowed.
+    p = Pen()
+    p.set_width(1.0)
+    assert_raises(
+        SegmentError,
+        lambda: p.arc_left(90, 10, start_angle=0)
+    )
+    p = Pen()
+    p.set_width(1.0)
+    assert_raises(
+        SegmentError,
+        lambda: p.arc_left(90, 10, end_angle=90)
+    )
     p = Pen()
     p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
     assert_raises(
-        ValueError,
+        SegmentError,
         lambda: p.arc_left(90, radius=5, start_angle=25)
+    )
+
+    # A combination of angles can also create a degenerate arc.
+    p = Pen()
+    p.set_width(1.0)
+    p.turn_toward((1, 0))
+    p.turn_left(1)
+    assert_raises(
+        SegmentError,
+        lambda: p.arc_to((1, 0), start_angle=40, end_angle=-40)
     )
 
 
@@ -575,7 +600,7 @@ def test_degenerate_arc():
     p.move_to((-5, 0))
     p.turn_to(0)
     assert_raises(
-        ValueError,
+        SegmentError,
         lambda: p.arc_to(
             (5, 0),
             center=(0, -200),
@@ -796,7 +821,7 @@ def test_width_error():
     # Don't set width.
     p.line_forward(1)
     assert_raises(
-        ValueError,
+        SegmentError,
         lambda: p.paper.svg_path_thick()
     )
 

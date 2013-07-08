@@ -5,6 +5,7 @@ from .point import Point, points_equal
 from .svg import path_move, path_close, path_line, path_arc
 from .segment import LineSegment, ArcSegment
 from .shape import Circle
+from .error import SegmentError
 
 
 class Paper:
@@ -157,7 +158,7 @@ class Paper:
     def draw_stroke_thick(self, pen, segments):
         for seg in segments:
             if seg.width is None:
-                raise ValueError(
+                raise SegmentError(
                     'Cannot draw a thick segment without a width '
                     'specified.'
                 )
