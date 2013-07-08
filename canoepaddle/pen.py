@@ -240,7 +240,8 @@ class Pen:
         ))
 
     def last_slant_width(self):
-        return self.paper.strokes[-1][-1].end_slant_width()
+        seg = self.paper.strokes[-1][-1]
+        return vec.mag(vec.vfrom(seg.b_left, seg.b_right))
 
     @property
     def position(self):

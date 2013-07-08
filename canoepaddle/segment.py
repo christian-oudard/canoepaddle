@@ -19,6 +19,30 @@ def closest_point_to(target, points):
     )
 
 
+def calc_slant(heading, angle):
+    r"""
+    The slant of a stroke is defined as the angle between the
+    direction of the stroke and the start angle of the pen.
+
+    90 degree slant:
+     ___
+    |___|
+
+    60 degree slant:
+    ____
+    \___\
+
+    120 degree slant:
+     ____
+    /___/
+
+    """
+    if angle is None:
+        return 90
+    slant = (heading - angle) % 180
+    return slant
+
+
 class Segment:
     def __init__(self, a, b, width=None):
         self.a = Point(*a)
@@ -51,30 +75,6 @@ class Segment:
             self.join_with_line(other)
         elif isinstance(other, ArcSegment):
             self.join_with_arc(other)
-
-    @staticmethod
-    def calc_slant(heading, angle):
-        r"""
-        The slant of a stroke is defined as the angle between the
-        direction of the stroke and the start angle of the pen.
-
-        90 degree slant:
-         ___
-        |___|
-
-        60 degree slant:
-        ____
-        \___\
-
-        120 degree slant:
-         ____
-        /___/
-
-        """
-        if angle is None:
-            return 90
-        slant = (heading - angle) % 180
-        return slant
 
     def check_degenerate_segment(self):
         if any(
@@ -192,59 +192,64 @@ class LineSegment(Segment):
     def _heading(self):
         return math.degrees(vec.heading(vec.vfrom(self.a, self.b)))
 
-    @property
-    def start_heading(self):
-        return self._heading()
-
-    @property
-    def end_heading(self):
-        return self._heading()
-
-    def start_slant(self):
-        return self.calc_slant(self.start_heading, self.start_angle)
-
-    def end_slant(self):
-        return self.calc_slant(self.end_heading, self.end_angle)
-
     def draw_right(self, pen):
-        pen.turn_to(self.start_heading)
+        pen.turn_to(self._heading())
         pen.line_to(self.b_right)
 
     def draw_left(self, pen):
-        pen.turn_to(self.end_heading + 180)
+        pen.turn_to(self._heading() + 180)
         pen.line_to(self.a_left)
 
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle
-        if self.width is not None:
-            v = vec.from_heading(math.radians(self.start_heading))
-            v = vec.rotate(
-                v,
-                -math.radians(self.calc_slant(
-                    self.start_heading,
-                    start_angle,
-                ))
+
+        if self.width is None:
+            return
+
+        # Intersect the slant line with the left and right offset lines
+        # to find the starting corners.
+        if start_angle is None:
+            v_slant = vec.perp(vec.vfrom(self.a, self.b))
+        else:
+            v_slant = vec.from_heading(math.radians(start_angle))
+        a = self.a
+        b = vec.add(self.a, v_slant)
+
+        c, d = self.offset_line_left()
+        self.a_left = intersect_lines(a, b, c, d)
+
+        c, d = self.offset_line_right()
+        self.a_right = intersect_lines(a, b, c, d)
+
+        if self.a_left is None or self.a_right is None:
+            raise ValueError(
+                'Could not set start angle of {}'.format(start_angle)
             )
-            v = vec.norm(v, self.start_slant_width() / 2)
-            self.a_left = vec.sub(self.a, v)
-            self.a_right = vec.add(self.a, v)
-            self.check_degenerate_segment()
+
+        self.check_degenerate_segment()
 
     def set_end_angle(self, end_angle):
         self.end_angle = end_angle
-        if self.width is not None:
-            v = vec.from_heading(math.radians(self.end_heading))
-            v = vec.rotate(v, -math.radians(self.calc_slant(self.end_heading, end_angle)))
-            v = vec.norm(v, self.end_slant_width() / 2)
-            self.b_left = vec.sub(self.b, v)
-            self.b_right = vec.add(self.b, v)
-            self.check_degenerate_segment()
 
-    def start_slant_width(self):
-        return self.calc_slant_width(self.width, self.start_slant())
+        if self.width is None:
+            return
 
-    def end_slant_width(self):
-        return self.calc_slant_width(self.width, self.end_slant())
+        # Intersect the slant line with the left and right offset lines
+        # to find the ending corners.
+        if end_angle is None:
+            v_slant = vec.perp(vec.vfrom(self.a, self.b))
+        else:
+            v_slant = vec.from_heading(math.radians(end_angle))
+        a = self.b
+        b = vec.add(self.b, v_slant)
+
+        c, d = self.offset_line_left()
+        self.b_left = intersect_lines(a, b, c, d)
+
+        c, d = self.offset_line_right()
+        self.b_right = intersect_lines(a, b, c, d)
+
+        self.check_degenerate_segment()
 
     @staticmethod
     def calc_slant_width(stroke_width, slant):
@@ -342,7 +347,7 @@ class ArcSegment(Segment):
             v = vec.from_heading(math.radians(self.start_heading))
             v = vec.rotate(
                 v,
-                -math.radians(self.calc_slant(
+                -math.radians(calc_slant(
                     self.start_heading,
                     start_angle,
                 ))
@@ -374,7 +379,7 @@ class ArcSegment(Segment):
             v = vec.from_heading(math.radians(self.end_heading))
             v = vec.rotate(
                 v,
-                -math.radians(self.calc_slant(
+                -math.radians(calc_slant(
                     self.end_heading,
                     end_angle,
                 ))

@@ -1,17 +1,10 @@
 from canoepaddle import Pen
 
 p = Pen()
-p.set_width(0.5)
-p.move_to((-2, 0))
+p.set_width(1.0)
+p.move_to((0, 0))
 p.turn_to(0)
-p.line_forward(1)
-p.turn_left(90)
-p.line_forward(1)
-p.turn_right(90)
-p.arc_right(90, 1)
-p.arc_left(90, 1)
-p.turn_left(90)
-p.line_forward(1)
+p.line_forward(5, start_angle=-45, end_angle=30)
 
 p.paper.set_precision(2)
 
