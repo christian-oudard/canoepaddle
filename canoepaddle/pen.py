@@ -26,6 +26,7 @@ class Pen:
         self._position = (0.0, 0.0)
         self._width = None
         self.flipped_x = False
+        self.flipped_y = False
 
     def flip_x(self):
         """
@@ -33,12 +34,20 @@ class Pen:
         """
         self.flipped_x = not self.flipped_x
 
+    def flip_y(self):
+        """
+        Make turns behave in the y-opposite manner.
+        """
+        self.flipped_y = not self.flipped_y
+
     def set_width(self, width):
         self._width = width
 
     def turn_to(self, heading):
         if self.flipped_x:
             heading = flip_angle_x(heading)
+        if self.flipped_y:
+            heading = flip_angle_y(heading)
         self._heading = heading % 360
 
     def turn_toward(self, point):
@@ -81,6 +90,9 @@ class Pen:
         if self.flipped_x:
             start_angle = flip_angle_x(start_angle)
             end_angle = flip_angle_x(end_angle)
+        if self.flipped_y:
+            start_angle = flip_angle_y(start_angle)
+            end_angle = flip_angle_y(end_angle)
 
         self.paper.add_segment(LineSegment(
             old_position,
@@ -238,6 +250,8 @@ class Pen:
     def heading(self):
         if self.flipped_x:
             return flip_angle_x(self._heading)
+        if self.flipped_y:
+            return flip_angle_y(self._heading)
         return self._heading
 
     @property

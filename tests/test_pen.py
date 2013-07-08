@@ -225,22 +225,41 @@ def test_show_joints():
     )
 
 
-def test_flip_x():
+def test_flip():
+    def shape(p):
+        p.move_to((0, 0))
+        p.turn_to(180)
+        p.move_forward(6)
+        p.turn_to(0)
+        p.line_forward(6)
+        p.turn_right(60)
+        p.line_forward(6)
+        p.paper.set_precision(2)
+
     p = Pen()
-    p.set_width(1.0)
-    p.flip_x()
-    p.turn_to(180)
-    p.move_forward(6)
-    p.turn_to(0)
-    p.line_forward(6)
-    p.turn_right(60)
-    p.line_forward(6)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
+    shape(p)
+    path_data = p.paper.svg_path()
     assert_equal(
         path_data,
-        'M6.00,0.50 L6.00,-0.50 L-0.29,-0.50 L-3.43,4.95 '
-        'L-2.57,5.45 L0.29,0.50 L6.00,0.50 z'
+        'M-6.00,0.00 L0.00,0.00 L3.00,5.20'
+    )
+
+    p = Pen()
+    p.flip_x()
+    shape(p)
+    path_data = p.paper.svg_path()
+    assert_equal(
+        path_data,
+        'M6.00,0.00 L0.00,0.00 L-3.00,5.20'
+    )
+
+    p = Pen()
+    p.flip_y()
+    shape(p)
+    path_data = p.paper.svg_path()
+    assert_equal(
+        path_data,
+        'M-6.00,0.00 L0.00,0.00 L3.00,-5.20'
     )
 
 
