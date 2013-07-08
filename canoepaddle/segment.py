@@ -47,9 +47,9 @@ class Segment:
         if self.width is None or other.width is None:
             return
 
-        if other.is_line():
+        if isinstance(other, LineSegment):
             self.join_with_line(other)
-        elif other.is_arc():
+        elif isinstance(other, ArcSegment):
             self.join_with_arc(other)
 
     @staticmethod
@@ -106,12 +106,6 @@ class LineSegment(Segment):
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
 
-    def is_line(self):
-        return True
-
-    def is_arc(self):
-        return False  # COVER
-
     def join_with_line(self, other):
         # Check turn angle, and don't turn close to straight back.
         v_self = vec.vfrom(self.a, self.b)
@@ -147,21 +141,19 @@ class LineSegment(Segment):
             other.a_right = vec.sub(other.a, v_bisect)
             return
 
-        # Left side.
         a, b = self.offset_line_left()
         c, d = other.offset_line_left()
-        p = intersect_lines(a, b, c, d)
-        if p is None:
-            raise ValueError('Joint not well defined.')
-        self.b_left = other.a_left = p
+        p_left = intersect_lines(a, b, c, d)
 
-        # Right side.
         a, b = self.offset_line_right()
         c, d = other.offset_line_right()
-        p = intersect_lines(a, b, c, d)
-        if p is None:
-            raise ValueError('Joint not well defined.')  # COVER
-        self.b_right = other.a_right = p
+        p_right = intersect_lines(a, b, c, d)
+
+        if p_left is None or p_right is None:
+            raise ValueError('Joint not well defined.')
+
+        self.b_left = other.a_left = p_left
+        self.b_right = other.a_right = p_right
 
     def join_with_arc(self, other):
         a, b = self.offset_line_left()
@@ -288,12 +280,6 @@ class ArcSegment(Segment):
         self.end_angle = None
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
-
-    def is_line(self):
-        return False
-
-    def is_arc(self):
-        return True
 
     def join_with_line(self, other):
         a, b = other.offset_line_left()

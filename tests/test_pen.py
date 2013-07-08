@@ -749,6 +749,39 @@ def test_arc_line_joint_bug():
     )
 
 
+def test_various_joins():
+    p = Pen()
+    p.set_width(1.0)
+
+    p = Pen()
+    p.set_width(0.5)
+    p.move_to((-2, 0))
+    p.turn_to(0)
+    p.line_forward(1)
+    p.turn_left(90)
+    p.line_forward(1)
+    p.turn_right(90)
+    p.arc_right(90, 1)
+    p.arc_left(90, 1)
+    p.turn_left(90)
+    p.line_forward(1)
+
+    p.paper.set_precision(2)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M-2.00,-0.25 L-2.00,0.25 L-0.75,0.25 L-0.75,-0.71 '
+            'A 0.75,0.75 0 0 1 -0.25,0.00 '
+            'A 1.25,1.25 0 0 0 1.25,1.22 '
+            'L1.25,0.00 L0.75,0.00 L0.75,0.71 '
+            'A 0.75,0.75 0 0 1 0.25,0.00 '
+            'A 1.25,1.25 0 0 0 -1.25,-1.22 '
+            'L-1.25,-0.25 L-2.00,-0.25 z'
+        )
+    )
+
+
 def test_width_error():
     p = Pen()
     # Don't set width.
