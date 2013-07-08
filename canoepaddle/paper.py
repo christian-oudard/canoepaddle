@@ -151,7 +151,7 @@ class Paper:
             self.draw_stroke_thick(pen, segments)
         path_data = pen.paper.svg_path()
         if self.show_bones:
-            path_data += self.svg_path()
+            path_data += ' ' + self.svg_path()
         return path_data
 
     def draw_stroke_thick(self, pen, segments):

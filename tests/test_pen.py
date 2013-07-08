@@ -247,6 +247,27 @@ def test_show_nodes():
     )
 
 
+def test_show_bones():
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((-6, 0))
+    p.turn_to(0)
+    p.line_forward(6)
+    p.turn_right(60)
+    p.line_forward(6)
+    p.paper.show_bones = True
+    p.paper.set_precision(2)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        (
+            'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 '
+            'L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z '
+            'M-6.00,0.00 L0.00,0.00 L3.00,5.20'
+        ),
+    )
+
+
 def test_flip():
     def stroke(p):
         p.move_to((0, 0))
