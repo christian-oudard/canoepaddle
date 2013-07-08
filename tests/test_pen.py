@@ -1,4 +1,5 @@
 import math
+from textwrap import dedent
 from nose.tools import (
     assert_equal,
     assert_almost_equal,
@@ -225,8 +226,29 @@ def test_show_joints():
     )
 
 
+def test_show_nodes():
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((-6, 0))
+    p.turn_to(0)
+    p.line_forward(6)
+    p.turn_right(60)
+    p.line_forward(6)
+    p.paper.show_nodes = True
+    p.paper.set_precision(2)
+    assert_equal(
+        p.paper.svg_shapes(),
+        dedent('''
+            <ellipse cx="-6.00" cy="0.00" rx="0.25" ry="0.25" />
+            <ellipse cx="0.00" cy="0.00" rx="0.17" ry="0.17" />
+            <ellipse cx="0.00" cy="0.00" rx="0.25" ry="0.25" />
+            <ellipse cx="3.00" cy="5.20" rx="0.17" ry="0.17" />
+        ''').strip()
+    )
+
+
 def test_flip():
-    def shape(p):
+    def stroke(p):
         p.move_to((0, 0))
         p.turn_to(180)
         p.move_forward(6)
@@ -237,7 +259,7 @@ def test_flip():
         p.paper.set_precision(2)
 
     p = Pen()
-    shape(p)
+    stroke(p)
     path_data = p.paper.svg_path()
     assert_equal(
         path_data,
@@ -246,7 +268,7 @@ def test_flip():
 
     p = Pen()
     p.flip_x()
-    shape(p)
+    stroke(p)
     path_data = p.paper.svg_path()
     assert_equal(
         path_data,
@@ -255,7 +277,7 @@ def test_flip():
 
     p = Pen()
     p.flip_y()
-    shape(p)
+    stroke(p)
     path_data = p.paper.svg_path()
     assert_equal(
         path_data,

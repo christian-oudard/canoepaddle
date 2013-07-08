@@ -4,6 +4,7 @@ from string import Template
 from .point import Point, points_equal
 from .svg import path_move, path_close, path_line, path_arc
 from .segment import LineSegment, ArcSegment
+from .shape import Circle
 
 
 class Paper:
@@ -100,7 +101,6 @@ class Paper:
         # Debug switch to show the joint nodes between bones.
         nodes = []
         if self.show_nodes:
-            from .shape import Circle
             for segments in self.strokes:
                 for seg in segments:
                     nodes.append(Circle(seg.a, seg.width / 4))
