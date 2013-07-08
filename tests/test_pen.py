@@ -177,6 +177,12 @@ def test_angle_error():
         ValueError,
         lambda: p.line_forward(10, start_angle=0)
     )
+    p = Pen()
+    p.set_width(1.0)
+    assert_raises(
+        ValueError,
+        lambda: p.line_forward(10, end_angle=0)
+    )
 
     # A combination of angles can also create a degenerate segment.
     p = Pen()

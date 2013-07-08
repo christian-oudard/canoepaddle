@@ -249,17 +249,12 @@ class LineSegment(Segment):
         c, d = self.offset_line_right()
         self.b_right = intersect_lines(a, b, c, d)
 
-        self.check_degenerate_segment()
+        if self.b_left is None or self.b_right is None:
+            raise ValueError(
+                'Could not set start angle of {}'.format(end_angle)
+            )
 
-    @staticmethod
-    def calc_slant_width(stroke_width, slant):
-        """
-        The distance between the leading corners of the stroke can be longer if
-        the stroke start is angled.
-        """
-        if slant == 0:
-            raise ValueError('Slant angle is too steep')
-        return stroke_width / math.sin(math.radians(slant))
+        self.check_degenerate_segment()
 
 
 class ArcSegment(Segment):
