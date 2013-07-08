@@ -670,21 +670,6 @@ def test_arc_line_joint_bug():
     )
 
 
-#def test_arc_to_stability():
-#    # When doing certain arc joints, it will create thick arc pieces all
-#    # over the place, seemingly unrelated to the strokes we are trying to
-#    # create.
-#    p = Pen()
-#    p.set_width(1.0)
-#
-#    p.move_to((-1, 0))
-#    p.turn_to(90)
-#    p.arc_to((0, 5))
-#    p.turn_to(flip_angle_y(p.heading))
-#    p.arc_to((-1, 0))
-#    assert False
-
-
 def test_circle():
     p = Pen()
     p.circle(1)
