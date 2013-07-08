@@ -34,7 +34,7 @@ class Segment:
         yield self.b
 
     def __repr__(self):
-        strings = []
+        strings = []  # COVER
         for field in self.repr_fields:
             value = getattr(self, field)
             if value is None:
@@ -110,7 +110,7 @@ class LineSegment(Segment):
         return True
 
     def is_arc(self):
-        return False
+        return False  # COVER
 
     def join_with_line(self, other):
         # Check turn angle, and don't turn close to straight back.
@@ -160,7 +160,7 @@ class LineSegment(Segment):
         c, d = other.offset_line_right()
         p = intersect_lines(a, b, c, d)
         if p is None:
-            raise ValueError('Joint not well defined.')
+            raise ValueError('Joint not well defined.')  # COVER
         self.b_right = other.a_right = p
 
     def join_with_arc(self, other):

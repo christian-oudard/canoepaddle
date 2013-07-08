@@ -3,6 +3,7 @@ from canoepaddle import Pen
 p = Pen()
 p.set_width(1.0)
 
+
 def trefoil(origin, radius, num_leaves, leaf_angle, step=1):
     p.turn_to(90)
     points = []

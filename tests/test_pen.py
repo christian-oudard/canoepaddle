@@ -7,7 +7,6 @@ from nose.tools import (
 from util import assert_segments_equal, assert_points_equal
 import vec
 from canoepaddle import Pen
-from canoepaddle.pen import flip_angle_y
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -75,6 +74,24 @@ def test_line_thick():
     assert_equal(
         path_data,
         'M0,-1 L0,1 L5,1 L5,-1 L0,-1 z',
+    )
+
+
+def test_long_line_thick():
+    p = Pen()
+    p.set_width(2)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    for _ in range(2):
+        p.line_forward(5)
+        p.turn_right(90)
+        p.line_forward(5)
+        p.turn_left(90)
+    p.paper.set_precision(0)
+    path_data = p.paper.svg_path_thick()
+    assert_equal(
+        path_data,
+        'M0,-1 L0,1 L4,1 L4,6 L9,6 L9,10 L11,10 L11,4 L6,4 L6,-1 L0,-1 z'
     )
 
 
@@ -678,4 +695,14 @@ def test_circle():
     assert_equal(
         p.paper.svg_shapes(),
         '<ellipse cx="0" cy="0" rx="1" ry="1" />',
+    )
+
+
+def test_width_error():
+    p = Pen()
+    # Don't set width.
+    p.line_forward(1)
+    assert_raises(
+        ValueError,
+        lambda: p.paper.svg_path_thick()
     )
