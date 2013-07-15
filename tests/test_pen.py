@@ -15,14 +15,18 @@ sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
 
 
-def assert_svg_file(path_data, svg_filename):
+def _read_test_file(svg_filename):
     path = os.path.join(
         os.path.dirname(__file__),
         'files',
         svg_filename,
     )
     with open(path) as f:
-        content = f.read()
+        return f.read()
+
+
+def assert_svg_path(path_data, svg_filename):
+    content = _read_test_file(svg_filename)
     assert path_data in content
 
 
@@ -141,6 +145,25 @@ def test_format_svg():
     assert svg.startswith('<?xml')
     svg = p.paper.format_svg(thick=True)
     assert svg.startswith('<?xml')
+
+
+def test_set_view_box():
+    # Test that the view box gets set correctly.
+    p = Pen()
+    p.move_to((0, 0))
+    p.line_to((1, 1))
+    p.paper.set_precision(0)
+
+    p.paper.set_view_box(-1, -1, 3, 3)
+
+    # The view box is transformed into svg coordinates by flipping the
+    # Y-coordinate and adjusting for height.
+    svg_data = p.paper.format_svg(thick=False)
+    assert 'viewBox="-1 -2 3 3"' in svg_data
+
+    p.paper.set_view_box(-10, -10, 20, 20)
+    svg_data = p.paper.format_svg(thick=False)
+    assert 'viewBox="-10 -10 20 20"' in svg_data
 
 
 def test_svg_path_thick():
@@ -842,9 +865,6 @@ def test_arc_line_joint_bug():
 
 def test_various_joins():
     p = Pen()
-    p.set_width(1.0)
-
-    p = Pen()
     p.set_width(0.5)
     p.move_to((-2, 0))
     p.turn_to(0)
@@ -857,19 +877,13 @@ def test_various_joins():
     p.turn_left(90)
     p.line_forward(1)
 
+    p.paper.set_view_box(-3, -3, 6, 6)
     p.paper.set_precision(2)
+
     path_data = p.paper.svg_path_thick()
-    assert_equal(
+    assert_svg_path(
         path_data,
-        (
-            'M-2.00,-0.25 L-2.00,0.25 L-0.75,0.25 L-0.75,-0.71 '
-            'A 0.75,0.75 0 0 1 -0.25,0.00 '
-            'A 1.25,1.25 0 0 0 1.25,1.22 '
-            'L1.25,0.00 L0.75,0.00 L0.75,0.71 '
-            'A 0.75,0.75 0 0 1 0.25,0.00 '
-            'A 1.25,1.25 0 0 0 -1.25,-1.22 '
-            'L-1.25,-0.25 L-2.00,-0.25 z'
-        )
+        'test_various_joins.svg',
     )
 
 
@@ -897,7 +911,7 @@ def test_offwidth_arc_joins():
 
     p.paper.set_precision(3)
     path_data = p.paper.svg_path_thick()
-    assert_svg_file(
+    assert_svg_path(
         path_data,
         'test_offwidth_arc_joins.svg'
     )
