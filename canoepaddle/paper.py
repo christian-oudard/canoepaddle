@@ -1,3 +1,7 @@
+#TODO: Specify color and other style elements as a property on shape.
+#TODO: Turn paths into a shape.
+#TODO: Proper z-ordering for path, shape, path, shape.
+
 from textwrap import dedent
 from string import Template
 
@@ -9,11 +13,12 @@ from .error import SegmentError
 
 
 class Paper:
-    def __init__(self, precision=12):
-        self.precision = precision
+    def __init__(self):
         self.strokes = []
         self.shapes = []
 
+        # Default values.
+        self.set_precision(12)
         self.set_style('')
         self.set_view_box(-10, -10, 20, 20)
         self.set_pixel_size(800, 800)
@@ -155,7 +160,6 @@ class Paper:
             # Draw the rest of the stroke.
             for seg in segments:
                 p = Point(*seg.b)
-                #TODO: tell, don't ask
                 if isinstance(seg, LineSegment):
                     output.append(path_line(
                         p.x,
