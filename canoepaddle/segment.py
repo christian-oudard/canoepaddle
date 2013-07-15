@@ -127,7 +127,7 @@ class LineSegment(Segment):
         p_right = intersect_lines(a, b, c, d)
 
         if p_left is None or p_right is None:
-            raise SegmentError('Joint not well defined.')
+            raise SegmentError('Joint not allowed.')
 
         self.b_left = other.a_left = p_left
         self.b_right = other.a_right = p_right
@@ -142,6 +142,8 @@ class LineSegment(Segment):
         center, radius = other.offset_circle_right()
         points = intersect_circle_line(center, radius, a, b)
         self.b_right = other.a_right = closest_point_to(self.b, points)
+
+        #TODO: error handling
 
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle

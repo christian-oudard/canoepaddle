@@ -152,12 +152,23 @@ class Pen:
             end_heading=self._heading,
         ))
 
-    def arc_left(self, arc_angle, radius, start_angle=None, end_angle=None):
+    def arc_left(
+        self, arc_angle, radius=None, center=None, start_angle=None, end_angle=None,
+    ):
         # Create a radius vector, which is a vector from the arc center to the
         # current position. Subtract to find the center, then rotate the radius
         # vector to find the arc end point.
-        v_radius = vec.neg(vec.perp(self._vector(radius)))
-        center = vec.sub(self._position, v_radius)
+        if center is None:
+            if arc_angle < 0:
+                radius = -abs(radius)
+            v_radius = vec.neg(vec.perp(self._vector(radius)))
+            center = vec.sub(self._position, v_radius)
+        elif radius is None:
+            v_radius = vec.vfrom(center, self._position)
+            radius = vec.mag(v_radius)
+            if arc_angle < 0:
+                radius = -radius
+
         endpoint = vec.add(center, vec.rotate(v_radius, math.radians(arc_angle)))
 
         self._arc(
@@ -169,10 +180,12 @@ class Pen:
             end_angle=end_angle,
         )
 
-    def arc_right(self, arc_angle, radius, start_angle=None, end_angle=None):
+    def arc_right(
+        self, arc_angle, radius=None, center=None, start_angle=None, end_angle=None,
+    ):
         # We define a positive radius to be arcing to the left, and a
         # negative radius to be arcing to the right.
-        self.arc_left(-arc_angle, -radius, start_angle, end_angle)
+        self.arc_left(-arc_angle, radius, center, start_angle, end_angle)
 
     def arc_to(self, endpoint, center=None, start_angle=None, end_angle=None):
         """

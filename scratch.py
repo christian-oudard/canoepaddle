@@ -1,14 +1,16 @@
 from canoepaddle import Pen
 
 p = Pen()
-p.set_width(1.0)
 p.move_to((0, 0))
 p.turn_to(0)
-p.line_forward(5, start_angle=-45, end_angle=30)
 
-p.paper.set_precision(2)
+p.set_width(0.8)
+p.line_forward(5)
+p.turn_left(45)
+p.set_width(3.0)
+p.arc_left(90, 5)
 
-#p.paper.show_joints = True
+p.paper.show_joints = True
 p.paper.show_bones = True
 p.paper.show_nodes = True
 p.paper.set_style(

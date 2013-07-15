@@ -816,6 +816,11 @@ def test_various_joins():
     )
 
 
+def test_offwidth_arc_joins():
+    # Join arcs and lines of different widths.
+    assert False
+
+
 def test_width_error():
     p = Pen()
     # Don't set width.
