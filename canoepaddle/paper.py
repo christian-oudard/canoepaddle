@@ -13,7 +13,10 @@ class Paper:
         self.precision = precision
         self.strokes = []
         self.shapes = []
-        self.style = ''
+
+        self.set_style('')
+        self.set_view_box(-10, -10, 20, 20)
+        self.set_pixel_size(800, 800)
 
         # Debug switches.
         self.show_joints = False
@@ -60,6 +63,16 @@ class Paper:
     def set_style(self, style):
         self.style = style
 
+    def set_view_box(self, x, y, width, height):
+        self.view_x = x
+        self.view_y = y
+        self.view_width = width
+        self.view_height = height
+
+    def set_pixel_size(self, width, height):
+        self.pixel_width = width
+        self.pixel_height = height
+
     def set_precision(self, precision):
         self.precision = precision
 
@@ -70,6 +83,12 @@ class Paper:
         else:
             path_data = self.svg_path()
 
+        # Transform world-coordinate view box into svg-coordinate view box.
+        view_x = self.view_x
+        view_y = -self.view_y - self.view_height
+        view_width = self.view_width
+        view_height = self.view_height
+
         svg_template = dedent('''\
             <?xml version="1.0" standalone="no"?>
             <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
@@ -77,18 +96,25 @@ class Paper:
             <svg
                 xmlns="http://www.w3.org/2000/svg" version="1.1"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
-                viewBox="-10 -10 20 20"
-                width="800px" height="800px"
+                viewBox="$view_x $view_y $view_width $view_height"
+                width="${pixel_width}px" height="${pixel_height}px"
             >
                 <style type="text/css">
                     * {
                         $style
                     }
                 </style>
+                <rect
+                    style="fill: #FFF"
+                    x="$view_x"
+                    y="$view_y"
+                    width="$view_width"
+                    height="$view_height"
+                />
                 $shapes
                 <path d="
                     $path_data
-                    " />
+                " />
             </svg>
         ''')
         t = Template(svg_template)
@@ -96,6 +122,12 @@ class Paper:
             shapes=shapes,
             path_data=path_data,
             style=self.style,
+            pixel_width=self.pixel_width,
+            pixel_height=self.pixel_height,
+            view_x=view_x,
+            view_y=view_y,
+            view_height=view_height,
+            view_width=view_width,
         )
 
     def svg_shapes(self):
