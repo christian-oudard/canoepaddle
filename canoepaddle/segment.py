@@ -135,15 +135,14 @@ class LineSegment(Segment):
     def join_with_arc(self, other):
         a, b = self.offset_line_left()
         center, radius = other.offset_circle_left()
-        points = intersect_circle_line(center, radius, a, b)
-        self.b_left = other.a_left = closest_point_to(self.b, points)
+        points_left = intersect_circle_line(center, radius, a, b)
 
         a, b = self.offset_line_right()
         center, radius = other.offset_circle_right()
-        points = intersect_circle_line(center, radius, a, b)
-        self.b_right = other.a_right = closest_point_to(self.b, points)
+        points_right = intersect_circle_line(center, radius, a, b)
 
-        #TODO: error handling
+        self.b_left = other.a_left = closest_point_to(self.b, points_left)
+        self.b_right = other.a_right = closest_point_to(self.b, points_right)
 
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle
@@ -274,13 +273,17 @@ class ArcSegment(Segment):
     def join_with_arc(self, other):
         c1, r1 = self.offset_circle_left()
         c2, r2 = other.offset_circle_left()
-        points = intersect_circles(c1, r1, c2, r2)
-        self.b_left = other.a_left = closest_point_to(self.b, points)
+        points_left = intersect_circles(c1, r1, c2, r2)
 
         c1, r1 = self.offset_circle_right()
         c2, r2 = other.offset_circle_right()
-        points = intersect_circles(c1, r1, c2, r2)
-        self.b_right = other.a_right = closest_point_to(self.b, points)
+        points_right = intersect_circles(c1, r1, c2, r2)
+
+        if len(points_left) == 0 or len(points_right) == 0:
+            raise SegmentError('Joint not allowed.')
+
+        self.b_left = other.a_left = closest_point_to(self.b, points_left)
+        self.b_right = other.a_right = closest_point_to(self.b, points_right)
 
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle

@@ -1,3 +1,4 @@
+import os
 import math
 from textwrap import dedent
 from nose.tools import (
@@ -12,6 +13,17 @@ from canoepaddle.error import SegmentError
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
+
+
+def assert_svg_file(path_data, svg_filename):
+    path = os.path.join(
+        os.path.dirname(__file__),
+        'files',
+        svg_filename,
+    )
+    with open(path) as f:
+        content = f.read()
+    assert path_data in content
 
 
 def test_movement():
@@ -485,6 +497,33 @@ def test_arc():
     )
 
 
+def test_arc_center():
+    # Draw the same arcs as in test_arc, but using centers instead of radii.
+    p = Pen()
+
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_left(90, center=(-5, 5))
+    p.arc_right(270, center=(5, 5))
+
+    p.move_to((-5, 0))
+    p.turn_to(0)
+    p.arc_right(90, center=(-5, -5))
+    p.arc_left(270, center=(5, -5))
+
+    p.paper.set_precision(0)
+    path_data = p.paper.svg_path()
+    assert_equal(
+        path_data,
+        (
+            'M-5,0 A 5,5 0 0 0 0,-5 '
+            'A 5,5 0 1 1 5,0 '
+            'M-5,0 A 5,5 0 0 1 0,5 '
+            'A 5,5 0 1 0 5,0'
+        ),
+    )
+
+
 def test_arc_to():
     # Make the same arcs as test_arc, but using the destination points instead
     # of the angles.
@@ -590,6 +629,24 @@ def test_arc_angle_error():
     assert_raises(
         SegmentError,
         lambda: p.arc_to((1, 0), start_angle=40, end_angle=-40)
+    )
+
+
+def test_offwidth_arc_joint_error():
+    # Try to create an impossible joint between concentric arcs of
+    # different widths.
+    p = Pen()
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+
+    p.set_width(1.0)
+    p.arc_left(90, 5)
+
+    p.set_width(2.0)
+    assert_raises(
+        SegmentError,
+        lambda: p.arc_left(90, 5)
     )
 
 
@@ -818,7 +875,32 @@ def test_various_joins():
 
 def test_offwidth_arc_joins():
     # Join arcs and lines of different widths.
-    assert False
+    p = Pen()
+    p.move_to((0, 0))
+    p.turn_to(0)
+
+    p.set_width(0.8)
+    p.line_forward(5)
+    p.turn_left(45)
+    p.set_width(3.0)
+    p.arc_left(90, 5)
+
+    p.turn_to(-180)
+    p.line_forward(5)
+    p.turn_left(45)
+    p.set_width(0.8)
+    p.arc_left(45, 5)
+
+    p.turn_right(90)
+    p.set_width(3.0)
+    p.arc_right(90, 4)
+
+    p.paper.set_precision(3)
+    path_data = p.paper.svg_path_thick()
+    assert_svg_file(
+        path_data,
+        'test_offwidth_arc_joins.svg'
+    )
 
 
 def test_width_error():

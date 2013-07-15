@@ -1,0 +1,31 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg
+    xmlns="http://www.w3.org/2000/svg" version="1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    viewBox="-10 -10 20 20"
+    width="800px" height="800px"
+>
+    <style type="text/css">
+        * {
+            
+    stroke: black;
+    stroke-width: 0.05;
+    fill: none;
+    
+        }
+    </style>
+    <rect
+        style="fill: #FFF"
+        x="-10"
+        y="-10"
+        width="20"
+        height="20"
+    />
+    
+    <path d="
+        M0.000,-0.400 L0.000,0.400 L6.638,0.400 A 6.500,6.500 0 0 0 5.575,-8.571 L1.585,-8.571 A 5.400,5.400 0 0 0 -1.650,-5.042 A 2.500,2.500 0 0 1 -3.964,-7.536 L-6.964,-7.536 A 5.500,5.500 0 0 0 -0.826,-2.073 A 4.600,4.600 0 0 1 -0.590,-5.571 L4.312,-5.571 A 3.500,3.500 0 0 1 3.020,-0.400 L0.000,-0.400 z
+    " />
+</svg>
+
