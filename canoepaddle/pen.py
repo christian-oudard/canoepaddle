@@ -8,16 +8,6 @@ from .point import Point
 from .geometry import intersect_lines
 
 
-def flip_angle_x(angle):
-    if angle is not None:
-        return 180 - angle
-
-
-def flip_angle_y(angle):
-    if angle is not None:
-        return -angle
-
-
 class Pen:
 
     def __init__(self):
@@ -25,41 +15,43 @@ class Pen:
         self._heading = 0
         self._position = (0.0, 0.0)
         self._width = None
+        self._color = (0.0, 0.0, 0.0)
         self.flipped_x = False
         self.flipped_y = False
 
-    def flip_x(self):
-        """
-        Make turns behave in the x-opposite manner.
-        """
-        self.flipped_x = not self.flipped_x
+    # Properties.
 
-    def flip_y(self):
-        """
-        Make turns behave in the y-opposite manner.
-        """
-        self.flipped_y = not self.flipped_y
+    @property
+    def position(self):
+        return Point(*self._position)
+
+    @property
+    def heading(self):
+        if self.flipped_x:
+            return flip_angle_x(self._heading)
+        if self.flipped_y:
+            return flip_angle_y(self._heading)
+        return self._heading
+
+    @property
+    def width(self):
+        return self._width
 
     def set_width(self, width):
         self._width = width
 
-    def turn_to(self, heading):
-        if self.flipped_x:
-            heading = flip_angle_x(heading)
-        if self.flipped_y:
-            heading = flip_angle_y(heading)
-        self._heading = heading % 360
+    @property
+    def color(self):
+        return self._color
 
-    def turn_toward(self, point):
-        v = vec.vfrom(self._position, point)
-        heading = math.degrees(vec.heading(v))
-        self.turn_to(heading)
+    def set_color(self, color):
+        self._color = color
 
-    def turn_left(self, angle):
-        self.turn_to(self.heading + angle)
+    def last_slant_width(self):
+        seg = self.paper.strokes[-1][-1]
+        return vec.mag(vec.vfrom(seg.b_left, seg.b_right))
 
-    def turn_right(self, angle):
-        self.turn_left(-angle)
+    # Movement.
 
     def move_to(self, point):
         self._position = point
@@ -83,6 +75,40 @@ class Pen:
         new_position = self._calc_forward_to_x(x_target)
         self.move_to(new_position)
 
+    # Turning.
+
+    def turn_to(self, heading):
+        if self.flipped_x:
+            heading = flip_angle_x(heading)
+        if self.flipped_y:
+            heading = flip_angle_y(heading)
+        self._heading = heading % 360
+
+    def turn_toward(self, point):
+        v = vec.vfrom(self._position, point)
+        heading = math.degrees(vec.heading(v))
+        self.turn_to(heading)
+
+    def turn_left(self, angle):
+        self.turn_to(self.heading + angle)
+
+    def turn_right(self, angle):
+        self.turn_left(-angle)
+
+    def flip_x(self):
+        """
+        Make turns behave in the x-opposite manner.
+        """
+        self.flipped_x = not self.flipped_x
+
+    def flip_y(self):
+        """
+        Make turns behave in the y-opposite manner.
+        """
+        self.flipped_y = not self.flipped_y
+
+    # Lines.
+
     def line_to(self, point, start_angle=None, end_angle=None):
         old_position = self._position
         self.move_to(point)
@@ -95,9 +121,10 @@ class Pen:
             end_angle = flip_angle_y(end_angle)
 
         self.paper.add_segment(LineSegment(
-            old_position,
-            self.position,
-            self.width,
+            a=old_position,
+            b=self.position,
+            width=self.width,
+            color=self.color,
             start_angle=start_angle,
             end_angle=end_angle,
         ))
@@ -133,24 +160,7 @@ class Pen:
             end_angle=end_angle,
         )
 
-    def _arc(self, center, radius, endpoint, arc_angle, start_angle, end_angle):
-        old_position = self._position
-        old_heading = self._heading
-        self.move_to(endpoint)
-        self.turn_left(arc_angle)
-
-        self.paper.add_segment(ArcSegment(
-            a=old_position,
-            b=endpoint,
-            width=self.width,
-            start_angle=start_angle,
-            end_angle=end_angle,
-            center=center,
-            radius=radius,
-            arc_angle=arc_angle,
-            start_heading=old_heading,
-            end_heading=self._heading,
-        ))
+    # Arcs.
 
     def arc_left(
         self, arc_angle, radius=None, center=None, start_angle=None, end_angle=None,
@@ -246,31 +256,35 @@ class Pen:
             end_angle,
         )
 
+    def _arc(self, center, radius, endpoint, arc_angle, start_angle, end_angle):
+        old_position = self._position
+        old_heading = self._heading
+        self.move_to(endpoint)
+        self.turn_left(arc_angle)
+
+        self.paper.add_segment(ArcSegment(
+            a=old_position,
+            b=endpoint,
+            width=self.width,
+            color=self.color,
+            start_angle=start_angle,
+            end_angle=end_angle,
+            center=center,
+            radius=radius,
+            arc_angle=arc_angle,
+            start_heading=old_heading,
+            end_heading=self._heading,
+        ))
+
+    # Shapes.
+
     def circle(self, radius):
         self.paper.add_shape(Circle(
             center=self._position,
             radius=radius,
         ))
 
-    def last_slant_width(self):
-        seg = self.paper.strokes[-1][-1]
-        return vec.mag(vec.vfrom(seg.b_left, seg.b_right))
-
-    @property
-    def position(self):
-        return Point(*self._position)
-
-    @property
-    def heading(self):
-        if self.flipped_x:
-            return flip_angle_x(self._heading)
-        if self.flipped_y:
-            return flip_angle_y(self._heading)
-        return self._heading
-
-    @property
-    def width(self):
-        return self._width
+    # Internal.
 
     def _vector(self, length=1):
         """
@@ -296,3 +310,13 @@ class Pen:
         x_diff = x_target - x
         y_diff = x_diff * math.tan(math.radians(self._heading))
         return vec.add(self.position, (x_diff, y_diff))
+
+
+def flip_angle_x(angle):
+    if angle is not None:
+        return 180 - angle
+
+
+def flip_angle_y(angle):
+    if angle is not None:
+        return -angle

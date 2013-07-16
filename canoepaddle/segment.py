@@ -21,10 +21,11 @@ def closest_point_to(target, points):
 
 
 class Segment:
-    def __init__(self, a, b, width=None):
+    def __init__(self, a, b, width, color):
         self.a = Point(*a)
         self.b = Point(*b)
         self.width = width
+        self.color = color
         self.a_left = None
         self.a_right = None
         self.b_left = None
@@ -75,8 +76,8 @@ class LineSegment(Segment):
 
     repr_fields = ['a', 'b', 'width', 'start_angle', 'end_angle']
 
-    def __init__(self, a, b, width, start_angle, end_angle):
-        super().__init__(a, b, width)
+    def __init__(self, a, b, width, color, start_angle, end_angle):
+        super().__init__(a, b, width, color)
 
         self.start_angle = None
         self.end_angle = None
@@ -243,10 +244,10 @@ class ArcSegment(Segment):
     ]
 
     def __init__(
-        self, a, b, width, start_angle, end_angle,
+        self, a, b, width, color, start_angle, end_angle,
         center, radius, arc_angle, start_heading, end_heading,
     ):
-        super().__init__(a, b, width)
+        super().__init__(a, b, width, color)
 
         self.arc_angle = arc_angle
         self.center = center
