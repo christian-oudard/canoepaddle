@@ -270,21 +270,22 @@ def test_show_joints():
 
 def test_show_nodes():
     p = Pen()
+    p.paper.show_nodes = True
+    p.paper.set_precision(2)
     p.set_width(1.0)
+
     p.move_to((-6, 0))
     p.turn_to(0)
     p.line_forward(6)
     p.turn_right(60)
     p.line_forward(6)
-    p.paper.show_nodes = True
-    p.paper.set_precision(2)
     assert_equal(
         p.paper.svg_shapes(),
         dedent('''
-            <ellipse cx="-6.00" cy="0.00" rx="0.25" ry="0.25" />
-            <ellipse cx="0.00" cy="0.00" rx="0.17" ry="0.17" />
-            <ellipse cx="0.00" cy="0.00" rx="0.25" ry="0.25" />
-            <ellipse cx="3.00" cy="5.20" rx="0.17" ry="0.17" />
+            <circle cx="-6.00" cy="0.00" r="0.17" fill="#008000" />
+            <circle cx="0.00" cy="0.00" r="0.25" fill="#800000" />
+            <circle cx="0.00" cy="0.00" r="0.17" fill="#008000" />
+            <circle cx="3.00" cy="5.20" r="0.25" fill="#800000" />
         ''').strip()
     )
 
@@ -955,5 +956,32 @@ def test_circle():
     p.paper.set_precision(0)
     assert_equal(
         p.paper.svg_shapes(),
-        '<ellipse cx="0" cy="0" rx="1" ry="1" />',
+        '<circle cx="0" cy="0" r="1" fill="#000000" />',
+    )
+
+
+def test_circle_color():
+    p = Pen()
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+
+    p.turn_to(0)
+    p.set_color((1.0, 0.0, 0.0))
+    p.circle(1)
+    p.move_forward(2)
+    p.set_color((0.0, 1.0, 0.0))
+    p.circle(1)
+    p.move_forward(2)
+    p.set_color((0.0, 0.0, 1.0))
+    p.circle(1)
+
+    p.paper.set_precision(0)
+    assert_equal(
+        p.paper.svg_shapes(),
+        dedent('''
+            <circle cx="0" cy="0" r="1" fill="#ff0000" />
+            <circle cx="2" cy="0" r="1" fill="#00ff00" />
+            <circle cx="4" cy="0" r="1" fill="#0000ff" />
+        ''').strip(),
     )

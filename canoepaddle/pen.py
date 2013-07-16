@@ -282,6 +282,7 @@ class Pen:
         self.paper.add_shape(Circle(
             center=self._position,
             radius=radius,
+            color=self.color,
         ))
 
     # Internal.

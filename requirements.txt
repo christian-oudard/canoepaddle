@@ -1,1 +1,2 @@
--e git+git@github.com:christian-oudard/vec.git#egg=vec
+-e git+https://github.com/christian-oudard/vec.git#egg=vec
+-e git+https://github.com/xav/Grapefruit.git#egg=grapefruit

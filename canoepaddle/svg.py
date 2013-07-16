@@ -1,9 +1,16 @@
+from grapefruit import Color
+
+
 def number(n, precision):
     # Handle numbers near zero formatting inconsistently as
     # either "0.0" or "-0.0".
     if abs(n) < 0.5 * 10**(-precision):
         n = 0
     return '{n:.{p}f}'.format(n=n, p=precision)
+
+
+def html_color(color):
+    return Color.RgbToHtml(*color)
 
 
 def path_move(x, y, precision):
@@ -38,11 +45,12 @@ def path_arc(x, y, arc_angle, radius, precision):
     )
 
 
-def circle(x, y, radius, precision):
+def circle(x, y, radius, precision, color):
     return (
-        '<ellipse cx="{x}" cy="{y}" rx="{r}" ry="{r}" />'
+        '<circle cx="{x}" cy="{y}" r="{r}" fill="{color}" />'
     ).format(
         x=number(x, precision),
         y=number(-y, precision),
         r=number(abs(radius), precision),
+        color=html_color(color),
     )

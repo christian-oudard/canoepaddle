@@ -49,6 +49,11 @@ class Paper:
             # Start a new stroke.
             self.strokes.append([new_segment])
 
+        # Debug switch to show the joint nodes between bones.
+        if self.show_nodes and new_segment.width is not None:
+            self.add_shape(Circle(new_segment.a, new_segment.width / 6, color=(0, .5, 0)))
+            self.add_shape(Circle(new_segment.b, new_segment.width / 4, color=(.5, 0, 0)))
+
     def add_shape(self, new_shape):
         self.shapes.append(new_shape)
 
@@ -105,7 +110,7 @@ class Paper:
                 width="${pixel_width}px" height="${pixel_height}px"
             >
                 <style type="text/css">
-                    * {
+                    path {
                         $style
                     }
                 </style>
@@ -136,17 +141,9 @@ class Paper:
         )
 
     def svg_shapes(self):
-        # Debug switch to show the joint nodes between bones.
-        nodes = []
-        if self.show_nodes:
-            for segments in self.strokes:
-                for seg in segments:
-                    nodes.append(Circle(seg.a, seg.width / 4))
-                    nodes.append(Circle(seg.b, seg.width / 6))
-
         output = []
-        for shape in self.shapes + nodes:
-            output.append(shape.format(self.precision))
+        for shape in self.shapes:
+            output.append(shape.svg(self.precision))
 
         return '\n'.join(output)
 
