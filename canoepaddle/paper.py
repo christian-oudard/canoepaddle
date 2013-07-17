@@ -8,7 +8,7 @@ from string import Template
 from .point import Point, points_equal
 from .svg import path_move, path_close, path_line, path_arc
 from .segment import LineSegment, ArcSegment
-from .shape import Circle
+from .shape import Circle, Rectangle
 from .error import SegmentError
 
 
@@ -51,8 +51,18 @@ class Paper:
 
         # Debug switch to show the joint nodes between bones.
         if self.show_nodes and new_segment.width is not None:
-            self.add_shape(Circle(new_segment.a, new_segment.width / 6, color=(0, .5, 0)))
-            self.add_shape(Circle(new_segment.b, new_segment.width / 4, color=(.5, 0, 0)))
+            self.add_shape(Circle(
+                new_segment.a,
+                new_segment.width / 8,
+                color=(0, .5, 0),
+            ))
+            self.add_shape(Rectangle(
+                new_segment.b.x - new_segment.width / 8,
+                new_segment.b.y - new_segment.width / 8,
+                new_segment.width / 4,
+                new_segment.width / 4,
+                color=(.5, 0, 0),
+            ))
 
     def add_shape(self, new_shape):
         self.shapes.append(new_shape)

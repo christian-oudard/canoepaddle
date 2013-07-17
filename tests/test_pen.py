@@ -271,7 +271,7 @@ def test_show_joints():
 def test_show_nodes():
     p = Pen()
     p.paper.show_nodes = True
-    p.paper.set_precision(2)
+    p.paper.set_precision(3)
     p.set_width(1.0)
 
     p.move_to((-6, 0))
@@ -282,10 +282,10 @@ def test_show_nodes():
     assert_equal(
         p.paper.svg_shapes(),
         dedent('''
-            <circle cx="-6.00" cy="0.00" r="0.17" fill="#008000" />
-            <circle cx="0.00" cy="0.00" r="0.25" fill="#800000" />
-            <circle cx="0.00" cy="0.00" r="0.17" fill="#008000" />
-            <circle cx="3.00" cy="5.20" r="0.25" fill="#800000" />
+            <circle cx="-6.000" cy="0.000" r="0.125" fill="#008000" />
+            <rect x="-0.125" y="-0.125" width="0.250" height="0.250" fill="#800000" />
+            <circle cx="0.000" cy="0.000" r="0.125" fill="#008000" />
+            <rect x="2.875" y="5.071" width="0.250" height="0.250" fill="#800000" />
         ''').strip()
     )
 

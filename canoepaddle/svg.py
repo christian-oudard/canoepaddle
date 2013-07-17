@@ -1,3 +1,5 @@
+#TODO: refactor this into an object, so we don't have to say "precision" so much.
+
 from grapefruit import Color
 
 
@@ -7,6 +9,16 @@ def number(n, precision):
     if abs(n) < 0.5 * 10**(-precision):
         n = 0
     return '{n:.{p}f}'.format(n=n, p=precision)
+
+
+def svg_coord(x, y):
+    return x, -y
+
+
+def svg_rect(left, bottom, width, height):
+    x = left
+    y = -bottom - height
+    return x, y, width, height
 
 
 def html_color(color):
@@ -45,12 +57,26 @@ def path_arc(x, y, arc_angle, radius, precision):
     )
 
 
-def circle(x, y, radius, precision, color):
+def circle(x, y, radius, color, precision):
+    x, y = svg_coord(x, y)
     return (
         '<circle cx="{x}" cy="{y}" r="{r}" fill="{color}" />'
     ).format(
         x=number(x, precision),
-        y=number(-y, precision),
+        y=number(y, precision),
         r=number(abs(radius), precision),
+        color=html_color(color),
+    )
+
+
+def rectangle(left, bottom, width, height, color, precision):
+    x, y, width, height = svg_rect(left, bottom, width, height)
+    return (
+        '<rect x="{x}" y="{y}" width="{width}" height="{height}" fill="{color}" />'
+    ).format(
+        x=number(x, precision),
+        y=number(y, precision),
+        width=number(width, precision),
+        height=number(height, precision),
         color=html_color(color),
     )
