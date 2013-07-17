@@ -1094,3 +1094,28 @@ def test_color_formats():
             p.paper.svg_elements()[0],
             '<path d="M0,-1 L0,1 L5,1 L5,-1 L0,-1 z" fill="{}" />'.format(output)
         )
+
+
+def test_color_joint():
+    p = Pen()
+    p.set_width(1.0)
+
+    p.set_color('red')
+    p.move_to((-6, 0))
+    p.turn_to(0)
+    p.line_forward(6)
+
+    p.set_color('green')
+    p.turn_right(60)
+    p.line_forward(6)
+
+    path = p.paper.elements[0]
+    assert_equal(
+        [path.draw_thick(2) for path in p.paper.elements],
+        (
+            [
+                'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L0.29,-0.50 L-6.00,-0.50 z',
+                'M0.29,-0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',
+            ]
+        ),
+    )

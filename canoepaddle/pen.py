@@ -307,38 +307,38 @@ class Pen:
         if points_equal(new_segment.a, new_segment.b):
             return
 
-        # We have a few cases here we need to handle:
-        # 1. Current path is None, so create one then add the segment.
-        # 2. Current path is present but empty. This should not happen.
-        # 3. Current path is present, and we're continuing.
-        # 4. Current path is full, but there's a break and we're starting
-        #    a new path.
         def new_path():
-            self._current_path = Path(self.color)
-            self._current_path.show_joints = self.show_joints
-            self._current_path.show_nodes = self.show_nodes
-            self._current_path.show_bones = self.show_bones
-            self._current_path.add_segment(new_segment)
-            self.paper.add_element(self._current_path)
+            path = Path(self.color)
+            path.show_joints = self.show_joints
+            path.show_nodes = self.show_nodes
+            path.show_bones = self.show_bones
+            self.paper.add_element(path)
+            path.add_segment(new_segment)
+            self._current_path = path
 
+        # Start a new path if this is the first segment added.
         if self._current_path is None:
             new_path()
-        else:
-            assert len(self._current_path.segments) > 0
-            # Check whether we are continuing the current stroke or starting a
-            # new one.
-            continuing = False
-            last_segment = self._current_path.segments[-1]
-            if (
-                points_equal(last_segment.b, new_segment.a) and
-                last_segment.color == new_segment.color
-            ):
-                continuing = True
+            return
 
-            if continuing:
-                self._current_path.add_segment(new_segment)
-            else:
-                new_path()
+        # Check whether we are continuing the current stroke or starting a
+        # new one.
+        assert len(self._current_path.segments) > 0
+        last_segment = self._current_path.segments[-1]
+        points_same = points_equal(last_segment.b, new_segment.a)
+        color_same = (last_segment.color == new_segment.color)
+
+        if points_same and color_same:
+            self._current_path.add_segment(new_segment)
+        elif points_same and not color_same:
+            # We are continuing the old path visually, but with a new
+            # color. We implement this by starting a new path, and doing an
+            # extra "join_with" to set the start and end of the segment
+            # correctly.
+            new_path()
+            last_segment.join_with(new_segment)
+        else:  # There is a break in the path.
+            new_path()
 
     def _vector(self, length=1):
         """
