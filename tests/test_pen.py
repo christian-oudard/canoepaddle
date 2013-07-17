@@ -1,6 +1,7 @@
+from nose.plugins.skip import SkipTest
+
 import os
 import math
-from textwrap import dedent
 from nose.tools import (
     assert_equal,
     assert_almost_equal,
@@ -8,6 +9,7 @@ from nose.tools import (
 )
 from util import assert_segments_equal, assert_points_equal
 import vec
+
 from canoepaddle import Pen
 from canoepaddle.error import SegmentError
 
@@ -25,7 +27,7 @@ def _read_test_file(svg_filename):
         return f.read()
 
 
-def assert_svg_path(path_data, svg_filename):
+def assert_svg_file(path_data, svg_filename):
     content = _read_test_file(svg_filename)
     assert path_data in content
 
@@ -59,8 +61,8 @@ def test_stroke():
     p.line_forward(2.0)
 
     assert_points_equal(p.position, (sqrt2, sqrt2))
-    assert_equal(len(p.paper.strokes), 1)
-    segments = p.paper.strokes[0]
+    assert_equal(len(p.paper.elements), 1)
+    segments = p.paper.elements[0].segments
     for actual, target in zip(segments, [
         ((0, 0), (sqrt2, sqrt2)),
     ]):
@@ -73,10 +75,10 @@ def test_line():
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(5)
-    p.paper.set_precision(0)
-    path_data = p.paper.svg_path()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw(0),
         'M0,0 L5,0',
     )
 
@@ -88,10 +90,22 @@ def test_line_thick():
     p.turn_to(0)
     p.line_forward(5)
     p.paper.set_precision(0)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(0),
         'M0,-1 L0,1 L5,1 L5,-1 L0,-1 z',
+    )
+
+    p = Pen()
+    p.set_width(1.0)
+    p.turn_to(-45)
+    p.line_forward(5)
+
+    path = p.paper.elements[0]
+    assert_equal(
+        path.draw_thick(2),
+        'M0.35,-0.35 L-0.35,0.35 L3.18,3.89 L3.89,3.18 L0.35,-0.35 z',
     )
 
 
@@ -105,10 +119,10 @@ def test_long_line_thick():
         p.turn_right(90)
         p.line_forward(5)
         p.turn_left(90)
-    p.paper.set_precision(0)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(0),
         'M0,-1 L0,1 L4,1 L4,6 L9,6 L9,10 L11,10 L11,4 L6,4 L6,-1 L0,-1 z'
     )
 
@@ -150,10 +164,6 @@ def test_format_svg():
 def test_set_view_box():
     # Test that the view box gets set correctly.
     p = Pen()
-    p.move_to((0, 0))
-    p.line_to((1, 1))
-    p.paper.set_precision(0)
-
     p.paper.set_view_box(-1, -1, 3, 3)
 
     # The view box is transformed into svg coordinates by flipping the
@@ -166,29 +176,16 @@ def test_set_view_box():
     assert 'viewBox="-10 -10 20 20"' in svg_data
 
 
-def test_svg_path_thick():
-    p = Pen()
-    p.set_width(1.0)
-    p.turn_to(-45)
-    p.line_forward(5)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
-    assert_equal(
-        path_data,
-        'M0.35,-0.35 L-0.35,0.35 L3.18,3.89 L3.89,3.18 L0.35,-0.35 z',
-    )
-
-
 def test_angle():
     p = Pen()
     p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(10, start_angle=-45, end_angle=30)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(2),
         'M-0.50,-0.50 L0.50,0.50 L9.13,0.50 L10.87,-0.50 L-0.50,-0.50 z',
     )
 
@@ -197,10 +194,10 @@ def test_angle():
     p.move_to((0, 0))
     p.turn_to(-45)
     p.line_forward(10, start_angle=90, end_angle=None)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(2),
         'M0.00,-0.71 L0.00,0.71 L6.72,7.42 L7.42,6.72 L0.00,-0.71 z',
     )
 
@@ -237,10 +234,10 @@ def test_joint():
     p.line_forward(6)
     p.turn_right(60)
     p.line_forward(6)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(2),
         (
             'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 '
             'L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z'
@@ -250,17 +247,18 @@ def test_joint():
 
 def test_show_joints():
     p = Pen()
+    p.show_joints = True
+
     p.set_width(1.0)
     p.move_to((-6, 0))
     p.turn_to(0)
     p.line_forward(6)
     p.turn_right(60)
     p.line_forward(6)
-    p.paper.show_joints = True
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(2),
         (
             'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L0.29,-0.50 L-6.00,-0.50 z '
             'M0.29,-0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z'
@@ -270,44 +268,52 @@ def test_show_joints():
 
 def test_show_nodes():
     p = Pen()
-    p.paper.show_nodes = True
-    p.paper.set_precision(3)
-    p.set_width(1.0)
+    p.show_nodes = True
 
+    p.set_width(1.0)
     p.move_to((-6, 0))
     p.turn_to(0)
     p.line_forward(6)
     p.turn_right(60)
     p.line_forward(6)
+
+    p.paper.set_precision(3)
     assert_equal(
-        p.paper.svg_shapes(),
-        dedent('''
-            <circle cx="-6.000" cy="0.000" r="0.125" fill="#008000" />
-            <rect x="-0.125" y="-0.125" width="0.250" height="0.250" fill="#800000" />
-            <circle cx="0.000" cy="0.000" r="0.125" fill="#008000" />
-            <rect x="2.875" y="5.071" width="0.250" height="0.250" fill="#800000" />
-        ''').strip()
+        p.paper.svg_elements()[0].split('\n')[1:],
+        [
+            '<circle cx="-6.000" cy="0.000" r="0.125" fill="#008000" />',
+            '<rect x="-0.125" y="-0.125" width="0.250" height="0.250" fill="#800000" />',
+            '<circle cx="0.000" cy="0.000" r="0.125" fill="#008000" />',
+            '<rect x="2.875" y="5.071" width="0.250" height="0.250" fill="#800000" />',
+        ]
     )
 
 
 def test_show_bones():
     p = Pen()
+    p.show_bones = True
+
     p.set_width(1.0)
     p.move_to((-6, 0))
     p.turn_to(0)
     p.line_forward(6)
     p.turn_right(60)
     p.line_forward(6)
-    p.paper.show_bones = True
+
     p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
     assert_equal(
-        path_data,
-        (
-            'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 '
-            'L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z '
-            'M-6.00,0.00 L0.00,0.00 L3.00,5.20'
-        ),
+        p.paper.svg_elements()[0].split('\n'),
+        [
+            (
+                '<path d="M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 '
+                'L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z" '
+                'fill="none" stroke="#000000" stroke-width="0.0625" />'
+            ),
+            (
+                '<path d="M-6.00,0.00 L0.00,0.00 L3.00,5.20" '
+                'fill="none" stroke="#000000" stroke-width="0.0625" />'
+            ),
+        ]
     )
 
 
@@ -320,46 +326,52 @@ def test_flip():
         p.line_forward(6)
         p.turn_right(60)
         p.line_forward(6)
-        p.paper.set_precision(2)
 
     p = Pen()
     stroke(p)
-    path_data = p.paper.svg_path()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw(2),
         'M-6.00,0.00 L0.00,0.00 L3.00,5.20'
     )
 
     p = Pen()
     p.flip_x()
     stroke(p)
-    path_data = p.paper.svg_path()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw(2),
         'M6.00,0.00 L0.00,0.00 L-3.00,5.20'
     )
 
     p = Pen()
     p.flip_y()
     stroke(p)
-    path_data = p.paper.svg_path()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw(2),
         'M-6.00,0.00 L0.00,0.00 L3.00,-5.20'
     )
 
 
 def test_center_on_x():
+    raise SkipTest()
     p = Pen()
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(4)
+    p.move_to((2, 0))
+    p.circle(1)
+
     p.paper.center_on_x(0)
+
     p.paper.set_precision(0)
-    path_data = p.paper.svg_path()
     assert_equal(
-        path_data,
-        'M-2,0 L2,0',
+        p.paper.svg_elements(),
+        [
+            '<path d="M-2,0 L2,0" fill="#000000" />'
+            '<circle cx="0" cy="0" r="1" fill="#000000" />',
+        ]
     )
 
 
@@ -370,10 +382,10 @@ def test_straight_joint():
     p.turn_to(-90)
     p.line_forward(1)
     p.line_forward(1)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(2),
         (
             'M0.50,0.00 L-0.50,0.00 L-0.50,1.00 L-0.50,2.00 '
             'L0.50,2.00 L0.50,1.00 L0.50,0.00 z'
@@ -404,10 +416,10 @@ def test_offwidth_joint():
     p.set_width(0.5)
     p.turn_left(90)
     p.line_forward(3)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(2),
         (
             'M-3.00,-0.50 L-3.00,0.50 L0.25,0.50 L0.25,-3.00 '
             'L-0.25,-3.00 L-0.25,-0.50 L-3.00,-0.50 z'
@@ -428,7 +440,6 @@ def test_offwidth_joint_error():
 
 
 def test_straight_joint_headings():
-    from nose.plugins.skip import SkipTest
     raise SkipTest()
 
     # The math in calculating joint geometry can get numerically unstable
@@ -440,13 +451,13 @@ def test_straight_joint_headings():
         p.turn_to(heading_angle)
         p.line_forward(10)
         p.line_forward(10)
-        p.paper.set_precision(2)
-        p.paper.svg_path_thick()  # Doesn't crash.
+
+        path = p.paper.elements[0]
+        path.draw_thick(2)  # Doesn't crash.
 
         # Check that the joint angle is 90 degrees from the heading.
-        strokes = p.paper.strokes
-        assert_equal(len(strokes), 1)
-        segments = strokes[0]
+        assert_equal(len(p.paper.elements), 1)
+        segments = p.paper.elements[0].segments
         assert_equal(len(segments), 2)
         s0, s1 = segments
 
@@ -467,15 +478,13 @@ def test_multiple_strokes():
     p.line_forward(3)
     p.move_to((0, 3))
     p.line_forward(3)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
 
     assert_equal(
-        path_data,
-        (
-            'M0.00,-0.50 L0.00,0.50 L3.00,0.50 L3.00,-0.50 L0.00,-0.50 z '
-            'M0.00,-3.50 L0.00,-2.50 L3.00,-2.50 L3.00,-3.50 L0.00,-3.50 z'
-        ),
+        [path.draw_thick(2) for path in p.paper.elements],
+        [
+            'M0.00,-0.50 L0.00,0.50 L3.00,0.50 L3.00,-0.50 L0.00,-0.50 z',
+            'M0.00,-3.50 L0.00,-2.50 L3.00,-2.50 L3.00,-3.50 L0.00,-3.50 z',
+        ]
     )
 
 
@@ -483,14 +492,23 @@ def test_last_slant_width():
     p = Pen()
     p.set_width(1.0)
 
+    # If we haven't drawn any path segments yet, there is no last slant width.
+    assert_equal(p.last_slant_width(), None)
+
+    # 45 degree slant.
     p.move_to((0, 0))
     p.turn_to(-45)
     p.line_forward(1, end_angle=90)
     assert_almost_equal(p.last_slant_width(), sqrt2)
 
+    # 30 degree slant.
     p.move_to((0, 0))
     p.turn_to(30)
     p.line_forward(1, end_angle=90)
+    assert_almost_equal(p.last_slant_width(), 2 / sqrt3)
+
+    # Adding shapes on the end doesn't affect it. It still uses the last path.
+    p.circle(1)
     assert_almost_equal(p.last_slant_width(), 2 / sqrt3)
 
 
@@ -508,16 +526,12 @@ def test_arc():
     p.arc_right(90, radius=5)
     p.arc_left(270, radius=5)
 
-    p.paper.set_precision(0)
-    path_data = p.paper.svg_path()
     assert_equal(
-        path_data,
-        (
-            'M-5,0 A 5,5 0 0 0 0,-5 '
-            'A 5,5 0 1 1 5,0 '
-            'M-5,0 A 5,5 0 0 1 0,5 '
-            'A 5,5 0 1 0 5,0'
-        ),
+        [path.draw(0) for path in p.paper.elements],
+        [
+            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
+            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
+        ],
     )
 
 
@@ -535,16 +549,12 @@ def test_arc_center():
     p.arc_right(90, center=(-5, -5))
     p.arc_left(270, center=(5, -5))
 
-    p.paper.set_precision(0)
-    path_data = p.paper.svg_path()
     assert_equal(
-        path_data,
-        (
-            'M-5,0 A 5,5 0 0 0 0,-5 '
-            'A 5,5 0 1 1 5,0 '
-            'M-5,0 A 5,5 0 0 1 0,5 '
-            'A 5,5 0 1 0 5,0'
-        ),
+        [path.draw(0) for path in p.paper.elements],
+        [
+            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
+            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
+        ],
     )
 
 
@@ -563,16 +573,12 @@ def test_arc_to():
     p.arc_to((0, -5))
     p.arc_to((5, 0))
 
-    p.paper.set_precision(0)
-    path_data = p.paper.svg_path()
     assert_equal(
-        path_data,
-        (
-            'M-5,0 A 5,5 0 0 0 0,-5 '
-            'A 5,5 0 1 1 5,0 '
-            'M-5,0 A 5,5 0 0 1 0,5 '
-            'A 5,5 0 1 0 5,0'
-        ),
+        [path.draw(0) for path in p.paper.elements],
+        [
+            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
+            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
+        ],
     )
 
 
@@ -583,10 +589,10 @@ def test_arc_zero():
     p.turn_to(0)
 
     p.arc_left(0, radius=1)
-    assert_equal(p.paper.strokes, [])
+    assert_equal(p.paper.elements, [])
 
     p.arc_left(90, radius=0)
-    assert_equal(p.paper.strokes, [])
+    assert_equal(p.paper.elements, [])
 
 
 def test_arc_normalize():
@@ -596,10 +602,9 @@ def test_arc_normalize():
     p.turn_to(0)
     p.arc_left(360 + 90, radius=5)
 
-    p.paper.set_precision(0)
-    path_data = p.paper.svg_path()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw(0),
         'M-5,0 A 5,5 0 0 0 0,-5'
     )
 
@@ -610,10 +615,10 @@ def test_arc_angle():
     p.move_to((0, 0))
     p.turn_to(0)
     p.arc_left(90, radius=5, start_angle=45, end_angle=45)
-    p.paper.set_precision(2)
-    path_data = p.paper.svg_path_thick()
+
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(2),
         (
             'M0.53,-0.53 L-0.48,0.48 A 5.50,5.50 0 0 0 5.48,-5.48 '
             'L4.47,-4.47 A 4.50,4.50 0 0 1 0.53,-0.53 z'
@@ -701,10 +706,9 @@ def test_arc_line_joint():
     p.turn_left(90)
     p.arc_left(180, 3)
 
-    p.paper.set_precision(3)
-    path_data = p.paper.svg_path_thick()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(3),
         (
             'M0.000,-0.500 L0.000,0.500 L3.464,0.500 '
             'A 3.500,3.500 0 1 0 -3.500,0.000 L-2.500,0.000 '
@@ -721,10 +725,9 @@ def test_arc_sweep_bug():
     p.turn_to(90)
     p.arc_left(270, 3)
 
-    p.paper.set_precision(0)
-    path_data = p.paper.svg_path_thick()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(0),
         'M2,0 L4,0 A 4,4 0 1 0 0,4 L0,2 A 2,2 0 1 1 2,0 z'
     )
 
@@ -746,10 +749,9 @@ def test_arc_arc_joint():
     p.turn_left(5)
     p.arc_to(right, end_angle=0)
 
-    p.paper.set_precision(3)
-    path_data = p.paper.svg_path_thick()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(3),
         (
             'M-2.522,0.000 L-1.477,0.000 '
             'A 30.394,30.394 0 0 1 0.000,-3.853 '
@@ -772,10 +774,9 @@ def test_arc_arc_joint():
     p.turn_right(5)
     p.arc_to(right, end_angle=0)
 
-    p.paper.set_precision(3)
-    path_data = p.paper.svg_path_thick()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(3),
         (
             'M-2.561,0.000 L-1.441,0.000 '
             'A 31.394,31.394 0 0 0 0.000,-3.400 '
@@ -798,10 +799,9 @@ def test_arc_arc_joint():
     p.turn_right(5)
     p.arc_to(right, end_angle=0)
 
-    p.paper.set_precision(3)
-    path_data = p.paper.svg_path_thick()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(3),
         (
             'M-2.522,0.000 L-1.477,0.000 '
             'A 30.394,30.394 0 0 1 -0.090,-3.656 '
@@ -824,10 +824,9 @@ def test_arc_arc_joint():
     p.turn_left(5)
     p.arc_to(right, end_angle=0)
 
-    p.paper.set_precision(3)
-    path_data = p.paper.svg_path_thick()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(3),
         (
             'M-2.561,0.000 L-1.441,0.000 '
             'A 31.394,31.394 0 0 0 0.090,-3.656 '
@@ -851,10 +850,9 @@ def test_arc_line_joint_bug():
     p.turn_to(-90)
     p.line_forward(5)
 
-    p.paper.set_precision(3)
-    path_data = p.paper.svg_path_thick()
+    path = p.paper.elements[0]
     assert_equal(
-        path_data,
+        path.draw_thick(3),
         (
             'M-0.500,0.000 L0.500,0.000 '
             'A 4.500,4.500 0 0 1 4.500,-4.472 '
@@ -879,11 +877,10 @@ def test_various_joins():
     p.line_forward(1)
 
     p.paper.set_view_box(-3, -3, 6, 6)
-    p.paper.set_precision(2)
 
-    path_data = p.paper.svg_path_thick()
-    assert_svg_path(
-        path_data,
+    path = p.paper.elements[0]
+    assert_svg_file(
+        path.draw_thick(2),
         'test_various_joins.svg',
     )
 
@@ -910,10 +907,9 @@ def test_offwidth_arc_joins():
     p.set_width(3.0)
     p.arc_right(90, 4)
 
-    p.paper.set_precision(3)
-    path_data = p.paper.svg_path_thick()
-    assert_svg_path(
-        path_data,
+    path = p.paper.elements[0]
+    assert_svg_file(
+        path.draw_thick(3),
         'test_offwidth_arc_joins.svg'
     )
 
@@ -922,9 +918,11 @@ def test_width_error():
     p = Pen()
     # Don't set width.
     p.line_forward(1)
+
+    path = p.paper.elements[0]
     assert_raises(
         SegmentError,
-        lambda: p.paper.svg_path_thick()
+        lambda: path.draw_thick(0),
     )
 
 
@@ -934,8 +932,8 @@ def test_repr():
     p.turn_to(0)
     p.line_forward(1)
     p.arc_left(90, 1)
-    stroke = p.paper.strokes[0]
-    line, arc = stroke
+    path = p.paper.elements[0]
+    line, arc = path.segments
     assert_equal(
         repr(line),
         'LineSegment(a=Point(x=0, y=0), b=Point(x=1.0, y=0.0))'
@@ -955,8 +953,8 @@ def test_circle():
 
     p.paper.set_precision(0)
     assert_equal(
-        p.paper.svg_shapes(),
-        '<circle cx="0" cy="0" r="1" fill="#000000" />',
+        p.paper.svg_elements(),
+        ['<circle cx="0" cy="0" r="1" fill="#000000" />'],
     )
 
 
@@ -978,10 +976,44 @@ def test_circle_color():
 
     p.paper.set_precision(0)
     assert_equal(
-        p.paper.svg_shapes(),
-        dedent('''
-            <circle cx="0" cy="0" r="1" fill="#ff0000" />
-            <circle cx="2" cy="0" r="1" fill="#00ff00" />
-            <circle cx="4" cy="0" r="1" fill="#0000ff" />
-        ''').strip(),
+        p.paper.svg_elements(),
+        [
+            '<circle cx="0" cy="0" r="1" fill="#ff0000" />',
+            '<circle cx="2" cy="0" r="1" fill="#00ff00" />',
+            '<circle cx="4" cy="0" r="1" fill="#0000ff" />',
+        ]
+    )
+
+def test_circle_line_overlap():
+    p = Pen()
+    p.set_width(1.0)
+
+    p.set_color((1.0, 0.0, 0.0))
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(4)
+
+    p.set_color((0.0, 1.0, 0.0))
+    p.move_to((2, 2))
+    p.circle(2)
+
+    p.set_color((0.0, 0.0, 1.0))
+    p.move_to((0, 4))
+    p.turn_to(0)
+    p.line_forward(4)
+
+    p.paper.set_precision(1)
+    assert_equal(
+        p.paper.svg_elements(),
+        [
+            (
+                '<path d="M0.0,-0.5 L0.0,0.5 L4.0,0.5 L4.0,-0.5 L0.0,-0.5 z" '
+                'fill="#ff0000" />'
+            ),
+            '<circle cx="2.0" cy="-2.0" r="2.0" fill="#00ff00" />',
+            (
+                '<path d="M0.0,-4.5 L0.0,-3.5 L4.0,-3.5 L4.0,-4.5 L0.0,-4.5 z" '
+                'fill="#0000ff" />'
+            ),
+        ]
     )

@@ -6,4 +6,7 @@ nosetests-3.3 --verbosity=2 --with-doctest --with-coverage --cover-tests \
     --cover-package test \
     $@
 
-flake8 canoepaddle/*.py tests/*.py examples/*.py
+passed=$?
+if [ $passed -eq 0 ] ; then
+    flake8 canoepaddle/*.py tests/*.py examples/*.py
+fi

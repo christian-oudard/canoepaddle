@@ -25,6 +25,22 @@ def html_color(color):
     return Color.RgbToHtml(*color)
 
 
+def path_element(path_data, color, stroke_width=None):
+    color = html_color(color)
+    if stroke_width is not None:
+        color_attrs = 'fill="none" stroke="{}" stroke-width="{}"'.format(
+            color,
+            stroke_width,
+        )
+    else:
+        color_attrs = 'fill="{}"'.format(color)
+
+    return '<path d="{path_data}" {color_attrs} />'.format(
+        path_data=path_data,
+        color_attrs=color_attrs,
+    )
+
+
 def path_move(x, y, precision):
     return 'M{x},{y}'.format(
         x=number(x, precision),

@@ -2,9 +2,10 @@ import math
 
 import vec
 from .paper import Paper
+from .path import Path
 from .segment import LineSegment, ArcSegment
 from .shape import Circle
-from .point import Point
+from .point import Point, points_equal
 from .geometry import intersect_lines
 
 
@@ -18,6 +19,13 @@ class Pen:
         self._color = (0.0, 0.0, 0.0)
         self.flipped_x = False
         self.flipped_y = False
+
+        self._current_path = None
+
+        # Debug switches.
+        self.show_joints = False
+        self.show_nodes = False
+        self.show_bones = False
 
     # Properties.
 
@@ -48,7 +56,14 @@ class Pen:
         self._color = color
 
     def last_slant_width(self):
-        seg = self.paper.strokes[-1][-1]
+        for element in reversed(self.paper.elements):
+            if isinstance(element, Path):
+                last_path = element
+                break
+        else:
+            return None
+
+        seg = last_path.segments[-1]
         return vec.mag(vec.vfrom(seg.b_left, seg.b_right))
 
     # Movement.
@@ -120,7 +135,7 @@ class Pen:
             start_angle = flip_angle_y(start_angle)
             end_angle = flip_angle_y(end_angle)
 
-        self.paper.add_segment(LineSegment(
+        self._add_segment(LineSegment(
             a=old_position,
             b=self.position,
             width=self.width,
@@ -262,7 +277,7 @@ class Pen:
         self.move_to(endpoint)
         self.turn_left(arc_angle)
 
-        self.paper.add_segment(ArcSegment(
+        self._add_segment(ArcSegment(
             a=old_position,
             b=endpoint,
             width=self.width,
@@ -279,13 +294,52 @@ class Pen:
     # Shapes.
 
     def circle(self, radius):
-        self.paper.add_shape(Circle(
+        self.paper.add_element(Circle(
             center=self._position,
             radius=radius,
             color=self.color,
         ))
 
     # Internal.
+
+    def _add_segment(self, new_segment):
+        # Don't bother adding segments with zero length.
+        if points_equal(new_segment.a, new_segment.b):
+            return
+
+        # We have a few cases here we need to handle:
+        # 1. Current path is None, so create one then add the segment.
+        # 2. Current path is present but empty. This should not happen.
+        # 3. Current path is present, and we're continuing.
+        # 4. Current path is full, but there's a break and we're starting
+        #    a new path.
+        if self._current_path is None:
+            #TODO: refactor this
+            self._current_path = Path(self.color)
+            self._current_path.show_joints = self.show_joints
+            self._current_path.show_nodes = self.show_nodes
+            self._current_path.show_bones = self.show_bones
+            self._current_path.add_segment(new_segment)
+            self.paper.add_element(self._current_path)
+        else:
+            assert len(self._current_path.segments) > 0
+            # Check whether we are continuing the current stroke or starting a
+            # new one.
+            continuing = False
+            last_segment = self._current_path.segments[-1]
+            if points_equal(last_segment.b, new_segment.a):
+                continuing = True
+
+            if continuing:
+                self._current_path.add_segment(new_segment)
+            else:
+                #TODO: refactor this
+                self._current_path = Path(self.color)
+                self._current_path.show_joints = self.show_joints
+                self._current_path.show_nodes = self.show_nodes
+                self._current_path.show_bones = self.show_bones
+                self._current_path.add_segment(new_segment)
+                self.paper.add_element(self._current_path)
 
     def _vector(self, length=1):
         """
