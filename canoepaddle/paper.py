@@ -1,7 +1,7 @@
-#TODO: remove set_precision, only specify it on render.
-
 from textwrap import dedent
 from string import Template
+
+from .bounds import Bounds
 
 
 class Paper:
@@ -12,22 +12,31 @@ class Paper:
         self.shapes = []  # Deprecated.
 
         # Default values.
-        self.set_precision(12)
-        self.set_style('')
         self.set_view_box(-10, -10, 20, 20)
         self.set_pixel_size(800, 800)
 
     def add_element(self, element):
         self.elements.append(element)
 
+    def bounds(self):
+        return Bounds.union_all(
+            element.bounds()
+            for element in self.elements
+        )
+
+    def translate(self, offset):
+        for element in self.elements:
+            element.translate(offset)
+
     def center_on_x(self, x_center):
-        raise NotImplementedError
+        bounds = self.bounds()
+        current_x_center = (bounds.left + bounds.right) / 2
+        self.translate((x_center - current_x_center, 0))
 
     def center_on_y(self, y_center):
-        raise NotImplementedError
-
-    def set_style(self, style):
-        self.style = style
+        bounds = self.bounds()
+        current_y_center = (bounds.bottom + bounds.top) / 2
+        self.translate((0, y_center - current_y_center))
 
     def set_view_box(self, x, y, width, height):
         self.view_x = x
@@ -39,11 +48,8 @@ class Paper:
         self.pixel_width = width
         self.pixel_height = height
 
-    def set_precision(self, precision):
-        self.precision = precision
-
-    def format_svg(self, thick=True):
-        element_data = '\n'.join(self.svg_elements())
+    def format_svg(self, precision=12):
+        element_data = '\n'.join(self.svg_elements(precision))
 
         # Transform world-coordinate view box into svg-coordinate view box.
         view_x = self.view_x
@@ -51,7 +57,6 @@ class Paper:
         view_width = self.view_width
         view_height = self.view_height
 
-        #TODO: remove style
         #TODO: remove background rectangle?
         svg_template = dedent('''\
             <?xml version="1.0" standalone="no"?>
@@ -63,11 +68,6 @@ class Paper:
                 viewBox="$view_x $view_y $view_width $view_height"
                 width="${pixel_width}px" height="${pixel_height}px"
             >
-                <style type="text/css">
-                    path {
-                        $style
-                    }
-                </style>
                 <rect
                     style="fill: #FFF"
                     x="$view_x"
@@ -81,7 +81,6 @@ class Paper:
         t = Template(svg_template)
         return t.substitute(
             element_data=element_data,
-            style=self.style,
             pixel_width=self.pixel_width,
             pixel_height=self.pixel_height,
             view_x=view_x,
@@ -90,8 +89,8 @@ class Paper:
             view_width=view_width,
         )
 
-    def svg_elements(self):
+    def svg_elements(self, precision):
         return [
-            element.svg(self.precision)
+            element.svg(precision)
             for element in self.elements
         ]

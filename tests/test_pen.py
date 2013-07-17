@@ -1,3 +1,5 @@
+#TODO: offwidth errors can just start a new path instead.
+
 from nose.plugins.skip import SkipTest
 
 import os
@@ -14,6 +16,7 @@ from grapefruit import Color
 from util import assert_segments_equal, assert_points_equal
 from canoepaddle import Pen
 from canoepaddle.error import SegmentError
+from canoepaddle.bounds import Bounds
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -98,7 +101,6 @@ def test_line_thick():
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(5)
-    p.paper.set_precision(0)
 
     path = p.paper.elements[0]
     assert_equal(
@@ -166,8 +168,6 @@ def test_format_svg():
     p = Pen()
     svg = p.paper.format_svg()
     assert svg.startswith('<?xml')
-    svg = p.paper.format_svg(thick=True)
-    assert svg.startswith('<?xml')
 
 
 def test_set_view_box():
@@ -177,11 +177,11 @@ def test_set_view_box():
 
     # The view box is transformed into svg coordinates by flipping the
     # Y-coordinate and adjusting for height.
-    svg_data = p.paper.format_svg(thick=False)
+    svg_data = p.paper.format_svg()
     assert 'viewBox="-1 -2 3 3"' in svg_data
 
     p.paper.set_view_box(-10, -10, 20, 20)
-    svg_data = p.paper.format_svg(thick=False)
+    svg_data = p.paper.format_svg()
     assert 'viewBox="-10 -10 20 20"' in svg_data
 
 
@@ -286,9 +286,8 @@ def test_show_nodes():
     p.turn_right(60)
     p.line_forward(6)
 
-    p.paper.set_precision(3)
     assert_equal(
-        p.paper.svg_elements()[0].split('\n')[1:],
+        p.paper.svg_elements(3)[0].split('\n')[1:],
         [
             '<circle cx="-6.000" cy="0.000" r="0.125" fill="#008000" />',
             '<rect x="-0.125" y="-0.125" width="0.250" height="0.250" fill="#800000" />',
@@ -309,9 +308,8 @@ def test_show_bones():
     p.turn_right(60)
     p.line_forward(6)
 
-    p.paper.set_precision(2)
     assert_equal(
-        p.paper.svg_elements()[0].split('\n'),
+        p.paper.svg_elements(2)[0].split('\n'),
         [
             (
                 '<path d="M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 '
@@ -363,23 +361,87 @@ def test_flip():
     )
 
 
-def test_center_on_x():
+def test_circle_bounds():
     raise SkipTest()
+
+
+def test_rectangle_bounds():
+    raise SkipTest()
+
+
+def test_line_segment_bounds():
+    raise SkipTest()
+    # No-width segment.
+
+    # Segment with a width.
+
+    # Set an end angle, the bounds update.
+
+
+def test_arc_segment_bounds():
+    raise SkipTest()
+
+
+def test_translate():
     p = Pen()
+    p.set_width(1.0)
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(3)
+    p.arc_left(90, 3)
+    p.turn_left(90)
+    p.move_forward(3)
+    p.circle(0.5)
+    p.move_forward(3)
+    p.square(1)
+
+    p.paper.translate((1, 1))
+
+    assert_equal(
+        p.paper.svg_elements(1),
+        [
+            (
+                '<path d="M1.0,-1.5 L1.0,-0.5 L4.0,-0.5 A 3.5,3.5 0 0 0 '
+                '7.5,-4.0 L6.5,-4.0 A 2.5,2.5 0 0 1 4.0,-1.5 L1.0,-1.5 z" '
+                'fill="#000000" />'
+            ),
+            '<circle cx="4.0" cy="-4.0" r="0.5" fill="#000000" />',
+            '<rect x="0.5" y="-4.5" width="1.0" height="1.0" fill="#000000" />',
+        ]
+    )
+
+
+def test_center_on_xy():
+    p = Pen()
+    p.set_width(2.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(4)
-    p.move_to((2, 0))
+
+    p.move_to((2, 1))
     p.circle(1)
 
     p.paper.center_on_x(0)
 
-    p.paper.set_precision(0)
     assert_equal(
-        p.paper.svg_elements(),
+        p.paper.svg_elements(0),
         [
-            '<path d="M-2,0 L2,0" fill="#000000" />'
-            '<circle cx="0" cy="0" r="1" fill="#000000" />',
+            '<path d="M-2,-1 L-2,1 L2,1 L2,-1 L-2,-1 z" fill="#000000" />',
+            '<circle cx="0" cy="-1" r="1" fill="#000000" />',
+        ]
+    )
+
+    p.paper.center_on_y(0)
+
+    assert_equal(
+        p.paper.svg_elements(1),
+        [
+            (
+                '<path d="M-2.0,-0.5 L-2.0,1.5 L2.0,1.5 L2.0,-0.5 L-2.0,-0.5 z" '
+                'fill="#000000" />'
+            ),
+            '<circle cx="0.0" cy="-0.5" r="1.0" fill="#000000" />',
         ]
     )
 
@@ -960,9 +1022,8 @@ def test_circle():
     p = Pen()
     p.circle(1)
 
-    p.paper.set_precision(0)
     assert_equal(
-        p.paper.svg_elements(),
+        p.paper.svg_elements(0),
         ['<circle cx="0" cy="0" r="1" fill="#000000" />'],
     )
 
@@ -983,9 +1044,8 @@ def test_circle_color():
     p.set_color((0.0, 0.0, 1.0))
     p.circle(1)
 
-    p.paper.set_precision(0)
     assert_equal(
-        p.paper.svg_elements(),
+        p.paper.svg_elements(0),
         [
             '<circle cx="0" cy="0" r="1" fill="#ff0000" />',
             '<circle cx="2" cy="0" r="1" fill="#00ff00" />',
@@ -1012,9 +1072,8 @@ def test_circle_line_overlap():
     p.turn_to(0)
     p.line_forward(4)
 
-    p.paper.set_precision(1)
     assert_equal(
-        p.paper.svg_elements(),
+        p.paper.svg_elements(1),
         [
             (
                 '<path d="M0.0,-0.5 L0.0,0.5 L4.0,0.5 L4.0,-0.5 L0.0,-0.5 z" '
@@ -1043,9 +1102,8 @@ def test_color_path():
     p.set_color((0.0, 0.0, 1.0))
     p.line_forward(1)
 
-    p.paper.set_precision(1)
     assert_equal(
-        p.paper.svg_elements(),
+        p.paper.svg_elements(1),
         [
             (
                 '<path d="M0.0,-0.5 L0.0,0.5 L1.0,0.5 L1.0,-0.5 L0.0,-0.5 z" '
@@ -1089,9 +1147,8 @@ def test_color_formats():
         p.turn_to(0)
         p.line_forward(5)
 
-        p.paper.set_precision(0)
         assert_equal(
-            p.paper.svg_elements()[0],
+            p.paper.svg_elements(0)[0],
             '<path d="M0,-1 L0,1 L5,1 L5,-1 L0,-1 z" fill="{}" />'.format(output)
         )
 

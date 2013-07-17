@@ -6,7 +6,7 @@ from grapefruit import Color
 def number(n, precision):
     # Handle numbers near zero formatting inconsistently as
     # either "0.0" or "-0.0".
-    if abs(n) < 0.5 * 10**(-precision):
+    if abs(n) <= 0.5 * 10**(-precision):
         n = 0
     return '{n:.{p}f}'.format(n=n, p=precision)
 

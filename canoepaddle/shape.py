@@ -1,5 +1,8 @@
+import vec
+
 from .point import Point
 from .svg import circle, rectangle
+from .bounds import Bounds
 
 
 class Circle:
@@ -16,6 +19,17 @@ class Circle:
             self.color,
             precision,
         )
+
+    def bounds(self):
+        return Bounds(
+            self.center.x - self.radius,
+            self.center.y - self.radius,
+            self.center.x + self.radius,
+            self.center.y + self.radius,
+        )
+
+    def translate(self, offset):
+        self.center = Point(*vec.add(self.center, offset))
 
 
 class Rectangle:
@@ -35,3 +49,16 @@ class Rectangle:
             self.color,
             precision,
         )
+
+    def bounds(self):
+        return Bounds(
+            self.left,
+            self.bottom,
+            self.left + self.width,
+            self.bottom + self.height,
+        )
+
+    def translate(self, offset):
+        dx, dy = offset
+        self.left += dx
+        self.bottom += dy

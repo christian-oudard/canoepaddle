@@ -7,14 +7,17 @@ from grapefruit import Color
 def draw(p):
     p.set_width(1.0)
 
-    p.set_color('red')
-    p.move_to((-6, 0))
-    p.turn_to(0)
-    p.line_forward(6)
+    p.line_forward(3)
+    p.arc_left(90, 3)
+    p.turn_left(90)
+    p.move_forward(3)
+    p.circle(0.5)
+    p.move_forward(3)
+    p.square(1)
 
-    p.set_color('green')
-    p.turn_right(60)
-    p.line_forward(6)
+    p.paper.translate((1, 1))
+
+
 
 
 if __name__ == '__main__':

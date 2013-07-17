@@ -1,7 +1,15 @@
 import math
 
 import vec
-from .point import Point, float_equal, points_equal, epsilon
+from .point import (
+    Point,
+    float_equal,
+    points_equal,
+    epsilon,
+    point_bounds,
+)
+from .bounds import Bounds
+from .shape import Circle
 from .geometry import (
     intersect_lines,
     intersect_circle_line,
@@ -44,6 +52,18 @@ class Segment:
             strings.append('{}={}'.format(field, value))
         return '{}({})'.format(self.__class__.__name__, ', '.join(strings))
 
+    def translate(self, offset):
+        self.a = vec.add(self.a, offset)
+        self.b = vec.add(self.b, offset)
+        if self.a_left is not None:
+            self.a_left = vec.add(self.a_left, offset)
+        if self.a_right is not None:
+            self.a_right = vec.add(self.a_right, offset)
+        if self.b_left is not None:
+            self.b_left = vec.add(self.b_left, offset)
+        if self.b_right is not None:
+            self.b_right = vec.add(self.b_right, offset)
+
     def join_with(self, other):
         assert points_equal(self.b, other.a)
         if self.width is None or other.width is None:
@@ -83,6 +103,20 @@ class LineSegment(Segment):
         self.end_angle = None
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
+
+    def bounds(self):
+        if self.width is None:
+            return Bounds.union_all([
+                point_bounds(self.a),
+                point_bounds(self.b),
+            ])
+        else:
+            return Bounds.union_all([
+                point_bounds(self.a_left),
+                point_bounds(self.a_right),
+                point_bounds(self.b_left),
+                point_bounds(self.b_right),
+            ])
 
     def join_with_line(self, other):
         # Check turn angle, and don't turn close to straight back.
@@ -262,6 +296,15 @@ class ArcSegment(Segment):
         self.end_angle = None
         self.set_start_angle(start_angle)
         self.set_end_angle(end_angle)
+
+    def bounds(self):
+        #TODO: This is wrong. The bounds should be smaller when the arc doesn't
+        # take up a whole circle worth.
+        return Circle(self.center, self.radius, color=None).bounds()
+
+    def translate(self, offset):
+        self.center = vec.add(self.center, offset)
+        super().translate(offset)
 
     def join_with_line(self, other):
         a, b = other.offset_line_left()

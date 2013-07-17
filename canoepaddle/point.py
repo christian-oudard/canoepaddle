@@ -1,5 +1,7 @@
 from collections import namedtuple
 
+from .bounds import Bounds
+
 epsilon = 10e-15
 
 Point = namedtuple('Point', 'x, y')
@@ -14,3 +16,8 @@ def points_equal(a, b):
         float_equal(da, db)
         for (da, db) in zip(a, b)
     )
+
+
+def point_bounds(p):
+    p = Point(*p)
+    return Bounds(p.x, p.y, p.x, p.y)

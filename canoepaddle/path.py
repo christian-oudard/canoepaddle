@@ -1,4 +1,5 @@
 from .point import Point, points_equal
+from .bounds import Bounds
 from .segment import LineSegment, ArcSegment
 from .shape import Circle, Rectangle
 from .svg import (
@@ -19,6 +20,13 @@ class Path:
         self.show_joints = False
         self.show_nodes = False
         self.show_bones = False
+
+    def bounds(self):
+        return Bounds.union_all(seg.bounds() for seg in self.segments)
+
+    def translate(self, offset):
+        for seg in self.segments:
+            seg.translate(offset)
 
     def add_segment(self, new_segment):
         if len(self.segments) > 0:

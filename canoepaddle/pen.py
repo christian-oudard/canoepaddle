@@ -4,7 +4,7 @@ import vec
 from .paper import Paper
 from .path import Path
 from .segment import LineSegment, ArcSegment
-from .shape import Circle
+from .shape import Circle, Rectangle
 from .point import Point, points_equal
 from .geometry import intersect_lines
 
@@ -14,7 +14,7 @@ class Pen:
     def __init__(self):
         self.paper = Paper()
         self._heading = 0
-        self._position = (0.0, 0.0)
+        self._position = Point(0.0, 0.0)
         self._width = None
         self._color = (0.0, 0.0, 0.0)
         self.flipped_x = False
@@ -69,26 +69,24 @@ class Pen:
     # Movement.
 
     def move_to(self, point):
-        self._position = point
+        self._position = Point(*point)
 
     def move_forward(self, distance):
-        self._position = self._calc_forward_position(distance)
+        self.move_to(self._calc_forward_position(distance))
 
     def move_to_y(self, y_target):
         """
         Move forward in the current orientation, until the y coordinate
         equals the given value.
         """
-        new_position = self._calc_forward_to_y(y_target)
-        self.move_to(new_position)
+        self.move_to(self._calc_forward_to_y(y_target))
 
     def move_to_x(self, x_target):
         """
         Move forward in the current orientation, until the x coordinate
         equals the given value.
         """
-        new_position = self._calc_forward_to_x(x_target)
-        self.move_to(new_position)
+        self.move_to(self._calc_forward_to_x(x_target))
 
     # Turning.
 
@@ -297,6 +295,15 @@ class Pen:
         self.paper.add_element(Circle(
             center=self._position,
             radius=radius,
+            color=self.color,
+        ))
+
+    def square(self, size):
+        self.paper.add_element(Rectangle(
+            left=self._position.x - size / 2,
+            bottom=self._position.y - size / 2,
+            width=size,
+            height=size,
             color=self.color,
         ))
 
