@@ -313,33 +313,32 @@ class Pen:
         # 3. Current path is present, and we're continuing.
         # 4. Current path is full, but there's a break and we're starting
         #    a new path.
-        if self._current_path is None:
-            #TODO: refactor this
+        def new_path():
             self._current_path = Path(self.color)
             self._current_path.show_joints = self.show_joints
             self._current_path.show_nodes = self.show_nodes
             self._current_path.show_bones = self.show_bones
             self._current_path.add_segment(new_segment)
             self.paper.add_element(self._current_path)
+
+        if self._current_path is None:
+            new_path()
         else:
             assert len(self._current_path.segments) > 0
             # Check whether we are continuing the current stroke or starting a
             # new one.
             continuing = False
             last_segment = self._current_path.segments[-1]
-            if points_equal(last_segment.b, new_segment.a):
+            if (
+                points_equal(last_segment.b, new_segment.a) and
+                last_segment.color == new_segment.color
+            ):
                 continuing = True
 
             if continuing:
                 self._current_path.add_segment(new_segment)
             else:
-                #TODO: refactor this
-                self._current_path = Path(self.color)
-                self._current_path.show_joints = self.show_joints
-                self._current_path.show_nodes = self.show_nodes
-                self._current_path.show_bones = self.show_bones
-                self._current_path.add_segment(new_segment)
-                self.paper.add_element(self._current_path)
+                new_path()
 
     def _vector(self, length=1):
         """

@@ -1,25 +1,36 @@
+import math
+
 from canoepaddle import Pen
+from grapefruit import Color
 
 
 def draw(p):
-    p.paper.set_precision(1)
+    radius = 4
+    num_colors = 36
+    angle_step = 360 / num_colors
 
     p.set_width(1.0)
-
-    p.set_color((1.0, 0.0, 0.0))
     p.move_to((0, 0))
-    p.turn_to(0)
-    p.line_forward(4)
+    p.turn_to(90)
+    p.move_forward(radius)
+    p.turn_right(90)
 
-    p.set_color((0.0, 1.0, 0.0))
-    p.move_to((2, 2))
-    p.circle(2)
+    angle = 60
+    for _ in range(num_colors):
+        l = 74
+        chroma = 0.4
+        a = chroma * math.sin(math.radians(angle))
+        b = chroma * math.cos(math.radians(angle))
+        color = Color.NewFromLab(l, a, b)
+        assert color.isLegal
+        p.set_color(color)
 
-    p.set_color((0.0, 0.0, 1.0))
-    p.move_to((0, 4))
-    p.turn_to(0)
-    p.line_forward(4)
-
+        p.arc_right(
+            angle_step,
+            center=(0, 0),
+        )
+        #p.line_forward(1)
+        angle += angle_step
 
 if __name__ == '__main__':
     p = Pen()

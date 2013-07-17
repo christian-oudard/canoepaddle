@@ -1,7 +1,7 @@
 import math
 
 import vec
-from .point import Point, float_equal, points_equal
+from .point import Point, float_equal, points_equal, epsilon
 from .geometry import (
     intersect_lines,
     intersect_circle_line,
@@ -86,8 +86,8 @@ class LineSegment(Segment):
 
     def join_with_line(self, other):
         # Check turn angle, and don't turn close to straight back.
-        v_self = vec.vfrom(self.a, self.b)
-        v_other = vec.vfrom(other.a, other.b)
+        v_self = self._vector()
+        v_other = other._vector()
         angle = math.degrees(vec.angle(v_self, v_other))
         if abs(angle) > MAX_TURN_ANGLE:
             raise SegmentError('Turned too sharply.')
@@ -148,13 +148,13 @@ class LineSegment(Segment):
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle
 
-        if self.width is None:
+        if self.width is None or vec.mag(self._vector()) < epsilon:
             return
 
         # Intersect the slant line with the left and right offset lines
         # to find the starting corners.
         if start_angle is None:
-            v_slant = vec.perp(vec.vfrom(self.a, self.b))
+            v_slant = vec.perp(self._vector())
         else:
             v_slant = vec.from_heading(math.radians(start_angle))
         a = self.a
@@ -176,13 +176,13 @@ class LineSegment(Segment):
     def set_end_angle(self, end_angle):
         self.end_angle = end_angle
 
-        if self.width is None:
+        if self.width is None or vec.mag(self._vector()) < epsilon:
             return
 
         # Intersect the slant line with the left and right offset lines
         # to find the ending corners.
         if end_angle is None:
-            v_slant = vec.perp(vec.vfrom(self.a, self.b))
+            v_slant = vec.perp(self._vector())
         else:
             v_slant = vec.from_heading(math.radians(end_angle))
         a = self.b
@@ -218,8 +218,11 @@ class LineSegment(Segment):
             vec.add(self.b, w),
         )
 
+    def _vector(self):
+        return vec.vfrom(self.a, self.b)
+
     def _width_vector(self):
-        v = vec.vfrom(self.a, self.b)
+        v = self._vector()
         v = vec.perp(v)
         v = vec.norm(v, self.width / 2)
         return v
@@ -233,7 +236,7 @@ class LineSegment(Segment):
         pen.line_to(self.a_left)
 
     def _heading(self):
-        return math.degrees(vec.heading(vec.vfrom(self.a, self.b)))
+        return math.degrees(vec.heading(self._vector()))
 
 
 class ArcSegment(Segment):

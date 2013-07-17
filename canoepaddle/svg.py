@@ -22,6 +22,11 @@ def svg_rect(left, bottom, width, height):
 
 
 def html_color(color):
+    if isinstance(color, Color):
+        return color.html
+    if isinstance(color, str):
+        return Color.NewFromHtml(color).html
+
     return Color.RgbToHtml(*color)
 
 

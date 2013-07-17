@@ -7,9 +7,11 @@ from nose.tools import (
     assert_almost_equal,
     assert_raises,
 )
-from util import assert_segments_equal, assert_points_equal
-import vec
 
+import vec
+from grapefruit import Color
+
+from util import assert_segments_equal, assert_points_equal
 from canoepaddle import Pen
 from canoepaddle.error import SegmentError
 
@@ -53,7 +55,7 @@ def test_move_to_xy():
     assert_points_equal(p.position, (6, 8))
 
 
-def test_stroke():
+def test_line_segments():
     p = Pen()
 
     p.move_to((0, 0))
@@ -81,6 +83,13 @@ def test_line():
         path.draw(0),
         'M0,0 L5,0',
     )
+
+
+def test_line_zero():
+    p = Pen()
+    p.set_width(1.0)
+    p.line_forward(0)
+    assert_equal(p.paper.elements, [])
 
 
 def test_line_thick():
@@ -984,6 +993,7 @@ def test_circle_color():
         ]
     )
 
+
 def test_circle_line_overlap():
     p = Pen()
     p.set_width(1.0)
@@ -1017,3 +1027,70 @@ def test_circle_line_overlap():
             ),
         ]
     )
+
+
+def test_color_path():
+    # Changing colors starts a new path.
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+
+    p.set_color((1.0, 0.0, 0.0))
+    p.line_forward(1)
+    p.set_color((0.0, 1.0, 0.0))
+    p.line_forward(1)
+    p.set_color((0.0, 0.0, 1.0))
+    p.line_forward(1)
+
+    p.paper.set_precision(1)
+    assert_equal(
+        p.paper.svg_elements(),
+        [
+            (
+                '<path d="M0.0,-0.5 L0.0,0.5 L1.0,0.5 L1.0,-0.5 L0.0,-0.5 z" '
+                'fill="#ff0000" />'
+            ),
+            (
+                '<path d="M1.0,-0.5 L1.0,0.5 L2.0,0.5 L2.0,-0.5 L1.0,-0.5 z" '
+                'fill="#00ff00" />'
+            ),
+            (
+                '<path d="M2.0,-0.5 L2.0,0.5 L3.0,0.5 L3.0,-0.5 L2.0,-0.5 z" '
+                'fill="#0000ff" />'
+            ),
+        ]
+    )
+
+
+def test_color_formats():
+    for color, output in [
+        (
+            (1.0, 0.0, 0.0),
+            '#ff0000',
+        ),
+        (
+            Color.NewFromHtml('red'),
+            '#ff0000',
+        ),
+        (
+            'green',
+            '#008000',
+        ),
+        (
+            '#123456',
+            '#123456',
+        ),
+    ]:
+        p = Pen()
+        p.set_width(2.0)
+        p.set_color(color)
+        p.move_to((0, 0))
+        p.turn_to(0)
+        p.line_forward(5)
+
+        p.paper.set_precision(0)
+        assert_equal(
+            p.paper.svg_elements()[0],
+            '<path d="M0,-1 L0,1 L5,1 L5,-1 L0,-1 z" fill="{}" />'.format(output)
+        )
