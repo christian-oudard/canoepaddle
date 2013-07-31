@@ -318,6 +318,26 @@ class ArcSegment(Segment):
         self.b_right = other.a_right = closest_point_to(self.b, points)
 
     def join_with_arc(self, other):
+        # Special case coincident arcs.
+        if points_equal(self.center, other.center):
+            if (
+                float_equal(self.radius, other.radius) and
+                float_equal(self.width, other.width)
+            ):
+                r = vec.vfrom(self.center, self.b)
+                if self.radius < 0:
+                    r = vec.neg(r)
+                v_left = vec.norm(r, self.radius - self.width / 2)
+                self.b_left = other.a_left = vec.add(self.center, v_left)
+                v_right = vec.norm(r, self.radius + self.width / 2)
+                self.b_right = other.a_right = vec.add(self.center, v_right)
+                return
+            else:
+                raise SegmentError(
+                    'Joint not allowed, coincident arcs without equal '
+                    'widths or radii.'
+                )
+
         c1, r1 = self.offset_circle_left()
         c2, r2 = other.offset_circle_left()
         points_left = intersect_circles(c1, r1, c2, r2)

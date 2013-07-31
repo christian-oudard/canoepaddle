@@ -1166,13 +1166,41 @@ def test_color_joint():
     p.turn_right(60)
     p.line_forward(6)
 
-    path = p.paper.elements[0]
     assert_equal(
         [path.draw_thick(2) for path in p.paper.elements],
-        (
-            [
-                'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L0.29,-0.50 L-6.00,-0.50 z',
-                'M0.29,-0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',
-            ]
-        ),
+        [
+            'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L0.29,-0.50 L-6.00,-0.50 z',
+            'M0.29,-0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',
+        ]
+    )
+
+
+def test_arc_joint_continue():
+    p = Pen()
+    p.set_width(2.0)
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+
+    p.arc_left(90, 5)
+    p.arc_left(90, 5)
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+
+    p.arc_right(90, 5)
+    p.arc_right(90, 5)
+
+    assert_equal(
+        [path.draw_thick(0) for path in p.paper.elements],
+        [
+            (
+                'M0,-1 L0,1 A 6,6 0 0 0 6,-5 A 6,6 0 0 0 0,-11 '
+                'L0,-9 A 4,4 0 0 1 4,-5 A 4,4 0 0 1 0,-1 z'
+            ),
+            (
+                'M0,-1 L0,1 A 4,4 0 0 1 4,5 A 4,4 0 0 1 0,9 '
+                'L0,11 A 6,6 0 0 0 6,5 A 6,6 0 0 0 0,-1 z'
+            )
+        ]
     )
