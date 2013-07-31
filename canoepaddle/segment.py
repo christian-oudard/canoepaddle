@@ -82,13 +82,20 @@ class Segment:
             return
 
         # Check whether the endcap lines intersect. If so, this will cause
-        # graphical glitches when drawing the segment.
+        # graphical glitches when drawing the segment, unless the intersection
+        # is one of the endpoints.
         intersection = intersect_lines(
             self.a_left, self.a_right,
             self.b_left, self.b_right,
             segment=True,
         )
-        if intersection is not None:
+        if intersection not in [
+            None,
+            self.a_left,
+            self.a_right,
+            self.b_left,
+            self.b_right,
+        ]:
             raise SegmentError('Degenerate segment, endcaps cross each other.')
 
 

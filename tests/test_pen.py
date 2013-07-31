@@ -1204,3 +1204,19 @@ def test_arc_joint_continue():
             )
         ]
     )
+
+
+def test_zero_length_side():
+    # It is possible and legal to create a segment that just barely goes to
+    # zero on one side.
+    p = Pen()
+    p.set_width(2.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(1.0, end_angle=45)
+
+    path = p.paper.elements[0]
+    assert_equal(
+        path.draw_thick(0),
+        'M0,-1 L0,1 L2,-1 L0,-1 z',
+    )
