@@ -1,5 +1,9 @@
 from canoepaddle import Pen
 
+#TODO: Make the ends close correctly.
+#TODO: Use red outlined in black.
+
+
 p = Pen()
 p.set_width(1.0)
 
@@ -21,11 +25,3 @@ def trefoil(origin, radius, num_leaves, leaf_angle, step=1):
         p.arc_to(next_point)
 
 trefoil((0, 0), 8, 3, 110)
-
-p.paper.set_style('''
-    stroke: black;
-    stroke-width: 0.15;
-    stroke-linecap: round;
-    fill: red;
-''')
-print(p.paper.format_svg(thick=True))

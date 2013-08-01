@@ -228,9 +228,10 @@ class Pen:
         #    and the target arc end point.
         v_pen = self._vector()
         v_perp = vec.perp(self._vector())
+        v_chord = vec.vfrom(self._position, endpoint)
         if center is None:
             midpoint = vec.div(vec.add(self._position, endpoint), 2)
-            v_bisector = vec.perp(vec.vfrom(self._position, endpoint))
+            v_bisector = vec.perp(v_chord)
             center = intersect_lines(
                 self._position,
                 vec.add(self._position, v_perp),
@@ -238,28 +239,26 @@ class Pen:
                 vec.add(midpoint, v_bisector),
             )
 
-        # Calculate the arc angle.
-        # Construct two radii, one for the start and end of the arc, and find
-        # the angle between them.
-        v_radius_start = vec.vfrom(center, self._position)
-        v_radius_end = vec.vfrom(center, endpoint)
-
         # Determine true start heading. This may not be the same as the
-        # original pen heading if the "center" argument is specified.
+        # original pen heading in some circumstances.
+        v_radius_start = vec.vfrom(center, self._position)
         v_radius_perp = vec.perp(v_radius_start)
         if vec.dot(v_radius_perp, v_pen) < 0:
             v_radius_perp = vec.neg(v_radius_perp)
         start_heading = math.degrees(vec.heading(v_radius_perp))
         self.turn_to(start_heading)
+        # Refresh v_pen and v_perp based on the new start heading.
         v_pen = self._vector()
+        v_perp = vec.perp(self._vector())
 
-        # Check some dot products to determine which quadrant the arc
-        # angle is in, and whether the radius is positive or negative.
-        arc_angle = math.degrees(vec.angle(v_radius_start, v_radius_end))
+        # Calculate the arc angle.
+        # The arc angle is double the angle between the pen vector and the
+        # chord vector. Arcing to the left is a positive angle, and arcing to
+        # the right is a negative angle.
+        arc_angle = 2 * math.degrees(vec.angle(v_pen, v_chord))
         radius = vec.mag(v_radius_start)
-        if vec.dot(v_radius_end, v_pen) < 0:
-            arc_angle += 180
-        if vec.dot(v_radius_start, v_perp) > 0:
+        # Check which side of v_pen the goes toward.
+        if vec.dot(v_chord, v_perp) < 0:
             arc_angle = -arc_angle
             radius = -radius
 

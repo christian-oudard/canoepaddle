@@ -1,4 +1,5 @@
 #TODO: offwidth errors can just start a new path instead.
+# wait no require an explicit end() call
 
 from nose.plugins.skip import SkipTest
 
@@ -766,6 +767,43 @@ def test_degenerate_arc():
             end_angle=5,
         )
     )
+
+
+def test_arc_start_angle_bug():
+    # Some arcs are not reporting their start and end angles correctly.
+
+    # Set up positions on a circle at angles -120 and 30
+    p = Pen()
+
+    p.move_to((0, 0))
+    p.turn_to(30)
+    p.move_forward(3)
+    p1 = p.position
+    p.turn_left(90)
+    h1 = p.heading
+
+    p.move_to((0, 0))
+    p.turn_to(-120)
+    p.move_forward(3)
+    p2 = p.position
+
+    # Create an arc using arc_left.
+    p = Pen()
+    p.move_to(p1)
+    p.turn_to(h1)
+    p.arc_left(210, 3)
+    arc = p.paper.elements[0].segments[0]
+    assert_almost_equal(arc.start_heading, 120)
+    assert_almost_equal(arc.end_heading, 330)
+
+    # Create the same arc using arc_to.
+    p = Pen()
+    p.move_to(p1)
+    p.turn_to(h1)
+    p.arc_to(p2)
+    arc = p.paper.elements[0].segments[0]
+    assert_almost_equal(arc.start_heading, 120)
+    assert_almost_equal(arc.end_heading, 330)
 
 
 def test_arc_line_joint():
