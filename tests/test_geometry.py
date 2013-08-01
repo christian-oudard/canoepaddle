@@ -141,6 +141,13 @@ def test_intersect_circles():
         ),
         [(2, 0)],
     )
+    assert_equal(
+        intersect_circles(
+            (0, 1), 1.5,
+            (0, 0), 2.5,
+        ),
+        [(0, 2.5)],
+    )
     # Two points, same size circles.
     assert_equal(
         intersect_circles(

@@ -102,6 +102,9 @@ def intersect_circles(center1, radius1, center2, radius2):
     radius1 = abs(radius1)
     radius2 = abs(radius2)
 
+    if radius2 > radius1:
+        return intersect_circles(center2, radius2, center1, radius1)
+
     transverse = vec.vfrom(center1, center2)
     dist = vec.mag(transverse)
 

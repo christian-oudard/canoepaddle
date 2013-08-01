@@ -909,6 +909,28 @@ def test_arc_arc_joint():
     )
 
 
+def test_arc_arc_joint_off_radius():
+    p = Pen()
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.arc_left(180, 1)
+    p.arc_left(90, 2)
+
+    path = p.paper.elements[0]
+    assert_equal(
+        path.draw_thick(1),
+        (
+            'M0.0,-0.5 L0.0,0.5 '
+            'A 1.5,1.5 0 0 0 0.0,-2.5 '
+            'A 2.5,2.5 0 0 0 -2.5,0.0 '
+            'L-1.5,0.0 '
+            'A 1.5,1.5 0 0 1 0.0,-1.5 '
+            'A 0.5,0.5 0 0 1 0.0,-0.5 z'
+        )
+    )
+
+
 def test_arc_line_joint_bug():
     # When using arc_to, sometimes the b_left and b_right would get
     # reversed.
