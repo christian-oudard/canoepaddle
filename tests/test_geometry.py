@@ -163,3 +163,13 @@ def test_intersect_circles():
     )
     assert_points_equal(p1, (1, 1))
     assert_points_equal(p2, (1, -1))
+
+
+def test_intersect_circles_numerical():
+    assert_equal(
+        intersect_circles(
+            (-27.073924841728974, 65.92689560740814), -1.25,
+            (0.5, 0.5), -72.25000000000001,
+        ),
+        [(-27.55938126499886, 67.07877757232733)],
+    )

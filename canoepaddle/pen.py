@@ -88,6 +88,9 @@ class Pen:
         """
         self.move_to(self._calc_forward_to_x(x_target))
 
+    def end(self):
+        self._current_path = None
+
     # Turning.
 
     def turn_to(self, heading):

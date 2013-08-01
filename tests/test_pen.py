@@ -1229,6 +1229,17 @@ def test_arc_joint_continue():
     )
 
 
+def test_arc_joint_numerical():
+    # Sometimes arc joints can miss the mark if they have odd float numbers.
+    p = Pen()
+    p.set_width(0.5)
+    p.move_to((-26.685559703113075, 65.00539003547281))
+    p.turn_to(202.85281173472714)
+    p.arc_right(180, 1)
+    # This shouldn't error:
+    p.arc_right(50.443252846269075, center=(0.5, 0.5))
+
+
 def test_zero_length_side():
     # It is possible and legal to create a segment that just barely goes to
     # zero on one side.

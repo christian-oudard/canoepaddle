@@ -2,7 +2,7 @@ from collections import namedtuple
 
 from .bounds import Bounds
 
-epsilon = 10e-15
+epsilon = 10e-10
 
 Point = namedtuple('Point', 'x, y')
 

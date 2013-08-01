@@ -14,9 +14,9 @@ if [ $passed -eq 0 ] ; then
 
     echo
     echo 'Running examples...'
-    for file in $(ls examples/); do
+    for file in examples/*.py; do
         echo
-        echo examples/$file
-        python examples/$file > /dev/null
+        echo $file
+        python $file > /dev/null
     done
 fi
