@@ -1,6 +1,3 @@
-#TODO: offwidth errors can just start a new path instead.
-# wait no require an explicit end() call
-
 from nose.plugins.skip import SkipTest
 
 import os

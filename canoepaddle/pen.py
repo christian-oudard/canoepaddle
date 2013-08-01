@@ -1,3 +1,9 @@
+#TODO: close the ends of paths that loop back.
+#TODO: offwidth errors can just start a new path instead, or should we require
+# an explicit end() call?
+#TODO: implement different modes for fill, stroke, and outlined stroke.
+#TODO: implement different endcaps, such as round.
+
 import math
 
 import vec
