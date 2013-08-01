@@ -654,11 +654,12 @@ def test_arc_to():
 
 
 def test_arc_zero():
-    # Zero-angle and zero-radius arcs have zero length, so they are not added.
     p = Pen()
+    p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
 
+    # Zero-angle and zero-radius arcs have zero length, so they are not added.
     p.arc_left(0, radius=1)
     assert_equal(p.paper.elements, [])
 

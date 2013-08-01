@@ -9,8 +9,6 @@ class Paper:
     def __init__(self):
         self.elements = []
 
-        self.shapes = []  # Deprecated.
-
         # Default values.
         self.set_view_box(-10, -10, 20, 20)
         self.set_pixel_size(800, 800)

@@ -98,6 +98,12 @@ class Segment:
         ]:
             raise SegmentError('Degenerate segment, endcaps cross each other.')
 
+    def can_set_angle(self):
+        return (
+            self.width is not None and
+            not points_equal(self.a, self.b)
+        )
+
 
 class LineSegment(Segment):
 
@@ -189,7 +195,7 @@ class LineSegment(Segment):
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle
 
-        if self.width is None or vec.mag(self._vector()) < epsilon:
+        if not self.can_set_angle():
             return
 
         # Intersect the slant line with the left and right offset lines
@@ -217,7 +223,7 @@ class LineSegment(Segment):
     def set_end_angle(self, end_angle):
         self.end_angle = end_angle
 
-        if self.width is None or vec.mag(self._vector()) < epsilon:
+        if not self.can_set_angle():
             return
 
         # Intersect the slant line with the left and right offset lines
@@ -362,7 +368,7 @@ class ArcSegment(Segment):
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle
 
-        if self.width is None:
+        if not self.can_set_angle():
             return
 
         # Intersect the slant line with the left and right offset circles
@@ -393,7 +399,7 @@ class ArcSegment(Segment):
     def set_end_angle(self, end_angle):
         self.end_angle = end_angle
 
-        if self.width is None:
+        if not self.can_set_angle():
             return
 
         # Intersect the slant line with the left and right offset circles
