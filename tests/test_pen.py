@@ -450,19 +450,34 @@ def test_center_on_xy():
 
 def test_straight_joint():
     p = Pen()
-    p.set_width(1.0)
+    p.set_width(2.0)
     p.move_to((0, 0))
-    p.turn_to(-90)
-    p.line_forward(1)
-    p.line_forward(1)
+    p.turn_to(0)
+    p.line_forward(3)
+    p.line_forward(3)
 
     path = p.paper.elements[0]
     assert_equal(
-        path.draw_thick(2),
-        (
-            'M0.50,0.00 L-0.50,0.00 L-0.50,1.00 L-0.50,2.00 '
-            'L0.50,2.00 L0.50,1.00 L0.50,0.00 z'
-        ),
+        path.draw_thick(0),
+        'M0,-1 L0,1 L3,1 L6,1 L6,-1 L3,-1 L0,-1 z'
+    )
+
+
+def test_break_stroke():
+    p = Pen()
+    p.set_width(2.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(3)
+    p.break_stroke()
+    p.line_forward(3)
+
+    assert_equal(
+        [path.draw_thick(0) for path in p.paper.elements],
+        [
+            'M0,-1 L0,1 L3,1 L3,-1 L0,-1 z',
+            'M3,-1 L3,1 L6,1 L6,-1 L3,-1 z',
+        ]
     )
 
 

@@ -1,6 +1,5 @@
 #TODO: Coverage
 #TODO: offwidth errors can just start a new path instead, or should we require
-# an explicit end() call?
 #TODO: implement different modes for fill, stroke, and outlined stroke. self.width
 # is what controls this.
 #TODO: implement different endcaps, such as round.
@@ -95,7 +94,7 @@ class Pen:
         """
         self.move_to(self._calc_forward_to_x(x_target))
 
-    def end(self):
+    def break_stroke(self):
         self._current_path = None
 
     # Turning.
