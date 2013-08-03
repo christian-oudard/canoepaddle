@@ -25,3 +25,5 @@ def trefoil(origin, radius, num_leaves, leaf_angle, step=1):
         p.arc_to(next_point)
 
 trefoil((0, 0), 8, 3, 110)
+
+print(p.paper.format_svg())

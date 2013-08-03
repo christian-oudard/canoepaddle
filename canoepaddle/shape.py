@@ -32,6 +32,28 @@ class Circle:
         self.center = Point(*vec.add(self.center, offset))
 
 
+class PathCircle(Circle):
+
+    def __init__(self, center, radius, width, color):
+        self.center = Point(*center)
+        self.radius = radius
+        self.width = width
+        self.color = color
+
+    def svg(self, precision):
+        from .pen import Pen
+        pen = Pen()
+        pen.set_color(self.color)
+        pen.set_width(self.width)
+        pen.move_to(self.center)
+        pen.turn_to(0)
+        pen.move_forward(self.radius)
+        pen.turn_left(90)
+        pen.arc_left(180, self.radius)
+        pen.arc_left(180, self.radius)
+        return pen.paper.elements[0].svg(precision)
+
+
 class Rectangle:
     def __init__(self, left, bottom, width, height, color):
         self.left = left

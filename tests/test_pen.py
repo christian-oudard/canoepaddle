@@ -14,7 +14,7 @@ from grapefruit import Color
 from util import assert_segments_equal, assert_points_equal
 from canoepaddle import Pen
 from canoepaddle.error import SegmentError
-from canoepaddle.bounds import Bounds
+#from canoepaddle.bounds import Bounds #TODO bounds tests
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -250,6 +250,18 @@ def test_joint():
             'L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z'
         ),
     )
+
+
+def test_joint_circular():
+    p = Pen()
+
+    p.set_width(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+
+    # Draw a square.
+    p.line_forward(5)
+    p.turn_left(90)
 
 
 def test_show_joints():
@@ -1113,6 +1125,7 @@ def test_circle_color():
 
 
 def test_circle_line_overlap():
+    # Draw a circle that is above one line but below the other line.
     p = Pen()
     p.set_width(1.0)
 

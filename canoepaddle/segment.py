@@ -5,7 +5,6 @@ from .point import (
     Point,
     float_equal,
     points_equal,
-    epsilon,
     point_bounds,
 )
 from .bounds import Bounds

@@ -15,8 +15,6 @@ if [ $passed -eq 0 ] ; then
     echo
     echo 'Running examples...'
     for file in examples/*.py; do
-        echo
-        echo $file
-        python $file > /dev/null
+        python $file > $file.svg
     done
 fi

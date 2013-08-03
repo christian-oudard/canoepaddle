@@ -2,6 +2,8 @@ from canoepaddle import Pen
 
 p = Pen()
 
+p.set_color('#84f')
+
 
 def petal(start_radius, distance, heading):
     radius = start_radius
@@ -21,8 +23,4 @@ for _ in range(num_petals):
     petal(0.7, 2.0, heading)
     heading += (360 / num_petals)
 
-p.paper.set_style('''
-    stroke: none;
-    fill: #84f;
-''')
 print(p.paper.format_svg())

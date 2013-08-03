@@ -1,8 +1,11 @@
-#TODO: close the ends of paths that loop back.
+#TODO: Coverage
 #TODO: offwidth errors can just start a new path instead, or should we require
 # an explicit end() call?
-#TODO: implement different modes for fill, stroke, and outlined stroke.
+#TODO: implement different modes for fill, stroke, and outlined stroke. self.width
+# is what controls this.
 #TODO: implement different endcaps, such as round.
+#TODO: close the ends of paths that loop back, but in a way that stands up to
+# outlined stroke scrutiny.
 
 import math
 
@@ -10,7 +13,7 @@ import vec
 from .paper import Paper
 from .path import Path
 from .segment import LineSegment, ArcSegment
-from .shape import Circle, Rectangle
+from .shape import Circle, PathCircle, Rectangle
 from .point import Point, points_equal
 from .geometry import intersect_lines
 
@@ -215,8 +218,7 @@ class Pen:
     def arc_right(
         self, arc_angle, radius=None, center=None, start_angle=None, end_angle=None,
     ):
-        # We define a positive radius to be arcing to the left, and a
-        # negative radius to be arcing to the right.
+        # Reverse the arc angle so we go to the right.
         self.arc_left(-arc_angle, radius, center, start_angle, end_angle)
 
     def arc_to(self, endpoint, center=None, start_angle=None, end_angle=None):
@@ -278,6 +280,12 @@ class Pen:
         )
 
     def _arc(self, center, radius, endpoint, arc_angle, start_angle, end_angle):
+        """
+        Internal implementation of arcs.
+
+        Arcs that go to the left have a positive radius and arc angle.
+        Arcs that go to the right have a negative radius and arc angle.
+        """
         old_position = self._position
         old_heading = self._heading
         self.move_to(endpoint)
@@ -303,6 +311,14 @@ class Pen:
         self.paper.add_element(Circle(
             center=self._position,
             radius=radius,
+            color=self.color,
+        ))
+
+    def path_circle(self, radius):
+        self.paper.add_element(PathCircle(
+            center=self._position,
+            radius=radius,
+            width=self.width,
             color=self.color,
         ))
 
@@ -339,12 +355,17 @@ class Pen:
         # Check whether we are continuing the current stroke or starting a
         # new one.
         assert len(self._current_path.segments) > 0
+        first_segment = self._current_path.segments[0]
         last_segment = self._current_path.segments[-1]
+
         points_same = points_equal(last_segment.b, new_segment.a)
+        closes_path = points_equal(new_segment.b, first_segment.a)
         color_same = (last_segment.color == new_segment.color)
 
         if points_same and color_same:
             self._current_path.add_segment(new_segment)
+            if closes_path:
+                new_segment.join_with(first_segment)
         elif points_same and not color_same:
             # We are continuing the old path visually, but with a new
             # color. We implement this by starting a new path, and doing an
@@ -352,6 +373,8 @@ class Pen:
             # correctly.
             new_path()
             last_segment.join_with(new_segment)
+            if closes_path:
+                new_segment.join_with(first_segment)
         else:  # There is a break in the path.
             new_path()
 
