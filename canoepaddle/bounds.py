@@ -1,3 +1,6 @@
+from .point import Point, float_equal
+
+
 class Bounds:
 
     def __init__(self, left, bottom, right, top):
@@ -8,10 +11,10 @@ class Bounds:
 
     def __eq__(self, other):
         return (
-            self.left == other.left and
-            self.bottom == other.bottom and
-            self.right == other.right and
-            self.top == other.top
+            float_equal(self.left, other.left) and
+            float_equal(self.bottom, other.bottom) and
+            float_equal(self.right, other.right) and
+            float_equal(self.top, other.top)
         )
 
     def __repr__(self):
@@ -28,6 +31,11 @@ class Bounds:
         yield self.bottom
         yield self.right
         yield self.top
+
+    @classmethod
+    def from_point(self, point):
+        p = Point(*point)
+        return Bounds(p.x, p.y, p.x, p.y)
 
     def union(self, other):
         self.left = min(self.left, other.left)

@@ -5,10 +5,8 @@ from .point import (
     Point,
     float_equal,
     points_equal,
-    point_bounds,
 )
 from .bounds import Bounds
-from .shape import Circle
 from .geometry import (
     intersect_lines,
     intersect_circle_line,
@@ -126,15 +124,15 @@ class LineSegment(Segment):
     def bounds(self):
         if self.width is None:
             return Bounds.union_all([
-                point_bounds(self.a),
-                point_bounds(self.b),
+                Bounds.from_point(self.a),
+                Bounds.from_point(self.b),
             ])
         else:
             return Bounds.union_all([
-                point_bounds(self.a_left),
-                point_bounds(self.a_right),
-                point_bounds(self.b_left),
-                point_bounds(self.b_right),
+                Bounds.from_point(self.a_left),
+                Bounds.from_point(self.a_right),
+                Bounds.from_point(self.b_left),
+                Bounds.from_point(self.b_right),
             ])
 
     def join_with_line(self, other):
@@ -317,9 +315,46 @@ class ArcSegment(Segment):
         self.set_end_angle(end_angle)
 
     def bounds(self):
-        #TODO: This is wrong. The bounds should be smaller when the arc doesn't
-        # take up a whole circle worth.
-        return Circle(self.center, self.radius, color=None).bounds()
+        # Find the four "compass points" around the center.
+        r = self.radius
+        compass_points = [
+            vec.add(self.center, direction)
+            for direction in [
+                (r, 0),  # East, heading = 0.
+                (0, r),  # North, heading = 90.
+                (-r, 0),  # West, heading = 180.
+                (0, -r),  # South, heading = 270.
+            ]
+        ]
+
+        # Check which compass points are in the body of the circle. We need to
+        # know what "clock hand angle" the start and end of the arc are, in the
+        # range (0 <= angle < 360). Keep the end angle larger than the start
+        # angle.
+        start = self.start_heading - 90
+        end = self.end_heading - 90
+        start = start % 360
+        end = end % 360
+        if end < start:
+            end += 360
+        assert 0 <= start < 360
+        assert start <= end < start + 360
+
+        # Find the compass points in the angular range from the start to the
+        # end of the arc. We have to check two full rotations worth, because
+        # the end of the range could reach up to 720 degrees.
+        occupied_points = []
+        for i, angle in enumerate(range(0, 720, 90)):
+            if start <= angle <= end:
+                occupied_points.append(compass_points[i % 4])
+
+        # The bounding box of the arc is the combined bounding box of the start
+        # point, the end point, and the compass points occupied by the body of
+        # the arc.
+        return Bounds.union_all([
+            Bounds.from_point(p) for p in
+            [self.a, self.b] + occupied_points
+        ])
 
     def translate(self, offset):
         self.center = vec.add(self.center, offset)

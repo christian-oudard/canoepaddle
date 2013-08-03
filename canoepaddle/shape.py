@@ -34,6 +34,7 @@ class Circle:
 
 class PathCircle(Circle):
 
+    #TODO: Ew, we're using width for pen width here, but for rectangle width later.
     def __init__(self, center, radius, width, color):
         self.center = Point(*center)
         self.radius = radius

@@ -14,7 +14,6 @@ from grapefruit import Color
 from util import assert_segments_equal, assert_points_equal
 from canoepaddle import Pen
 from canoepaddle.error import SegmentError
-#from canoepaddle.bounds import Bounds #TODO bounds tests
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -383,27 +382,6 @@ def test_flip():
         path.draw(2),
         'M-6.00,0.00 L0.00,0.00 L3.00,-5.20'
     )
-
-
-def test_circle_bounds():
-    raise SkipTest()
-
-
-def test_rectangle_bounds():
-    raise SkipTest()
-
-
-def test_line_segment_bounds():
-    raise SkipTest()
-    # No-width segment.
-
-    # Segment with a width.
-
-    # Set an end angle, the bounds update.
-
-
-def test_arc_segment_bounds():
-    raise SkipTest()
 
 
 def test_translate():
