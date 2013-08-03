@@ -1,6 +1,5 @@
 from canoepaddle import Pen
 
-#TODO: Make the ends close correctly.
 #TODO: Use red outlined in black.
 
 
