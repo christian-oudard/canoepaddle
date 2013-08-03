@@ -255,13 +255,27 @@ def test_joint():
 def test_joint_circular():
     p = Pen()
 
-    p.set_width(1.0)
+    p.set_width(2.0)
     p.move_to((0, 0))
     p.turn_to(0)
 
     # Draw a square.
     p.line_forward(5)
     p.turn_left(90)
+    p.line_forward(5)
+    p.turn_left(90)
+    p.line_forward(5)
+    p.turn_left(90)
+    p.line_forward(5)
+
+    path = p.paper.elements[0]
+    assert_equal(
+        path.draw_thick(0),
+        (
+            'M-1,1 L6,1 L6,-6 L-1,-6 L-1,1 z '
+            'M1,-1 L1,-4 L4,-4 L4,-1 L1,-1 z'
+        )
+    )
 
 
 def test_show_joints():

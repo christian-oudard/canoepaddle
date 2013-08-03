@@ -160,9 +160,14 @@ def draw_thick_segments(pen, segments, show_joints=False):
 
 def draw_segment_right(pen, seg, first=False, last=False):
     if first:
-        # Draw the beginning edge.
-        pen.move_to(seg.a_left)
-        pen.line_to(seg.a_right)
+        if seg.loop_start:
+            # If this segment starts a loop, start directly on right side of
+            # the loop.
+            pen.move_to(seg.a_right)
+        else:
+            # Draw the beginning edge of the stroke.
+            pen.move_to(seg.a_left)
+            pen.line_to(seg.a_right)
 
     # Draw along the length of the segment.
     seg.draw_right(pen)
@@ -170,8 +175,13 @@ def draw_segment_right(pen, seg, first=False, last=False):
 
 def draw_segment_left(pen, seg, first=False, last=False):
     if last:
-        # Draw the ending thickness edge.
-        pen.line_to(seg.b_left)
+        if seg.loop_end:
+            # If this segment ends a loop, finish the right side and start the
+            # left side of the loop.
+            pen.move_to(seg.b_left)
+        else:
+            # Draw the ending thickness edge.
+            pen.line_to(seg.b_left)
 
     # Continue path back towards the beginning.
     seg.draw_left(pen)

@@ -38,6 +38,9 @@ class Segment:
         self.b_left = None
         self.b_right = None
 
+        self.loop_start = False
+        self.loop_end = False
+
     def __iter__(self):
         yield self.a
         yield self.b
@@ -63,7 +66,7 @@ class Segment:
         if self.b_right is not None:
             self.b_right = vec.add(self.b_right, offset)
 
-    def join_with(self, other):
+    def join_with(self, other, loop=False):
         assert points_equal(self.b, other.a)
         if self.width is None or other.width is None:
             return
@@ -72,6 +75,10 @@ class Segment:
             self.join_with_line(other)
         elif isinstance(other, ArcSegment):
             self.join_with_arc(other)
+
+        if loop:
+            self.loop_end = True
+            other.loop_start = True
 
     def check_degenerate_segment(self):
         if any(

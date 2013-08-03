@@ -4,8 +4,6 @@
 #TODO: implement different modes for fill, stroke, and outlined stroke. self.width
 # is what controls this.
 #TODO: implement different endcaps, such as round.
-#TODO: close the ends of paths that loop back, but in a way that stands up to
-# outlined stroke scrutiny.
 
 import math
 
@@ -365,16 +363,15 @@ class Pen:
         if points_same and color_same:
             self._current_path.add_segment(new_segment)
             if closes_path:
-                new_segment.join_with(first_segment)
+                new_segment.join_with(first_segment, loop=True)
         elif points_same and not color_same:
             # We are continuing the old path visually, but with a new
             # color. We implement this by starting a new path, and doing an
-            # extra "join_with" to set the start and end of the segment
-            # correctly.
+            # extra "join_with" so that it looks like the same line.
             new_path()
             last_segment.join_with(new_segment)
             if closes_path:
-                new_segment.join_with(first_segment)
+                new_segment.join_with(first_segment, loop=True)
         else:  # There is a break in the path.
             new_path()
 
