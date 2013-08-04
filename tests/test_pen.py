@@ -403,6 +403,7 @@ def test_translate():
     p.arc_left(90, 3)
     p.turn_left(90)
     p.move_forward(3)
+    p.set_fill_mode()
     p.circle(0.5)
     p.move_forward(3)
     p.square(1)
@@ -418,11 +419,11 @@ def test_translate():
                 'fill="#000000" />'
             ),
             (
-                '<path d="M5.0,-4.0 A 1.0,1.0 0 1 0 3.0,-4.0 A 1.0,1.0 0 1 0 '
-                '5.0,-4.0 z" fill="#000000" />'
+                '<path d="M4.5,-4.0 A 0.5,0.5 0 0 0 3.5,-4.0 '
+                'A 0.5,0.5 0 0 0 4.5,-4.0 z" fill="#000000" />'
             ),
             (
-                '<path d="M0.0,-3.0 L2.0,-3.0 L2.0,-5.0 L0.0,-5.0 L0.0,-3.0 z" '
+                '<path d="M0.5,-3.5 L1.5,-3.5 L1.5,-4.5 L0.5,-4.5 L0.5,-3.5 z" '
                 'fill="#000000" />'
             ),
         ]
@@ -803,6 +804,22 @@ def test_degenerate_arc():
     )
 
 
+def test_arc_pie_slice():
+    # Draw a "pie slice" arc that is wide enough to reach all the way to the
+    # arc center.
+    p = Pen()
+    p.set_stroke_mode(1.0)
+    p.move_to((0.5, 0))
+    p.turn_to(90)
+    p.arc_left(90, 0.5)
+
+    path = p.paper.elements[0]
+    assert_equal(
+        path.draw(0),
+        'M0,0 L1,0 A 1,1 0 0 0 0,-1 L0,0 z'
+    )
+
+
 def test_arc_start_angle_bug():
     # Some arcs are not reporting their start and end angles correctly.
 
@@ -1115,6 +1132,16 @@ def test_circle():
     assert_equal(
         p.paper.svg_elements(0),
         ['<path d="M1,0 A 1,1 0 0 0 -1,0 A 1,1 0 0 0 1,0 z" fill="#000000" />']
+    )
+
+
+def test_circle_degenerate():
+    p = Pen()
+    p.set_stroke_mode(2.0)
+    p.circle(1)
+    assert_equal(
+        p.paper.svg_elements(0),
+        ['<path d="M2,0 A 2,2 0 0 0 -2,0 A 2,2 0 0 0 2,0 z" fill="#000000" />']
     )
 
 

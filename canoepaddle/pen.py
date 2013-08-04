@@ -247,6 +247,8 @@ class Pen:
         Draw an arc ending at the specified point, starting tangent to the
         current position and heading.
         """
+        if points_equal(self._position, endpoint):
+            return
         # Handle unspecified center.
         # We need to find the center of the arc, so we can find its radius. The
         # center of this arc is uniquely defined by the intersection of two
@@ -270,6 +272,7 @@ class Pen:
 
         # Determine true start heading. This may not be the same as the
         # original pen heading in some circumstances.
+        assert not points_equal(center, self._position)
         v_radius_start = vec.vfrom(center, self._position)
         v_radius_perp = vec.perp(v_radius_start)
         if vec.dot(v_radius_perp, v_pen) < 0:
