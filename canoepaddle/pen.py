@@ -352,7 +352,7 @@ class Pen:
         def new_path():
             path = Path(self.mode)
             self.paper.add_element(path)
-            path.add_segment(new_segment)
+            path.segments.append(new_segment)
             self._current_path = path
 
         # Start a new path if this is the first segment added.
@@ -374,13 +374,17 @@ class Pen:
             last_segment.mode.outline_width == new_segment.mode.outline_width
         )
 
-        if not mode_same:
+        if not mode_same or not points_same:
+            # There is a break in the path or a mode change.
             new_path()
-        elif points_same and color_same:
-            self._current_path.add_segment(new_segment)
+            return
+
+        if color_same:
+            self._current_path.segments.append(new_segment)
+            last_segment.join_with(new_segment)
             if closes_path:
                 new_segment.join_with(first_segment, loop=True)
-        elif points_same and not color_same:
+        else:
             # We are continuing the old path visually, but with a new
             # color. We implement this by starting a new path, and doing an
             # extra "join_with" so that it looks like the same line.
@@ -389,8 +393,6 @@ class Pen:
             if closes_path:
                 # Different color, so no loop argument.
                 new_segment.join_with(first_segment)
-        else:  # There is a break in the path.
-            new_path()
 
     def _vector(self, length=1):
         """

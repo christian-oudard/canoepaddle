@@ -23,12 +23,6 @@ class Path:
         for seg in self.segments:
             seg.translate(offset)
 
-    def add_segment(self, new_segment):
-        if len(self.segments) > 0:
-            last_segment = self.segments[-1]
-            last_segment.join_with(new_segment)
-        self.segments.append(new_segment)
-
     def svg(self, precision):
         assert len(self.segments) > 0
         output = []
