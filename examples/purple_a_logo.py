@@ -2,8 +2,7 @@ from canoepaddle import Pen
 
 
 def draw(p):
-    p.set_width(2.0)
-    p.set_color('#650360')
+    p.set_stroke_mode(2.0, '#650360')
 
     p.move_to((3, -4))
     p.turn_to(90)

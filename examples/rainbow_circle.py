@@ -9,7 +9,6 @@ def draw(p):
     num_colors = 36
     angle_step = 360 / num_colors
 
-    p.set_width(1.0)
     p.move_to((0, 0))
     p.turn_to(90)
     p.move_forward(radius)
@@ -23,7 +22,7 @@ def draw(p):
         b = chroma * math.cos(math.radians(angle))
         color = Color.NewFromLab(l, a, b)
         assert color.isLegal
-        p.set_color(color)
+        p.set_stroke_mode(1.0, color)
 
         p.arc_right(
             angle_step,

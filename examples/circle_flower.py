@@ -2,7 +2,7 @@ from canoepaddle import Pen
 
 p = Pen()
 
-p.set_color('#84f')
+p.set_fill_mode('#84f')
 
 
 def petal(start_radius, distance, heading):

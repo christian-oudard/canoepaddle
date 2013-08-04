@@ -2,7 +2,7 @@ from canoepaddle import Pen
 
 p = Pen()
 
-p.set_color('green')
+p.set_fill_mode('green')
 
 p.move_to((0, 0))
 p.turn_to(0)

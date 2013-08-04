@@ -4,7 +4,7 @@ from canoepaddle import Pen
 
 
 p = Pen()
-p.set_width(1.0)
+p.set_stroke_mode(1.0)
 
 
 def trefoil(origin, radius, num_leaves, leaf_angle, step=1):

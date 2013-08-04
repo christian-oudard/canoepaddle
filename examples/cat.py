@@ -12,19 +12,17 @@ def draw(p):
     green = '#7BD41C'
     cat_color = '#F5EADA'
 
-    p.set_width(1.0)
-
     p.move_to((0, 0))
     p.turn_to(0)
 
     # Head.
-    p.set_color(cat_color)
+    p.set_fill_mode(cat_color)
     p.circle(5)
-    p.set_color(gray)
-    p.path_circle(5)
+    p.set_stroke_mode(1.0, gray)
+    p.circle(5)
 
     # Mouth.
-    p.set_width(0.5)
+    p.set_stroke_mode(0.5, gray)
     p.turn_to(-90)
     p.move_forward(2)
     mouth_top = p.position
@@ -35,19 +33,17 @@ def draw(p):
 
     # Nose.
     p.move_to(mouth_top)
-    p.set_color(pink)
-    p.set_width(sqrt2 - 1)
+    p.set_fill_mode(pink)
     p.move_to(mouth_top)
     p.turn_to(45)
-    p.line_forward(sqrt2 / 2)
+    p.line_forward(sqrt2)
     p.turn_left(135)
-    p.line_forward(1)
+    p.line_forward(2)
     p.turn_left(135)
     p.line_to(mouth_top)
 
     # Whiskers.
-    p.set_color(gray)
-    p.set_width(0.15)
+    p.set_stroke_mode(0.15, gray)
     dot_angles_and_distances = [
         (-16, 1.5),
         (-3, 1.4),
@@ -69,11 +65,10 @@ def draw(p):
     # Eyes.
     def eye():
         center = p.position
-        p.set_width(0.4)
-        p.set_color(gray)
-        p.path_circle(1.0)
-        p.set_color(green)
-        p.circle(0.8)
+        p.set_fill_mode(green)
+        p.circle(1.0)
+        p.set_stroke_mode(0.4, gray)
+        p.circle(1.0)
 
         p.move_to(center)
         p.turn_to(90)
@@ -85,8 +80,7 @@ def draw(p):
         bottom = p.position
 
         angle = 25
-        p.set_color(gray)
-        p.set_width(0.30)
+        p.set_stroke_mode(0.30, gray)
         p.turn_to(90 - angle)
         p.arc_to(top)
         p.turn_left(180 - 2 * angle)
@@ -98,7 +92,7 @@ def draw(p):
     eye()
 
     # Ears.
-    p.set_width(1.0)
+    p.set_stroke_mode(1.0, gray)
     p.move_to((1, 5))
     p.turn_to(20)
     p.line_forward(3.5)
