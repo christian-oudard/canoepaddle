@@ -1,12 +1,6 @@
-#TODO: implement different modes for fill, stroke, and outlined stroke.
-#TODO: remove old svg based shape elements, use paths instead.
 #TODO: Coverage
 #TODO: implement different endcaps, such as round.
 #TODO: offwidth errors can just start a new path instead?
-#TODO: Make shape drawing go off of a pen, not off of returning svg output
-#TODO: Stop doing extra work to calculate thick segment widths? Maybe wait
-# until you draw them and then take the boundary.
-#TODO: Make Pen.circle and Pen.square not drop you into fill mode automatically.
 
 import math
 from copy import copy
@@ -21,13 +15,9 @@ from .geometry import intersect_lines
 
 class Pen:
 
-    def __init__(self, mode=None):
-        if mode is None:
-            self._mode = Mode()
-        else:
-            self._mode = mode
-
+    def __init__(self):
         self.paper = Paper()
+        self._mode = Mode()
         self._heading = 0
         self._position = Point(0.0, 0.0)
 
@@ -397,7 +387,8 @@ class Pen:
             new_path()
             last_segment.join_with(new_segment)
             if closes_path:
-                new_segment.join_with(first_segment, loop=True)
+                # Different color, so no loop argument.
+                new_segment.join_with(first_segment)
         else:  # There is a break in the path.
             new_path()
 

@@ -8,7 +8,6 @@ from .svg import (
     path_arc,
     path_close,
 )
-from .error import SegmentError
 
 
 class Path:
@@ -107,18 +106,8 @@ class Path:
             for path in pen.paper.elements
         )
 
-    def draw_nodes(self, precision):
-        return  # TODO: stub
-
 
 def draw_thick_segments(pen, segments, mode):
-    for seg in segments:
-        if mode.width is None:
-            raise SegmentError(
-                'Cannot draw a thick segment without a width '
-                'specified.'
-            )
-
     if len(segments) == 1:
         seg = segments[0]
         draw_segment_right(pen, seg, first=True, last=True)

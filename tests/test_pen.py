@@ -254,7 +254,7 @@ def test_joint():
     )
 
 
-def test_joint_circular():
+def test_joint_loop():
     p = Pen()
 
     p.set_stroke_mode(2.0)
@@ -277,6 +277,33 @@ def test_joint_circular():
             'M-1,1 L6,1 L6,-6 L-1,-6 L-1,1 z '
             'M1,-1 L1,-4 L4,-4 L4,-1 L1,-1 z'
         )
+    )
+
+
+def test_joint_loop_color():
+    p = Pen()
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+
+    # Draw a square with one side a different color. It joins to the
+    # beginning correctly.
+    p.set_stroke_mode(2.0, color='black')
+    p.line_forward(5)
+    p.turn_left(90)
+    p.line_forward(5)
+    p.turn_left(90)
+    p.line_forward(5)
+    p.turn_left(90)
+    p.set_stroke_mode(2.0, color='red')
+    p.line_forward(5)
+
+    assert_equal(
+        [path.draw(0) for path in p.paper.elements],
+        [
+            'M1,-1 L-1,1 L6,1 L6,-6 L-1,-6 L1,-4 L4,-4 L4,-1 L1,-1 z',
+            'M1,-4 L-1,-6 L-1,1 L1,-1 L1,-4 z',
+        ]
     )
 
 
@@ -711,6 +738,20 @@ def test_offwidth_arc_joint_error():
     assert_raises(
         SegmentError,
         lambda: p.arc_left(90, 5)
+    )
+
+
+def test_arc_joint_error_nonconcentric():
+    # Join two arcs together illegally, but don't make them concentric.
+    p = Pen()
+
+    p.move_to((0, -1))
+    p.set_stroke_mode(1.0)
+    p.arc_to((1, 0), center=(0, 0))
+    p.set_stroke_mode(0.1)
+    assert_raises(
+        SegmentError,
+        lambda: p.arc_to((0, 1), center=(0.1, 0)),
     )
 
 

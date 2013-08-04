@@ -11,16 +11,6 @@ def number(n, precision):
     return '{n:.{p}f}'.format(n=n, p=precision)
 
 
-def svg_coord(x, y):
-    return x, -y
-
-
-def svg_rect(left, bottom, width, height):
-    x = left
-    y = -bottom - height
-    return x, y, width, height
-
-
 def html_color(color):
     if isinstance(color, Color):
         return color.html
@@ -30,19 +20,11 @@ def html_color(color):
     return Color.RgbToHtml(*color)
 
 
-def path_element(path_data, color, stroke_width=None):
+def path_element(path_data, color):
     color = html_color(color)
-    if stroke_width is not None:
-        color_attrs = 'fill="none" stroke="{}" stroke-width="{}"'.format(
-            color,
-            stroke_width,
-        )
-    else:
-        color_attrs = 'fill="{}"'.format(color)
-
-    return '<path d="{path_data}" {color_attrs} />'.format(
+    return '<path d="{path_data}" fill="{color}" />'.format(
         path_data=path_data,
-        color_attrs=color_attrs,
+        color=color,
     )
 
 
@@ -75,29 +57,4 @@ def path_arc(x, y, arc_angle, radius, precision):
         r=number(abs(radius), precision),
         direction_flag=direction_flag,
         sweep_flag=sweep_flag,
-    )
-
-
-def circle(x, y, radius, color, precision):
-    x, y = svg_coord(x, y)
-    return (
-        '<circle cx="{x}" cy="{y}" r="{r}" fill="{color}" />'
-    ).format(
-        x=number(x, precision),
-        y=number(y, precision),
-        r=number(abs(radius), precision),
-        color=html_color(color),
-    )
-
-
-def rectangle(left, bottom, width, height, color, precision):
-    x, y, width, height = svg_rect(left, bottom, width, height)
-    return (
-        '<rect x="{x}" y="{y}" width="{width}" height="{height}" fill="{color}" />'
-    ).format(
-        x=number(x, precision),
-        y=number(y, precision),
-        width=number(width, precision),
-        height=number(height, precision),
-        color=html_color(color),
     )
