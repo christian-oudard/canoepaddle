@@ -50,3 +50,14 @@ class Bounds:
         for b in bounds_list:
             current.union(b)
         return current
+
+    def draw(self, pen):
+        pen.move_to((self.left, self.bottom))
+        pen.turn_to(0)
+        pen.line_to_x(self.right)
+        pen.turn_left(90)
+        pen.line_to_y(self.top)
+        pen.turn_left(90)
+        pen.line_to_x(self.left)
+        pen.turn_left(90)
+        pen.line_to_y(self.bottom)

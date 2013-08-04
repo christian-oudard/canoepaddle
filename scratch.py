@@ -1,26 +1,29 @@
 import math
 
-from canoepaddle import Pen
+from canoepaddle import Pen, Paper
 from grapefruit import Color
 
 
-def draw(p):
-    p.move_to((0, 0))
-    p.turn_to(0)
+def draw():
+    paper = Paper()
 
-    # Draw a square with one side a different color. It joins to the
-    # beginning correctly.
-    p.stroke_mode(2.0, color='black')
-    p.line_forward(5)
-    p.turn_left(90)
-    p.line_forward(5)
-    p.turn_left(90)
-    p.line_forward(5)
-    p.turn_left(90)
-    p.stroke_mode(2.0, color='red')
-    p.line_forward(5)
+    p = Pen()
+    p.fill_mode()
+    p.turn_to(0)
+    p.arc_left(180, 5)
+    p.paper.center_on_x(0)
+    paper.merge(p.paper)
+
+    p = Pen()
+    p.fill_mode()
+    p.turn_to(180)
+    p.arc_left(180, 5)
+    p.paper.center_on_x(0)
+    paper.merge(p.paper)
+
+    return paper
 
 if __name__ == '__main__':
     p = Pen()
-    draw(p)
-    print(p.paper.format_svg(1))
+    paper = draw()
+    print(paper.format_svg())

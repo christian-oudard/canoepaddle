@@ -12,7 +12,7 @@ import vec
 from grapefruit import Color
 
 from util import assert_segments_equal, assert_points_equal
-from canoepaddle.pen import Pen, Mode
+from canoepaddle.pen import Pen, Paper, Mode
 from canoepaddle.error import SegmentError
 
 sqrt2 = math.sqrt(2)
@@ -394,8 +394,7 @@ def test_center_on_xy():
     p.move_to((2, 1))
     p.circle(1)
 
-    bounds = p.paper.bounds()
-    p.paper.translate((-(bounds.left + bounds.right) / 2, 0))
+    p.paper.center_on_x(0)
 
     assert_equal(
         p.paper.svg_elements(0),
@@ -405,8 +404,7 @@ def test_center_on_xy():
         ]
     )
 
-    bounds = p.paper.bounds()
-    p.paper.translate((0, -(bounds.bottom + bounds.top) / 2))
+    p.paper.center_on_y(0)
 
     assert_equal(
         p.paper.svg_elements(1),
@@ -419,6 +417,33 @@ def test_center_on_xy():
                 '<path d="M2.0,0.0 A 2.0,2.0 0 0 0 -2.0,0.0 '
                 'A 2.0,2.0 0 0 0 2.0,0.0 z" fill="#000000" />'
             ),
+        ]
+    )
+
+
+def test_paper_merge():
+    # Merge two drawings together.
+    paper = Paper()
+
+    p = Pen()
+    p.fill_mode()
+    p.turn_to(0)
+    p.arc_left(180, 5)
+    p.paper.center_on_x(0)
+    paper.merge(p.paper)
+
+    p = Pen()
+    p.fill_mode()
+    p.turn_to(180)
+    p.arc_left(180, 5)
+    p.paper.center_on_x(0)
+    paper.merge(p.paper)
+
+    assert_equal(
+        [path.draw(1) for path in paper.elements],
+        [
+            'M-2.5,0.0 A 5.0,5.0 0 0 0 -2.5,-10.0',
+            'M2.5,0.0 A 5.0,5.0 0 0 0 2.5,10.0',
         ]
     )
 

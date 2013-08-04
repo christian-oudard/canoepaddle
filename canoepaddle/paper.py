@@ -16,6 +16,9 @@ class Paper:
     def add_element(self, element):
         self.elements.append(element)
 
+    def merge(self, other):
+        self.elements.extend(other.elements)
+
     def bounds(self):
         return Bounds.union_all(
             element.bounds()
@@ -25,6 +28,16 @@ class Paper:
     def translate(self, offset):
         for element in self.elements:
             element.translate(offset)
+
+    def center_on_x(self, x_center):
+        bounds = self.bounds()
+        current_x_center = (bounds.left + bounds.right) / 2
+        self.translate((x_center - current_x_center, 0))
+
+    def center_on_y(self, y_center):
+        bounds = self.bounds()
+        current_y_center = (bounds.bottom + bounds.top) / 2
+        self.translate((0, y_center - current_y_center))
 
     def set_view_box(self, x, y, width, height):
         self.view_x = x

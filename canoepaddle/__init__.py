@@ -1,3 +1,3 @@
-__all__ = ['Pen']
+__all__ = ['Pen', 'Paper']
 
-from .pen import Pen
+from .pen import Pen, Paper

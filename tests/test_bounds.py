@@ -26,6 +26,17 @@ def test_bounds_union():
     )
 
 
+def test_draw_bounds():
+    p = Pen()
+    p.fill_mode()
+    Bounds(-2, -3, 1, 2).draw(p)
+    path = p.paper.elements[0]
+    assert_equal(
+        path.draw(0),
+        'M-2,3 L1,3 L1,-2 L-2,-2 L-2,3 z'
+    )
+
+
 def test_circle_bounds():
     p = Pen()
     p.fill_mode()
