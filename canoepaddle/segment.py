@@ -309,7 +309,7 @@ class ArcSegment(Segment):
 
     def bounds(self):
         # Find the four "compass points" around the center.
-        r = self.radius
+        r = abs(self.radius)
         compass_points = [
             vec.add(self.center, direction)
             for direction in [

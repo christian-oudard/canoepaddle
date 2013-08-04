@@ -134,3 +134,16 @@ def test_arc_segment_bounds():
         arc.bounds(),
         Bounds(-sqrt2 / 2, -sqrt2 / 2, 1, 1)
     )
+
+    # Half circle, right side
+    p = Pen()
+    p.fill_mode()
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.arc_right(180, 5)
+
+    arc = p.paper.elements[0].segments[0]
+    assert_equal(
+        arc.bounds(),
+        Bounds(0, -10, 5, 0),
+    )
