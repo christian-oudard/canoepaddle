@@ -53,6 +53,8 @@ class Path:
             return self.draw_fill(precision)
         elif self.mode.name == 'stroke':
             return self.draw_stroke(precision)
+        elif self.mode.name == 'outline':
+            return self.draw_outline(precision)
 
     def draw_fill(self, precision):
         output = []
@@ -90,6 +92,20 @@ class Path:
         from .pen import Pen
         pen = Pen()
         pen.set_fill_mode()
+        draw_thick_segments(pen, self.segments, self.mode)
+
+        # Render the path created by our temporary pen.
+        return ' '.join(
+            path.draw(precision)
+            for path in pen.paper.elements
+        )
+
+    def draw_outline(self, precision):
+        # Create a temporary pen to draw the outline of the path segments,
+        # taking into account the thickness of the path and the outline thickness.
+        from .pen import Pen
+        pen = Pen()
+        pen.set_stroke_mode(self.mode.outline_width)
         draw_thick_segments(pen, self.segments, self.mode)
 
         # Render the path created by our temporary pen.

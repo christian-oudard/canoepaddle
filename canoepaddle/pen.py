@@ -68,14 +68,10 @@ class Pen:
         """
         self._set_mode('stroke', color, width)
 
-    def set_outline_mode(self, width, ratio=0.1, color=None):
+    def set_outline_mode(self, width, outline_width, color=None):
         """
         Start drawing strokes with a width drawn by thin outlines.
-
-        The ratio argument determines how thick the outlines are in comparison
-        to the stroke width.
         """
-        outline_width = width * ratio
         self._set_mode('outline', color, width, outline_width)
 
     def _set_mode(self, mode_name, color, width=None, outline_width=None):
@@ -383,7 +379,10 @@ class Pen:
         points_same = points_equal(last_segment.b, new_segment.a)
         closes_path = points_equal(new_segment.b, first_segment.a)
         color_same = (last_segment.mode.color == new_segment.mode.color)
-        mode_same = (last_segment.mode.name == new_segment.mode.name)
+        mode_same = (
+            last_segment.mode.name == new_segment.mode.name and
+            last_segment.mode.outline_width == new_segment.mode.outline_width
+        )
 
         if not mode_same:
             new_path()

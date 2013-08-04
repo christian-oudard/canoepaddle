@@ -1403,3 +1403,45 @@ def test_change_mode():
             '<path d="M5,0 L10,0" fill="#000000" />',
         ]
     )
+
+
+def test_outline():
+    p = Pen()
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.set_outline_mode(1.0, 0.2)
+    p.line_forward(3)
+
+    path = p.paper.elements[0]
+    assert_equal(
+        path.draw(1),
+        (
+            'M-0.1,-0.6 L-0.1,0.6 L3.1,0.6 L3.1,-0.6 L-0.1,-0.6 z '
+            'M0.1,-0.4 L2.9,-0.4 L2.9,0.4 L0.1,0.4 L0.1,-0.4 z'
+        )
+    )
+
+
+def test_change_outline_width():
+    # Changing the outline width starts a new path.
+    p = Pen()
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.set_outline_mode(1.0, 0.2)
+    p.line_forward(3)
+    p.set_outline_mode(1.0, 0.4)
+    p.line_forward(3)
+
+    assert_equal(
+        [path.draw(1) for path in p.paper.elements],
+        [
+            (
+                'M-0.1,-0.6 L-0.1,0.6 L3.1,0.6 L3.1,-0.6 L-0.1,-0.6 z '
+                'M0.1,-0.4 L2.9,-0.4 L2.9,0.4 L0.1,0.4 L0.1,-0.4 z'
+            ),
+            (
+                'M2.8,-0.7 L2.8,0.7 L6.2,0.7 L6.2,-0.7 L2.8,-0.7 z '
+                'M3.2,-0.3 L5.8,-0.3 L5.8,0.3 L3.2,0.3 L3.2,-0.3 z'
+            ),
+        ]
+    )
