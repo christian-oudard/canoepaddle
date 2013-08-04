@@ -39,13 +39,6 @@ class Path:
             self.mode.color,
         ))
 
-        if self.mode.show_bones:
-            output.append(path_element(
-                self.draw(precision),
-                self.color,
-            ))
-        if self.mode.show_nodes:
-            output.append(self.draw_nodes(precision))
         return '\n'.join(output)
 
     def draw(self, precision):
@@ -125,12 +118,6 @@ def draw_thick_segments(pen, segments, mode):
                 'Cannot draw a thick segment without a width '
                 'specified.'
             )
-
-    if mode.show_joints:
-        for seg in segments:
-            draw_segment_right(pen, seg, first=True, last=True)
-            draw_segment_left(pen, seg, first=True, last=True)
-        return
 
     if len(segments) == 1:
         seg = segments[0]

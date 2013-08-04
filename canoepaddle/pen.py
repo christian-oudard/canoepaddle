@@ -449,10 +449,6 @@ class Mode:
         self.width = width
         self.outline_width = outline_width
 
-        self.show_joints = False
-        self.show_nodes = False
-        self.show_bones = False
-
     def __repr__(self):
         strings = []
         for field in self.repr_fields:
