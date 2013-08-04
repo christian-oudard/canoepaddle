@@ -134,3 +134,35 @@ def test_arc_segment_bounds():
         arc.bounds(),
         Bounds(-sqrt2 / 2, -sqrt2 / 2, 1, 1)
     )
+
+
+def test_thick_arc_bounds():
+    # Create a thick arc.
+    p = Pen()
+    p.set_width(sqrt2 / 2)
+    p.move_to((0, 0))
+    p.turn_to(45)
+    p.move_forward(sqrt2)
+    p.turn_left(90)
+    p.arc_left(90, center=(0, 0))
+
+    arc = p.paper.elements[0].segments[0]
+    assert_equal(
+        arc.bounds(),
+        Bounds(-1.25, 0.75, 1.25, 1.25 * sqrt2)
+    )
+
+    # Change its start angle to change its bounds.
+    p = Pen()
+    p.set_width(sqrt2 / 2)
+    p.move_to((0, 0))
+    p.turn_to(45)
+    p.move_forward(sqrt2)
+    p.turn_left(90)
+    p.arc_left(90, center=(0, 0), start_angle=90)
+
+    arc = p.paper.elements[0].segments[0]
+    assert_equal(
+        arc.bounds(),
+        Bounds(-1.25, 0.25 * sqrt2, 1.0, 1.25 * sqrt2)
+    )

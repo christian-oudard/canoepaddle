@@ -315,6 +315,26 @@ class ArcSegment(Segment):
         self.set_end_angle(end_angle)
 
     def bounds(self):
+        # Handle the case if we have a width.
+        if self.width is not None:
+            from .pen import Pen
+            # Make a temporary pen to trace out the inner and outer edge of the
+            # thick arc. The combination of the bounding boxes of the inner and
+            # outer edge arcs is the bounding box of the thick arc.
+            p = Pen()
+            p.move_to(self.a_left)
+            p.turn_to(self.start_heading)
+            p.arc_to(self.b_left, center=self.center)
+            left_bounds = p.paper.elements[0].segments[0].bounds()
+
+            p = Pen()
+            p.move_to(self.a_right)
+            p.turn_to(self.start_heading)
+            p.arc_to(self.b_right, center=self.center)
+            right_bounds = p.paper.elements[0].segments[0].bounds()
+
+            return Bounds.union_all([left_bounds, right_bounds])
+
         # Find the four "compass points" around the center.
         r = self.radius
         compass_points = [
