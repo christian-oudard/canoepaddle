@@ -16,13 +16,13 @@ def draw(p):
     p.turn_to(0)
 
     # Head.
-    p.set_fill_mode(cat_color)
+    p.fill_mode(cat_color)
     p.circle(5)
-    p.set_stroke_mode(1.0, gray)
+    p.stroke_mode(1.0, gray)
     p.circle(5)
 
     # Mouth.
-    p.set_stroke_mode(0.5, gray)
+    p.stroke_mode(0.5, gray)
     p.turn_to(-90)
     p.move_forward(2)
     mouth_top = p.position
@@ -33,7 +33,7 @@ def draw(p):
 
     # Nose.
     p.move_to(mouth_top)
-    p.set_fill_mode(pink)
+    p.fill_mode(pink)
     p.move_to(mouth_top)
     p.turn_to(45)
     p.line_forward(sqrt2)
@@ -43,7 +43,7 @@ def draw(p):
     p.line_to(mouth_top)
 
     # Whiskers.
-    p.set_stroke_mode(0.15, gray)
+    p.stroke_mode(0.15, gray)
     dot_angles_and_distances = [
         (-16, 1.5),
         (-3, 1.4),
@@ -65,9 +65,9 @@ def draw(p):
     # Eyes.
     def eye():
         center = p.position
-        p.set_fill_mode(green)
+        p.fill_mode(green)
         p.circle(1.0)
-        p.set_stroke_mode(0.4, gray)
+        p.stroke_mode(0.4, gray)
         p.circle(1.0)
 
         p.move_to(center)
@@ -80,7 +80,7 @@ def draw(p):
         bottom = p.position
 
         angle = 25
-        p.set_stroke_mode(0.30, gray)
+        p.stroke_mode(0.30, gray)
         p.turn_to(90 - angle)
         p.arc_to(top)
         p.turn_left(180 - 2 * angle)
@@ -92,7 +92,7 @@ def draw(p):
     eye()
 
     # Ears.
-    p.set_stroke_mode(1.0, gray)
+    p.stroke_mode(1.0, gray)
     p.move_to((1, 5))
     p.turn_to(20)
     p.line_forward(3.5)

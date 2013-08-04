@@ -83,7 +83,7 @@ class Path:
         # taking into account the thickness of the path.
         from .pen import Pen
         pen = Pen()
-        pen.set_fill_mode()
+        pen.fill_mode()
         draw_thick_segments(pen, self.segments, self.mode)
 
         # Render the path created by our temporary pen.
@@ -97,7 +97,7 @@ class Path:
         # taking into account the thickness of the path and the outline thickness.
         from .pen import Pen
         pen = Pen()
-        pen.set_stroke_mode(self.mode.outline_width)
+        pen.stroke_mode(self.mode.outline_width)
         draw_thick_segments(pen, self.segments, self.mode)
 
         # Render the path created by our temporary pen.

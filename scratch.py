@@ -10,14 +10,14 @@ def draw(p):
 
     # Draw a square with one side a different color. It joins to the
     # beginning correctly.
-    p.set_stroke_mode(2.0, color='black')
+    p.stroke_mode(2.0, color='black')
     p.line_forward(5)
     p.turn_left(90)
     p.line_forward(5)
     p.turn_left(90)
     p.line_forward(5)
     p.turn_left(90)
-    p.set_stroke_mode(2.0, color='red')
+    p.stroke_mode(2.0, color='red')
     p.line_forward(5)
 
 if __name__ == '__main__':

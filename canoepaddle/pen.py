@@ -1,6 +1,6 @@
-#TODO: Coverage
 #TODO: implement different endcaps, such as round.
-#TODO: offwidth errors can just start a new path instead?
+#TODO: offwidth and joint errors can just start a new path instead? flat cap
+# arc joints when illegal?
 
 import math
 from copy import copy
@@ -46,19 +46,19 @@ class Pen:
             raise AttributeError('Mode not set.')
         return copy(self._mode)
 
-    def set_fill_mode(self, color=None):
+    def fill_mode(self, color=None):
         """
         Start drawing filled paths.
         """
         self._set_mode('fill', color)
 
-    def set_stroke_mode(self, width, color=None):
+    def stroke_mode(self, width, color=None):
         """
         Start drawing strokes with a width.
         """
         self._set_mode('stroke', color, width)
 
-    def set_outline_mode(self, width, outline_width, color=None):
+    def outline_mode(self, width, outline_width, color=None):
         """
         Start drawing strokes with a width drawn by thin outlines.
         """

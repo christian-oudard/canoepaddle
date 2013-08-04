@@ -28,7 +28,7 @@ def test_bounds_union():
 
 def test_circle_bounds():
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((1, 1))
     p.circle(1.5)
 
@@ -40,7 +40,7 @@ def test_circle_bounds():
 
 def test_square_bounds():
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((1, 1))
     p.square(4)
 
@@ -53,7 +53,7 @@ def test_square_bounds():
 def test_line_segment_bounds():
     # Fill mode segment.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((1, 0))
     p.line_to((2, 3))
 
@@ -65,7 +65,7 @@ def test_line_segment_bounds():
 
     # Pen mode is ignored for bounds checking purposes.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((1, 0))
     p.line_to((2, 3))
 
@@ -79,7 +79,7 @@ def test_line_segment_bounds():
 def test_arc_segment_bounds():
     # Arc which occupies its entire circle.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((1, 0))
     p.turn_to(90)
     p.arc_left(359, 1)
@@ -92,7 +92,7 @@ def test_arc_segment_bounds():
 
     # Arc which pushes the boundary only with the endpoints.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((0, 0))
     p.turn_to(30)
     p.move_forward(1)
@@ -107,7 +107,7 @@ def test_arc_segment_bounds():
 
     # Arc which pushes the boundary with the middle in one spot.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((0, 0))
     p.turn_to(-45)
     p.move_forward(1)
@@ -122,7 +122,7 @@ def test_arc_segment_bounds():
 
     # Arc which pushes the boundary with the middle in two spots.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((0, 0))
     p.turn_to(-45)
     p.move_forward(1)

@@ -4,7 +4,7 @@ from canoepaddle import Pen
 p = Pen()
 p.paper.set_view_box(-120, -120, 240, 240)
 p.paper.set_pixel_size(720, 720)
-p.set_stroke_mode(1.0, '#15A')
+p.stroke_mode(1.0, '#15A')
 
 p.move_to((0.5, 0.5))
 

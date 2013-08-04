@@ -57,7 +57,7 @@ def test_move_to_xy():
 
 def test_line_segments():
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
 
     p.move_to((0, 0))
     p.turn_to(45)
@@ -74,7 +74,7 @@ def test_line_segments():
 
 def test_line():
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(5)
@@ -88,14 +88,14 @@ def test_line():
 
 def test_line_zero():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.line_forward(0)
     assert_equal(p.paper.elements, [])
 
 
 def test_line_thick():
     p = Pen()
-    p.set_stroke_mode(2)
+    p.stroke_mode(2)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(5)
@@ -107,7 +107,7 @@ def test_line_thick():
     )
 
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.turn_to(-45)
     p.line_forward(5)
 
@@ -120,7 +120,7 @@ def test_line_thick():
 
 def test_long_line_thick():
     p = Pen()
-    p.set_stroke_mode(2)
+    p.stroke_mode(2)
     p.move_to((0, 0))
     p.turn_to(0)
     for _ in range(2):
@@ -138,7 +138,7 @@ def test_long_line_thick():
 
 def test_line_to_coordinate():
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((0, 0))
     p.turn_to(45)
     p.line_to_y(3)
@@ -151,7 +151,7 @@ def test_line_to_coordinate():
         (-6, 6),
     ]:
         p = Pen()
-        p.set_fill_mode()
+        p.fill_mode()
 
         p.move_to((0, 0))
         p.turn_toward((x, y))
@@ -187,7 +187,7 @@ def test_set_view_box():
 
 def test_angle():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(10, start_angle=-45, end_angle=30)
@@ -199,7 +199,7 @@ def test_angle():
     )
 
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(-45)
     p.line_forward(10, start_angle=90, end_angle=None)
@@ -214,13 +214,13 @@ def test_angle():
 def test_angle_error():
     # Creating an angle close to 0 is not allowed.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
         lambda: p.line_forward(10, start_angle=0)
     )
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
         lambda: p.line_forward(10, end_angle=0)
@@ -228,7 +228,7 @@ def test_angle_error():
 
     # A combination of angles can also create a degenerate segment.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
         lambda: p.line_forward(1, start_angle=40, end_angle=-40)
@@ -237,7 +237,7 @@ def test_angle_error():
 
 def test_joint():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((-6, 0))
     p.turn_to(0)
     p.line_forward(6)
@@ -257,7 +257,7 @@ def test_joint():
 def test_joint_loop():
     p = Pen()
 
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
     p.move_to((0, 0))
     p.turn_to(0)
 
@@ -288,14 +288,14 @@ def test_joint_loop_color():
 
     # Draw a square with one side a different color. It joins to the
     # beginning correctly.
-    p.set_stroke_mode(2.0, color='black')
+    p.stroke_mode(2.0, color='black')
     p.line_forward(5)
     p.turn_left(90)
     p.line_forward(5)
     p.turn_left(90)
     p.line_forward(5)
     p.turn_left(90)
-    p.set_stroke_mode(2.0, color='red')
+    p.stroke_mode(2.0, color='red')
     p.line_forward(5)
 
     assert_equal(
@@ -318,7 +318,7 @@ def test_flip():
         p.line_forward(6)
 
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     stroke(p)
     path = p.paper.elements[0]
     assert_equal(
@@ -327,7 +327,7 @@ def test_flip():
     )
 
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.flip_x()
     stroke(p)
     path = p.paper.elements[0]
@@ -337,7 +337,7 @@ def test_flip():
     )
 
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.flip_y()
     stroke(p)
     path = p.paper.elements[0]
@@ -349,7 +349,7 @@ def test_flip():
 
 def test_translate():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
 
     p.move_to((0, 0))
     p.turn_to(0)
@@ -357,7 +357,7 @@ def test_translate():
     p.arc_left(90, 3)
     p.turn_left(90)
     p.move_forward(3)
-    p.set_fill_mode()
+    p.fill_mode()
     p.circle(0.5)
     p.move_forward(3)
     p.square(1)
@@ -386,7 +386,7 @@ def test_translate():
 
 def test_center_on_xy():
     p = Pen()
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(4)
@@ -423,7 +423,7 @@ def test_center_on_xy():
 
 def test_straight_joint():
     p = Pen()
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(3)
@@ -438,7 +438,7 @@ def test_straight_joint():
 
 def test_break_stroke():
     p = Pen()
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(3)
@@ -457,7 +457,7 @@ def test_break_stroke():
 def test_turn_back_error():
     # Make a line turn back on itself; it doesn't work.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(10)
@@ -470,11 +470,11 @@ def test_turn_back_error():
 
 def test_offwidth_joint():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.turn_to(0)
     p.move_forward(-3)
     p.line_forward(3)
-    p.set_stroke_mode(0.5)
+    p.stroke_mode(0.5)
     p.turn_left(90)
     p.line_forward(3)
 
@@ -490,10 +490,10 @@ def test_offwidth_joint():
 
 def test_offwidth_joint_error():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.turn_to(0)
     p.line_forward(3)
-    p.set_stroke_mode(0.5)
+    p.stroke_mode(0.5)
     assert_raises(
         SegmentError,
         lambda: p.line_forward(3)
@@ -507,7 +507,7 @@ def test_straight_joint_headings():
     # very close to straight joints at various headings.
     for heading_angle in range(0, 360):
         p = Pen()
-        p.set_stroke_mode(1.0)
+        p.stroke_mode(1.0)
         p.move_to((0, 0))
         p.turn_to(heading_angle)
         p.line_forward(10)
@@ -533,7 +533,7 @@ def test_straight_joint_headings():
 
 def test_multiple_strokes():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.turn_to(0)
     p.move_to((0, 0))
     p.line_forward(3)
@@ -551,7 +551,7 @@ def test_multiple_strokes():
 
 def test_last_slant_width():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
 
     # If we haven't drawn any path segments yet, there is no last slant width.
     assert_equal(p.last_slant_width(), None)
@@ -572,7 +572,7 @@ def test_last_slant_width():
 def test_arc():
     # Draw arcs with all four combinations of sweep and direction flags.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
 
     p.move_to((-5, 0))
     p.turn_to(0)
@@ -596,7 +596,7 @@ def test_arc():
 def test_arc_center():
     # Draw the same arcs as in test_arc, but using centers instead of radii.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
 
     p.move_to((-5, 0))
     p.turn_to(0)
@@ -621,7 +621,7 @@ def test_arc_to():
     # Make the same arcs as test_arc, but using the destination points instead
     # of the angles.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
 
     p.move_to((-5, 0))
     p.turn_to(0)
@@ -644,7 +644,7 @@ def test_arc_to():
 
 def test_arc_zero():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
 
@@ -659,7 +659,7 @@ def test_arc_zero():
 def test_arc_normalize():
     # Arc angles larger than 360 behave correctly.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((-5, 0))
     p.turn_to(0)
     p.arc_left(360 + 90, radius=5)
@@ -673,7 +673,7 @@ def test_arc_normalize():
 
 def test_arc_angle():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.arc_left(90, radius=5, start_angle=45, end_angle=45)
@@ -692,19 +692,19 @@ def test_arc_angle_error():
     # Endpoints with certain angles do not go all the way across the
     # stroke, and are disallowed.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
         lambda: p.arc_left(90, 10, start_angle=0)
     )
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
         lambda: p.arc_left(90, 10, end_angle=90)
     )
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
     assert_raises(
@@ -714,7 +714,7 @@ def test_arc_angle_error():
 
     # A combination of angles can also create a degenerate arc.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.turn_toward((1, 0))
     p.turn_left(1)
     assert_raises(
@@ -731,10 +731,10 @@ def test_offwidth_arc_joint_error():
     p.move_to((0, 0))
     p.turn_to(0)
 
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.arc_left(90, 5)
 
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
     assert_raises(
         SegmentError,
         lambda: p.arc_left(90, 5)
@@ -746,9 +746,9 @@ def test_arc_joint_error_nonconcentric():
     p = Pen()
 
     p.move_to((0, -1))
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.arc_to((1, 0), center=(0, 0))
-    p.set_stroke_mode(0.1)
+    p.stroke_mode(0.1)
     assert_raises(
         SegmentError,
         lambda: p.arc_to((0, 1), center=(0.1, 0)),
@@ -757,7 +757,7 @@ def test_arc_joint_error_nonconcentric():
 
 def test_degenerate_arc():
     p = Pen()
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
 
     p.move_to((-5, 0))
     p.turn_to(0)
@@ -776,7 +776,7 @@ def test_arc_pie_slice():
     # Draw a "pie slice" arc that is wide enough to reach all the way to the
     # arc center.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((0.5, 0))
     p.turn_to(90)
     p.arc_left(90, 0.5)
@@ -793,7 +793,7 @@ def test_arc_start_angle_bug():
 
     # Set up positions on a circle at angles -120 and 30
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
 
     p.move_to((0, 0))
     p.turn_to(30)
@@ -809,7 +809,7 @@ def test_arc_start_angle_bug():
 
     # Create an arc using arc_left.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
 
     p.move_to(p1)
     p.turn_to(h1)
@@ -820,7 +820,7 @@ def test_arc_start_angle_bug():
 
     # Create the same arc using arc_to.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
 
     p.move_to(p1)
     p.turn_to(h1)
@@ -832,7 +832,7 @@ def test_arc_start_angle_bug():
 
 def test_arc_line_joint():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
 
     p.move_to((0, 0))
     p.turn_to(0)
@@ -853,7 +853,7 @@ def test_arc_line_joint():
 
 def test_arc_sweep_bug():
     p = Pen()
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
 
     p.move_to((3, 0))
     p.turn_to(90)
@@ -873,7 +873,7 @@ def test_arc_arc_joint():
 
     # Convex-convex.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
 
     p.move_to(left)
     p.turn_toward(top)
@@ -898,7 +898,7 @@ def test_arc_arc_joint():
 
     # Concave-concave.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
 
     p.move_to(left)
     p.turn_toward(top)
@@ -923,7 +923,7 @@ def test_arc_arc_joint():
 
     # Convex-concave.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
 
     p.move_to(left)
     p.turn_toward(top)
@@ -948,7 +948,7 @@ def test_arc_arc_joint():
 
     # Concave-convex.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
 
     p.move_to(left)
     p.turn_toward(top)
@@ -974,7 +974,7 @@ def test_arc_arc_joint():
 
 def test_arc_arc_joint_off_radius():
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.arc_left(180, 1)
@@ -998,7 +998,7 @@ def test_arc_line_joint_bug():
     # When using arc_to, sometimes the b_left and b_right would get
     # reversed.
     p = Pen()
-    p.set_stroke_mode(1.0)
+    p.stroke_mode(1.0)
 
     p.move_to((0, 0))
     p.turn_to(90)
@@ -1020,7 +1020,7 @@ def test_arc_line_joint_bug():
 
 def test_various_joins():
     p = Pen()
-    p.set_stroke_mode(0.5)
+    p.stroke_mode(0.5)
     p.move_to((-2, 0))
     p.turn_to(0)
     p.line_forward(1)
@@ -1047,20 +1047,20 @@ def test_offwidth_arc_joins():
     p.move_to((0, 0))
     p.turn_to(0)
 
-    p.set_stroke_mode(0.8)
+    p.stroke_mode(0.8)
     p.line_forward(5)
     p.turn_left(45)
-    p.set_stroke_mode(3.0)
+    p.stroke_mode(3.0)
     p.arc_left(90, 5)
 
     p.turn_to(-180)
     p.line_forward(5)
     p.turn_left(45)
-    p.set_stroke_mode(0.8)
+    p.stroke_mode(0.8)
     p.arc_left(45, 5)
 
     p.turn_right(90)
-    p.set_stroke_mode(3.0)
+    p.stroke_mode(3.0)
     p.arc_right(90, 4)
 
     path = p.paper.elements[0]
@@ -1072,7 +1072,7 @@ def test_offwidth_arc_joins():
 
 def test_repr():
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(1)
@@ -1094,7 +1094,7 @@ def test_repr():
 
 def test_circle():
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.circle(1)
 
     assert_equal(
@@ -1105,7 +1105,7 @@ def test_circle():
 
 def test_circle_degenerate():
     p = Pen()
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
     p.circle(1)
     assert_equal(
         p.paper.svg_elements(0),
@@ -1118,13 +1118,13 @@ def test_circle_color():
     p.move_to((0, 0))
 
     p.turn_to(0)
-    p.set_fill_mode((1.0, 0.0, 0.0))
+    p.fill_mode((1.0, 0.0, 0.0))
     p.circle(1)
     p.move_forward(2)
-    p.set_fill_mode((0.0, 1.0, 0.0))
+    p.fill_mode((0.0, 1.0, 0.0))
     p.circle(1)
     p.move_forward(2)
-    p.set_fill_mode((0.0, 0.0, 1.0))
+    p.fill_mode((0.0, 0.0, 1.0))
     p.circle(1)
 
     assert_equal(
@@ -1141,16 +1141,16 @@ def test_circle_line_overlap():
     # Draw a circle that is above one line but below the other line.
     p = Pen()
 
-    p.set_stroke_mode(1.0, color=(1.0, 0.0, 0.0))
+    p.stroke_mode(1.0, color=(1.0, 0.0, 0.0))
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(4)
 
-    p.set_fill_mode(color=(0.0, 1.0, 0.0))
+    p.fill_mode(color=(0.0, 1.0, 0.0))
     p.move_to((2, 2))
     p.circle(2)
 
-    p.set_stroke_mode(1.0, color=(0.0, 0.0, 1.0))
+    p.stroke_mode(1.0, color=(0.0, 0.0, 1.0))
     p.move_to((0, 4))
     p.turn_to(0)
     p.line_forward(4)
@@ -1180,11 +1180,11 @@ def test_color_path():
     p.move_to((0, 0))
     p.turn_to(0)
 
-    p.set_stroke_mode(1.0, (1.0, 0.0, 0.0))
+    p.stroke_mode(1.0, (1.0, 0.0, 0.0))
     p.line_forward(1)
-    p.set_stroke_mode(1.0, (0.0, 1.0, 0.0))
+    p.stroke_mode(1.0, (0.0, 1.0, 0.0))
     p.line_forward(1)
-    p.set_stroke_mode(1.0, (0.0, 0.0, 1.0))
+    p.stroke_mode(1.0, (0.0, 0.0, 1.0))
     p.line_forward(1)
 
     assert_equal(
@@ -1226,7 +1226,7 @@ def test_color_formats():
         ),
     ]:
         p = Pen()
-        p.set_stroke_mode(2.0, color)
+        p.stroke_mode(2.0, color)
         p.move_to((0, 0))
         p.turn_to(0)
         p.line_forward(5)
@@ -1240,12 +1240,12 @@ def test_color_formats():
 def test_color_joint():
     p = Pen()
 
-    p.set_stroke_mode(1.0, 'red')
+    p.stroke_mode(1.0, 'red')
     p.move_to((-6, 0))
     p.turn_to(0)
     p.line_forward(6)
 
-    p.set_stroke_mode(1.0, 'green')
+    p.stroke_mode(1.0, 'green')
     p.turn_right(60)
     p.line_forward(6)
 
@@ -1260,7 +1260,7 @@ def test_color_joint():
 
 def test_arc_joint_continue():
     p = Pen()
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
 
     p.move_to((0, 0))
     p.turn_to(0)
@@ -1292,7 +1292,7 @@ def test_arc_joint_continue():
 def test_arc_joint_numerical():
     # Sometimes arc joints can miss the mark if they have odd float numbers.
     p = Pen()
-    p.set_stroke_mode(0.5)
+    p.stroke_mode(0.5)
     p.move_to((-26.685559703113075, 65.00539003547281))
     p.turn_to(202.85281173472714)
     p.arc_right(180, 1)
@@ -1304,7 +1304,7 @@ def test_zero_length_side():
     # It is possible and legal to create a segment that just barely goes to
     # zero on one side.
     p = Pen()
-    p.set_stroke_mode(2.0)
+    p.stroke_mode(2.0)
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(1.0, end_angle=45)
@@ -1319,7 +1319,7 @@ def test_zero_length_side():
 def test_mode():
     # Fill mode square.
     p = Pen()
-    p.set_fill_mode()
+    p.fill_mode()
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(5)
@@ -1359,9 +1359,9 @@ def test_change_mode():
     p.move_to((0, 0))
     p.turn_to(0)
 
-    p.set_stroke_mode(2.0, 'black')
+    p.stroke_mode(2.0, 'black')
     p.line_forward(5)
-    p.set_fill_mode('black')
+    p.fill_mode('black')
     p.line_forward(5)
 
     assert_equal(
@@ -1377,7 +1377,7 @@ def test_outline():
     p = Pen()
     p.move_to((0, 0))
     p.turn_to(0)
-    p.set_outline_mode(1.0, 0.2)
+    p.outline_mode(1.0, 0.2)
     p.line_forward(3)
 
     path = p.paper.elements[0]
@@ -1395,9 +1395,9 @@ def test_change_outline_width():
     p = Pen()
     p.move_to((0, 0))
     p.turn_to(0)
-    p.set_outline_mode(1.0, 0.2)
+    p.outline_mode(1.0, 0.2)
     p.line_forward(3)
-    p.set_outline_mode(1.0, 0.4)
+    p.outline_mode(1.0, 0.4)
     p.line_forward(3)
 
     assert_equal(

@@ -22,7 +22,7 @@ def draw(p):
         b = chroma * math.cos(math.radians(angle))
         color = Color.NewFromLab(l, a, b)
         assert color.isLegal
-        p.set_stroke_mode(1.0, color)
+        p.stroke_mode(1.0, color)
 
         p.arc_right(
             angle_step,
