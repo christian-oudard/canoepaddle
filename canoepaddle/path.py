@@ -1,7 +1,6 @@
 from .point import Point, points_equal
 from .bounds import Bounds
 from .segment import LineSegment, ArcSegment
-from .shape import Circle, Rectangle
 from .svg import (
     path_element,
     path_move,
@@ -14,12 +13,9 @@ from .error import SegmentError
 
 class Path:
 
-    def __init__(self, color):
+    def __init__(self, mode):
+        self.mode = mode
         self.segments = []
-        self.color = color
-        self.show_joints = False
-        self.show_nodes = False
-        self.show_bones = False
 
     def bounds(self):
         return Bounds.union_all(seg.bounds() for seg in self.segments)
@@ -38,27 +34,27 @@ class Path:
         assert len(self.segments) > 0
         output = []
 
-        stroke_width = None  # Default to fill, not stroke.
-        if self.show_bones:
-            stroke_width = min(seg.width for seg in self.segments) / 16
-
         output.append(path_element(
-            self.draw_thick(precision),
-            self.color,
-            stroke_width,
+            self.draw(precision),
+            self.mode.color,
         ))
 
-        if self.show_bones:
+        if self.mode.show_bones:
             output.append(path_element(
                 self.draw(precision),
                 self.color,
-                stroke_width,
             ))
-        if self.show_nodes:
+        if self.mode.show_nodes:
             output.append(self.draw_nodes(precision))
         return '\n'.join(output)
 
     def draw(self, precision):
+        if self.mode.name == 'fill':
+            return self.draw_fill(precision)
+        elif self.mode.name == 'stroke':
+            return self.draw_stroke(precision)
+
+    def draw_fill(self, precision):
         output = []
 
         start_point = p = Point(*self.segments[0].a)
@@ -88,12 +84,13 @@ class Path:
 
         return ' '.join(output)
 
-    def draw_thick(self, precision):
+    def draw_stroke(self, precision):
         # Create a temporary pen to draw the outline of the path segments,
         # taking into account the thickness of the path.
         from .pen import Pen
         pen = Pen()
-        draw_thick_segments(pen, self.segments, self.show_joints)
+        pen.set_fill_mode()
+        draw_thick_segments(pen, self.segments, self.mode)
 
         # Render the path created by our temporary pen.
         return ' '.join(
@@ -102,35 +99,18 @@ class Path:
         )
 
     def draw_nodes(self, precision):
-        shapes = []
-        for seg in self.segments:
-            shapes.append(Circle(
-                seg.a,
-                seg.width / 8,
-                color=(0, .5, 0),
-            ))
-            shapes.append(Rectangle(
-                seg.b.x - seg.width / 8,
-                seg.b.y - seg.width / 8,
-                seg.width / 4,
-                seg.width / 4,
-                color=(.5, 0, 0),
-            ))
-        return '\n'.join(
-            s.svg(precision)
-            for s in shapes
-        )
+        return  # TODO: stub
 
 
-def draw_thick_segments(pen, segments, show_joints=False):
+def draw_thick_segments(pen, segments, mode):
     for seg in segments:
-        if seg.width is None:
+        if mode.width is None:
             raise SegmentError(
                 'Cannot draw a thick segment without a width '
                 'specified.'
             )
 
-    if show_joints:
+    if mode.show_joints:
         for seg in segments:
             draw_segment_right(pen, seg, first=True, last=True)
             draw_segment_left(pen, seg, first=True, last=True)

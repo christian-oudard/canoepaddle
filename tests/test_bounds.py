@@ -4,7 +4,6 @@ from nose.tools import assert_equal
 
 from canoepaddle import Pen
 from canoepaddle.bounds import Bounds
-from canoepaddle.shape import Circle, Rectangle
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
@@ -28,24 +27,33 @@ def test_bounds_union():
 
 
 def test_circle_bounds():
-    circle = Circle((1, 1), 1.5, 'color')
+    p = Pen()
+    p.set_fill_mode()
+    p.move_to((1, 1))
+    p.circle(1.5)
+
     assert_equal(
-        circle.bounds(),
+        p.paper.bounds(),
         Bounds(-0.5, -0.5, 2.5, 2.5)
     )
 
 
-def test_rectangle_bounds():
-    rectangle = Rectangle(1, 1, 3, 4, 'color')
+def test_square_bounds():
+    p = Pen()
+    p.set_fill_mode()
+    p.move_to((1, 1))
+    p.square(4)
+
     assert_equal(
-        rectangle.bounds(),
-        Bounds(1, 1, 4, 5)
+        p.paper.bounds(),
+        Bounds(-1, -1, 3, 3)
     )
 
 
 def test_line_segment_bounds():
-    # No-width segment.
+    # Fill mode segment.
     p = Pen()
+    p.set_fill_mode()
     p.move_to((1, 0))
     p.line_to((2, 3))
 
@@ -55,34 +63,23 @@ def test_line_segment_bounds():
         Bounds(1, 0, 2, 3)
     )
 
-    # Segment with a width.
+    # Pen mode is ignored for bounds checking purposes.
     p = Pen()
-    p.set_width(sqrt2)
-    p.move_to((0, 0))
-    p.line_to((5, 5))
+    p.set_stroke_mode(1.0)
+    p.move_to((1, 0))
+    p.line_to((2, 3))
 
     line = p.paper.elements[0].segments[0]
     assert_equal(
         line.bounds(),
-        Bounds(-0.5, -0.5, 5.5, 5.5)
-    )
-
-    # Set a start angle, and the bounds change.
-    p = Pen()
-    p.set_width(math.sqrt(2))
-    p.move_to((0, 0))
-    p.line_to((5, 5), start_angle=0)
-
-    line = p.paper.elements[0].segments[0]
-    assert_equal(
-        line.bounds(),
-        Bounds(-1.0, 0.0, 5.5, 5.5)
+        Bounds(1, 0, 2, 3)
     )
 
 
 def test_arc_segment_bounds():
     # Arc which occupies its entire circle.
     p = Pen()
+    p.set_fill_mode()
     p.move_to((1, 0))
     p.turn_to(90)
     p.arc_left(359, 1)
@@ -95,6 +92,7 @@ def test_arc_segment_bounds():
 
     # Arc which pushes the boundary only with the endpoints.
     p = Pen()
+    p.set_fill_mode()
     p.move_to((0, 0))
     p.turn_to(30)
     p.move_forward(1)
@@ -109,6 +107,7 @@ def test_arc_segment_bounds():
 
     # Arc which pushes the boundary with the middle in one spot.
     p = Pen()
+    p.set_fill_mode()
     p.move_to((0, 0))
     p.turn_to(-45)
     p.move_forward(1)
@@ -123,6 +122,7 @@ def test_arc_segment_bounds():
 
     # Arc which pushes the boundary with the middle in two spots.
     p = Pen()
+    p.set_fill_mode()
     p.move_to((0, 0))
     p.turn_to(-45)
     p.move_forward(1)
@@ -133,36 +133,4 @@ def test_arc_segment_bounds():
     assert_equal(
         arc.bounds(),
         Bounds(-sqrt2 / 2, -sqrt2 / 2, 1, 1)
-    )
-
-
-def test_thick_arc_bounds():
-    # Create a thick arc.
-    p = Pen()
-    p.set_width(sqrt2 / 2)
-    p.move_to((0, 0))
-    p.turn_to(45)
-    p.move_forward(sqrt2)
-    p.turn_left(90)
-    p.arc_left(90, center=(0, 0))
-
-    arc = p.paper.elements[0].segments[0]
-    assert_equal(
-        arc.bounds(),
-        Bounds(-1.25, 0.75, 1.25, 1.25 * sqrt2)
-    )
-
-    # Change its start angle to change its bounds.
-    p = Pen()
-    p.set_width(sqrt2 / 2)
-    p.move_to((0, 0))
-    p.turn_to(45)
-    p.move_forward(sqrt2)
-    p.turn_left(90)
-    p.arc_left(90, center=(0, 0), start_angle=90)
-
-    arc = p.paper.elements[0].segments[0]
-    assert_equal(
-        arc.bounds(),
-        Bounds(-1.25, 0.25 * sqrt2, 1.0, 1.25 * sqrt2)
     )

@@ -1,2 +1,2 @@
-class SegmentError(ValueError):
+class SegmentError(Exception):
     pass

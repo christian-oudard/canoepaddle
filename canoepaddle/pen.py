@@ -1,38 +1,40 @@
-#TODO: implement different modes for fill, stroke, and outlined stroke. self.width
-# is what controls this.
+#TODO: implement different modes for fill, stroke, and outlined stroke.
 #TODO: remove old svg based shape elements, use paths instead.
 #TODO: Coverage
 #TODO: implement different endcaps, such as round.
 #TODO: offwidth errors can just start a new path instead?
+#TODO: Make shape drawing go off of a pen, not off of returning svg output
+#TODO: Stop doing extra work to calculate thick segment widths? Maybe wait
+# until you draw them and then take the boundary.
+#TODO: Make Pen.circle and Pen.square not drop you into fill mode automatically.
 
 import math
+from copy import copy
 
 import vec
 from .paper import Paper
 from .path import Path
 from .segment import LineSegment, ArcSegment
-from .shape import Circle, PathCircle, Rectangle
 from .point import Point, points_equal
 from .geometry import intersect_lines
 
 
 class Pen:
 
-    def __init__(self):
+    def __init__(self, mode=None):
+        if mode is None:
+            self._mode = Mode()
+        else:
+            self._mode = mode
+
         self.paper = Paper()
         self._heading = 0
         self._position = Point(0.0, 0.0)
-        self._width = None
-        self._color = (0.0, 0.0, 0.0)
+
         self.flipped_x = False
         self.flipped_y = False
 
         self._current_path = None
-
-        # Debug switches.
-        self.show_joints = False
-        self.show_nodes = False
-        self.show_bones = False
 
     # Properties.
 
@@ -49,18 +51,40 @@ class Pen:
         return self._heading
 
     @property
-    def width(self):
-        return self._width
+    def mode(self):
+        if self._mode.name is None:
+            raise AttributeError('Mode not set.')
+        return copy(self._mode)
 
-    def set_width(self, width):
-        self._width = width
+    def set_fill_mode(self, color=None):
+        """
+        Start drawing filled paths.
+        """
+        self._set_mode('fill', color)
 
-    @property
-    def color(self):
-        return self._color
+    def set_stroke_mode(self, width, color=None):
+        """
+        Start drawing strokes with a width.
+        """
+        self._set_mode('stroke', color, width)
 
-    def set_color(self, color):
-        self._color = color
+    def set_outline_mode(self, width, ratio=0.1, color=None):
+        """
+        Start drawing strokes with a width drawn by thin outlines.
+
+        The ratio argument determines how thick the outlines are in comparison
+        to the stroke width.
+        """
+        outline_width = width * ratio
+        self._set_mode('outline', color, width, outline_width)
+
+    def _set_mode(self, mode_name, color, width=None, outline_width=None):
+        self._mode.name = mode_name
+        if color is None:
+            color = self._mode.color
+        self._mode.color = color
+        self._mode.width = width
+        self._mode.outline_width = outline_width
 
     def last_slant_width(self):
         for element in reversed(self.paper.elements):
@@ -146,8 +170,7 @@ class Pen:
         self._add_segment(LineSegment(
             a=old_position,
             b=self.position,
-            width=self.width,
-            color=self.color,
+            mode=self.mode,
             start_angle=start_angle,
             end_angle=end_angle,
         ))
@@ -292,8 +315,7 @@ class Pen:
         self._add_segment(ArcSegment(
             a=old_position,
             b=endpoint,
-            width=self.width,
-            color=self.color,
+            mode=self.mode,
             start_angle=start_angle,
             end_angle=end_angle,
             center=center,
@@ -306,28 +328,30 @@ class Pen:
     # Shapes.
 
     def circle(self, radius):
-        self.paper.add_element(Circle(
-            center=self._position,
-            radius=radius,
-            color=self.color,
-        ))
-
-    def path_circle(self, radius):
-        self.paper.add_element(PathCircle(
-            center=self._position,
-            radius=radius,
-            width=self.width,
-            color=self.color,
-        ))
+        old_position = self._position
+        old_heading = self._heading
+        self.turn_to(0)
+        self.move_forward(radius)
+        self.turn_left(90)
+        self.arc_left(180, radius)
+        self.arc_left(180, radius)
+        self.move_to(old_position)
+        self.turn_to(old_heading)
 
     def square(self, size):
-        self.paper.add_element(Rectangle(
-            left=self._position.x - size / 2,
-            bottom=self._position.y - size / 2,
-            width=size,
-            height=size,
-            color=self.color,
-        ))
+        old_position = self._position
+        old_heading = self._heading
+        self.move_to(vec.add(self._position, (-size / 2, -size / 2)))
+        self.turn_to(0)
+        self.line_forward(size)
+        self.turn_left(90)
+        self.line_forward(size)
+        self.turn_left(90)
+        self.line_forward(size)
+        self.turn_left(90)
+        self.line_forward(size)
+        self.move_to(old_position)
+        self.turn_to(old_heading)
 
     # Internal.
 
@@ -337,10 +361,7 @@ class Pen:
             return
 
         def new_path():
-            path = Path(self.color)
-            path.show_joints = self.show_joints
-            path.show_nodes = self.show_nodes
-            path.show_bones = self.show_bones
+            path = Path(self.mode)
             self.paper.add_element(path)
             path.add_segment(new_segment)
             self._current_path = path
@@ -358,9 +379,12 @@ class Pen:
 
         points_same = points_equal(last_segment.b, new_segment.a)
         closes_path = points_equal(new_segment.b, first_segment.a)
-        color_same = (last_segment.color == new_segment.color)
+        color_same = (last_segment.mode.color == new_segment.mode.color)
+        mode_same = (last_segment.mode.name == new_segment.mode.name)
 
-        if points_same and color_same:
+        if not mode_same:
+            new_path()
+        elif points_same and color_same:
             self._current_path.add_segment(new_segment)
             if closes_path:
                 new_segment.join_with(first_segment, loop=True)
@@ -409,3 +433,29 @@ def flip_angle_x(angle):
 def flip_angle_y(angle):
     if angle is not None:
         return -angle
+
+
+class Mode:
+
+    repr_fields = ['name', 'color', 'width', 'outline_width']
+
+    def __init__(self, name=None, color=None, width=None, outline_width=None):
+        self.name = name
+        if color is None:
+            color = 'black'
+        self.color = color
+        self.width = width
+        self.outline_width = outline_width
+
+        self.show_joints = False
+        self.show_nodes = False
+        self.show_bones = False
+
+    def __repr__(self):
+        strings = []
+        for field in self.repr_fields:
+            value = getattr(self, field)
+            if value is None:
+                continue
+            strings.append(repr(value))
+        return '{}({})'.format(self.__class__.__name__, ', '.join(strings))
