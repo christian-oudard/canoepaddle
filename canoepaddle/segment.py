@@ -53,8 +53,8 @@ class Segment:
         return '{}({})'.format(self.__class__.__name__, ', '.join(strings))
 
     def translate(self, offset):
-        self.a = vec.add(self.a, offset)
-        self.b = vec.add(self.b, offset)
+        self.a = Point(*vec.add(self.a, offset))
+        self.b = Point(*vec.add(self.b, offset))
         if self.a_left is not None:
             self.a_left = vec.add(self.a_left, offset)
         if self.a_right is not None:
@@ -297,7 +297,7 @@ class ArcSegment(Segment):
         super().__init__(a, b, mode)
 
         self.arc_angle = arc_angle
-        self.center = center
+        self.center = Point(*center)
         self.radius = radius
         self.start_heading = start_heading
         self.end_heading = end_heading
@@ -350,7 +350,7 @@ class ArcSegment(Segment):
         ])
 
     def translate(self, offset):
-        self.center = vec.add(self.center, offset)
+        self.center = Point(*vec.add(self.center, offset))
         super().translate(offset)
 
     def join_with_line(self, other):

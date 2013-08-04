@@ -394,7 +394,8 @@ def test_center_on_xy():
     p.move_to((2, 1))
     p.circle(1)
 
-    p.paper.center_on_x(0)
+    bounds = p.paper.bounds()
+    p.paper.translate((-(bounds.left + bounds.right) / 2, 0))
 
     assert_equal(
         p.paper.svg_elements(0),
@@ -404,7 +405,8 @@ def test_center_on_xy():
         ]
     )
 
-    p.paper.center_on_y(0)
+    bounds = p.paper.bounds()
+    p.paper.translate((0, -(bounds.bottom + bounds.top) / 2))
 
     assert_equal(
         p.paper.svg_elements(1),
@@ -419,6 +421,18 @@ def test_center_on_xy():
             ),
         ]
     )
+
+
+def test_offset():
+    p = Pen()
+    p.fill_mode()
+    p.set_offset((0, 1))
+    p.move_to((0, 0))
+    p.line_to((1, 0))
+    path = p.paper.elements[0]
+    line = path.segments[0]
+    assert_equal(line.a, (0, 1))
+    assert_equal(line.b, (1, 1))
 
 
 def test_straight_joint():
@@ -1077,6 +1091,7 @@ def test_repr():
     p.turn_to(0)
     p.line_forward(1)
     p.arc_left(90, 1)
+
     path = p.paper.elements[0]
     line, arc = path.segments
     assert_equal(
@@ -1087,7 +1102,7 @@ def test_repr():
         repr(arc),
         (
             'ArcSegment(a=Point(x=1.0, y=0.0), b=Point(x=2.0, y=0.9999999999999999), '
-            'center=(1.0, 1.0), radius=1, start_heading=0, end_heading=90)'
+            'center=Point(x=1.0, y=1.0), radius=1, start_heading=0, end_heading=90)'
         )
     )
 

@@ -21,6 +21,7 @@ class Pen:
         self._heading = 0
         self._position = Point(0.0, 0.0)
 
+        self.offset = (0, 0)
         self.flipped_x = False
         self.flipped_y = False
 
@@ -71,6 +72,21 @@ class Pen:
         self._mode.color = color
         self._mode.width = width
         self._mode.outline_width = outline_width
+
+    def set_offset(self, offset):
+        self.offset = offset
+
+    def flip_x(self):
+        """
+        Make turns behave in the x-opposite manner.
+        """
+        self.flipped_x = not self.flipped_x
+
+    def flip_y(self):
+        """
+        Make turns behave in the y-opposite manner.
+        """
+        self.flipped_y = not self.flipped_y
 
     def last_slant_width(self):
         for element in reversed(self.paper.elements):
@@ -127,18 +143,6 @@ class Pen:
 
     def turn_right(self, angle):
         self.turn_left(-angle)
-
-    def flip_x(self):
-        """
-        Make turns behave in the x-opposite manner.
-        """
-        self.flipped_x = not self.flipped_x
-
-    def flip_y(self):
-        """
-        Make turns behave in the y-opposite manner.
-        """
-        self.flipped_y = not self.flipped_y
 
     # Lines.
 
@@ -348,6 +352,9 @@ class Pen:
         # Don't bother adding segments with zero length.
         if points_equal(new_segment.a, new_segment.b):
             return
+
+        # Translate the segment to match the current pen offset.
+        new_segment.translate(self.offset)
 
         def new_path():
             path = Path(self.mode)
