@@ -1,8 +1,9 @@
-#TODO: Coverage
-#TODO: offwidth errors can just start a new path instead, or should we require
 #TODO: implement different modes for fill, stroke, and outlined stroke. self.width
 # is what controls this.
+#TODO: remove old svg based shape elements, use paths instead.
+#TODO: Coverage
 #TODO: implement different endcaps, such as round.
+#TODO: offwidth errors can just start a new path instead?
 
 import math
 

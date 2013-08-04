@@ -1,5 +1,3 @@
-# TODO: round endcaps
-
 from canoepaddle import Pen
 
 p = Pen()

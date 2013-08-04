@@ -1,7 +1,5 @@
 from canoepaddle import Pen
 
-#TODO: Make the ends close correctly.
-
 p = Pen()
 p.set_width(0.15)
 
