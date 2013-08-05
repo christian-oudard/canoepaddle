@@ -51,6 +51,14 @@ class Bounds:
             current.union(b)
         return current
 
+    @property
+    def width(self):
+        return self.right - self.left
+
+    @property
+    def height(self):
+        return self.top - self.bottom
+
     def draw(self, pen):
         pen.move_to((self.left, self.bottom))
         pen.turn_to(0)

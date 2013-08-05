@@ -18,6 +18,7 @@ class Paper:
 
     def merge(self, other):
         self.elements.extend(other.elements)
+        return self
 
     def bounds(self):
         return Bounds.union_all(
