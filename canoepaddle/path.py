@@ -2,7 +2,6 @@ from .point import Point, points_equal
 from .bounds import Bounds
 from .segment import LineSegment, ArcSegment
 from .svg import (
-    path_element,
     path_move,
     path_line,
     path_arc,
@@ -24,41 +23,30 @@ class Path:
             seg.translate(offset)
 
     def svg(self, precision):
+        # Defer to the drawing mode to actually turn our path data into
+        # svg code. The mode will then call some combination of
+        # Path.render_path() and Path.draw_outline() to produce the finished
+        # styled drawing.
+        return self.mode.svg(self, precision)
+
+    def render_path(self, precision):
         assert len(self.segments) > 0
-        output = []
 
-        output.append(path_element(
-            self.draw(precision),
-            self.mode.color,
-        ))
-
-        return '\n'.join(output)
-
-    def draw(self, precision):
-        if self.mode.name == 'fill':
-            return self.draw_fill(precision)
-        elif self.mode.name == 'stroke':
-            return self.draw_stroke(precision)
-        elif self.mode.name == 'outline':
-            return self.draw_outline(precision)
-
-    def draw_fill(self, precision):
-        output = []
+        path_data = []
 
         start_point = p = Point(*self.segments[0].a)
-        output.append(path_move(p.x, p.y, precision))
+        path_data.append(path_move(p.x, p.y, precision))
 
-        # Draw the rest of the stroke.
         for seg in self.segments:
             p = Point(*seg.b)
             if isinstance(seg, LineSegment):
-                output.append(path_line(
+                path_data.append(path_line(
                     p.x,
                     p.y,
                     precision,
                 ))
             elif isinstance(seg, ArcSegment):
-                output.append(path_arc(
+                path_data.append(path_arc(
                     p.x,
                     p.y,
                     seg.arc_angle,
@@ -68,37 +56,13 @@ class Path:
 
         # Close the path if necessary.
         if points_equal(seg.b, start_point):
-            output.append(path_close())
+            path_data.append(path_close())
 
-        return ' '.join(output)
+        return ' '.join(path_data)
 
-    def draw_stroke(self, precision):
-        # Create a temporary pen to draw the outline of the path segments,
-        # taking into account the thickness of the path.
-        from .pen import Pen
-        pen = Pen()
-        pen.fill_mode()
+    def draw_outline(self, pen, precision):
+        # Draw along the outline using a temporary pen we are given.
         draw_thick_segments(pen, self.segments, self.mode)
-
-        # Render the path created by our temporary pen.
-        return ' '.join(
-            path.draw(precision)
-            for path in pen.paper.elements
-        )
-
-    def draw_outline(self, precision):
-        # Create a temporary pen to draw the outline of the path segments,
-        # taking into account the thickness of the path and the outline thickness.
-        from .pen import Pen
-        pen = Pen()
-        pen.stroke_mode(self.mode.outline_width)
-        draw_thick_segments(pen, self.segments, self.mode)
-
-        # Render the path created by our temporary pen.
-        return ' '.join(
-            path.draw(precision)
-            for path in pen.paper.elements
-        )
 
 
 def draw_thick_segments(pen, segments, mode):

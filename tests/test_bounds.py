@@ -2,6 +2,7 @@ import math
 
 from nose.tools import assert_equal
 
+from util import assert_path_data
 from canoepaddle import Pen
 from canoepaddle.bounds import Bounds
 
@@ -30,9 +31,9 @@ def test_draw_bounds():
     p = Pen()
     p.fill_mode()
     Bounds(-2, -3, 1, 2).draw(p)
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+
+    assert_path_data(
+        p, 0,
         'M-2,3 L1,3 L1,-2 L-2,-2 L-2,3 z'
     )
 

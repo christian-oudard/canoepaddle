@@ -11,13 +11,14 @@ from .path import Path
 from .segment import LineSegment, ArcSegment
 from .point import Point, points_equal
 from .geometry import intersect_lines
+from .mode import FillMode, StrokeMode, OutlineMode, modes_compatible
 
 
 class Pen:
 
     def __init__(self):
         self.paper = Paper()
-        self._mode = Mode()
+        self._mode = None
         self._heading = 0
         self._position = Point(0.0, 0.0)
 
@@ -43,7 +44,7 @@ class Pen:
 
     @property
     def mode(self):
-        if self._mode.name is None:
+        if self._mode is None:
             raise AttributeError('Mode not set.')
         return copy(self._mode)
 
@@ -51,24 +52,23 @@ class Pen:
         """
         Start drawing filled paths.
         """
-        self.set_mode(Mode('fill', color))
+        self.set_mode(FillMode(color))
 
     def stroke_mode(self, width, color=None):
         """
         Start drawing strokes with a width.
         """
-        self.set_mode(Mode('stroke', color, width))
+        self.set_mode(StrokeMode(width, color))
 
     def outline_mode(self, width, outline_width, color=None):
         """
         Start drawing strokes with a width drawn by thin outlines.
         """
-        self.set_mode(Mode('outline', color, width, outline_width))
+        self.set_mode(OutlineMode(width, outline_width, color))
 
     def set_mode(self, mode):
-        # If the color is not specified, use the previous one.
-        if mode.color is None:
-            mode.color = self._mode.color
+        if self._mode is not None:
+            mode.copy_colors(self._mode)
         self._mode = mode
 
     def set_offset(self, offset):
@@ -373,17 +373,19 @@ class Pen:
 
         points_same = points_equal(last_segment.b, new_segment.a)
         closes_path = points_equal(new_segment.b, first_segment.a)
-        color_same = (last_segment.mode.color == new_segment.mode.color)
-        mode_same = (
-            last_segment.mode.name == new_segment.mode.name and
-            last_segment.mode.outline_width == new_segment.mode.outline_width
-        )
+        mode_same = modes_compatible(last_segment.mode, new_segment.mode)
 
         if not mode_same or not points_same:
             # There is a break in the path or a mode change.
             new_path()
             return
 
+        color_same = (
+            getattr(last_segment.mode, 'color', None) ==
+            getattr(new_segment.mode, 'color', None) and
+            getattr(last_segment.mode, 'outline_color', None) ==
+            getattr(new_segment.mode, 'outline_color', None)
+        )
         if color_same:
             self._current_path.segments.append(new_segment)
             last_segment.join_with(new_segment)
@@ -433,25 +435,3 @@ def flip_angle_x(angle):
 def flip_angle_y(angle):
     if angle is not None:
         return -angle
-
-
-class Mode:
-
-    repr_fields = ['name', 'color', 'width', 'outline_width']
-
-    def __init__(self, name=None, color=None, width=None, outline_width=None):
-        self.name = name
-        if color is None:
-            color = 'black'
-        self.color = color
-        self.width = width
-        self.outline_width = outline_width
-
-    def __repr__(self):
-        strings = []
-        for field in self.repr_fields:
-            value = getattr(self, field)
-            if value is None:
-                continue
-            strings.append(repr(value))
-        return '{}({})'.format(self.__class__.__name__, ', '.join(strings))

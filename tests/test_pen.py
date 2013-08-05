@@ -1,7 +1,7 @@
-from nose.plugins.skip import SkipTest
-
-import os
+# TODO: test looped outlines.
 import math
+
+from nose.plugins.skip import SkipTest
 from nose.tools import (
     assert_equal,
     assert_almost_equal,
@@ -11,27 +11,18 @@ from nose.tools import (
 import vec
 from grapefruit import Color
 
-from util import assert_segments_equal, assert_points_equal
-from canoepaddle.pen import Pen, Paper, Mode
+from util import (
+    assert_segments_equal,
+    assert_points_equal,
+    assert_svg_file,
+    assert_path_data,
+)
+from canoepaddle.pen import Pen, Paper
+from canoepaddle.mode import FillMode
 from canoepaddle.error import SegmentError
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)
-
-
-def _read_test_file(svg_filename):
-    path = os.path.join(
-        os.path.dirname(__file__),
-        'files',
-        svg_filename,
-    )
-    with open(path) as f:
-        return f.read()
-
-
-def assert_svg_file(path_data, svg_filename):
-    content = _read_test_file(svg_filename)
-    assert path_data in content
 
 
 def test_movement():
@@ -79,10 +70,9 @@ def test_line():
     p.turn_to(0)
     p.line_forward(5)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
-        'M0,0 L5,0',
+    assert_path_data(
+        p, 0,
+        'M0,0 L5,0'
     )
 
 
@@ -100,10 +90,9 @@ def test_line_thick():
     p.turn_to(0)
     p.line_forward(5)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
-        'M0,-1 L0,1 L5,1 L5,-1 L0,-1 z',
+    assert_path_data(
+        p, 0,
+        'M0,-1 L0,1 L5,1 L5,-1 L0,-1 z'
     )
 
     p = Pen()
@@ -111,10 +100,9 @@ def test_line_thick():
     p.turn_to(-45)
     p.line_forward(5)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
-        'M0.35,-0.35 L-0.35,0.35 L3.18,3.89 L3.89,3.18 L0.35,-0.35 z',
+    assert_path_data(
+        p, 2,
+        'M0.35,-0.35 L-0.35,0.35 L3.18,3.89 L3.89,3.18 L0.35,-0.35 z'
     )
 
 
@@ -129,9 +117,8 @@ def test_long_line_thick():
         p.line_forward(5)
         p.turn_left(90)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+    assert_path_data(
+        p, 0,
         'M0,-1 L0,1 L4,1 L4,6 L9,6 L9,10 L11,10 L11,4 L6,4 L6,-1 L0,-1 z'
     )
 
@@ -192,10 +179,9 @@ def test_angle():
     p.turn_to(0)
     p.line_forward(10, start_angle=-45, end_angle=30)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
-        'M-0.50,-0.50 L0.50,0.50 L9.13,0.50 L10.87,-0.50 L-0.50,-0.50 z',
+    assert_path_data(
+        p, 2,
+        'M-0.50,-0.50 L0.50,0.50 L9.13,0.50 L10.87,-0.50 L-0.50,-0.50 z'
     )
 
     p = Pen()
@@ -204,10 +190,9 @@ def test_angle():
     p.turn_to(-45)
     p.line_forward(10, start_angle=90, end_angle=None)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
-        'M0.00,-0.71 L0.00,0.71 L6.72,7.42 L7.42,6.72 L0.00,-0.71 z',
+    assert_path_data(
+        p, 2,
+        'M0.00,-0.71 L0.00,0.71 L6.72,7.42 L7.42,6.72 L0.00,-0.71 z'
     )
 
 
@@ -244,9 +229,8 @@ def test_joint():
     p.turn_right(60)
     p.line_forward(6)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
+    assert_path_data(
+        p, 2,
         (
             'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L2.57,5.45 '
             'L3.43,4.95 L0.29,-0.50 L-6.00,-0.50 z'
@@ -270,9 +254,8 @@ def test_joint_loop():
     p.turn_left(90)
     p.line_forward(5)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+    assert_path_data(
+        p, 0,
         (
             'M-1,1 L6,1 L6,-6 L-1,-6 L-1,1 z '
             'M1,-1 L1,-4 L4,-4 L4,-1 L1,-1 z'
@@ -295,11 +278,16 @@ def test_joint_loop_color():
     p.turn_left(90)
     p.line_forward(5)
     p.turn_left(90)
+
+    assert_equal(len(p.paper.elements), 1)
+
     p.stroke_mode(2.0, color='red')
     p.line_forward(5)
 
-    assert_equal(
-        [path.draw(0) for path in p.paper.elements],
+    assert_equal(len(p.paper.elements), 2)
+
+    assert_path_data(
+        p, 0,
         [
             'M1,-1 L-1,1 L6,1 L6,-6 L-1,-6 L1,-4 L4,-4 L4,-1 L1,-1 z',
             'M1,-4 L-1,-6 L-1,1 L1,-1 L1,-4 z',
@@ -320,9 +308,8 @@ def test_flip():
     p = Pen()
     p.fill_mode()
     stroke(p)
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
+    assert_path_data(
+        p, 2,
         'M-6.00,0.00 L0.00,0.00 L3.00,5.20'
     )
 
@@ -330,9 +317,8 @@ def test_flip():
     p.fill_mode()
     p.flip_x()
     stroke(p)
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
+    assert_path_data(
+        p, 2,
         'M6.00,0.00 L0.00,0.00 L-3.00,5.20'
     )
 
@@ -340,9 +326,8 @@ def test_flip():
     p.fill_mode()
     p.flip_y()
     stroke(p)
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
+    assert_path_data(
+        p, 2,
         'M-6.00,0.00 L0.00,0.00 L3.00,-5.20'
     )
 
@@ -439,8 +424,8 @@ def test_paper_merge():
     p.paper.center_on_x(0)
     paper.merge(p.paper)
 
-    assert_equal(
-        [path.draw(1) for path in paper.elements],
+    assert_path_data(
+        paper, 1,
         [
             'M-2.5,0.0 A 5.0,5.0 0 0 0 -2.5,-10.0',
             'M2.5,0.0 A 5.0,5.0 0 0 0 2.5,10.0',
@@ -468,9 +453,8 @@ def test_straight_joint():
     p.line_forward(3)
     p.line_forward(3)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+    assert_path_data(
+        p, 0,
         'M0,-1 L0,1 L3,1 L6,1 L6,-1 L3,-1 L0,-1 z'
     )
 
@@ -484,8 +468,8 @@ def test_break_stroke():
     p.break_stroke()
     p.line_forward(3)
 
-    assert_equal(
-        [path.draw(0) for path in p.paper.elements],
+    assert_path_data(
+        p, 0,
         [
             'M0,-1 L0,1 L3,1 L3,-1 L0,-1 z',
             'M3,-1 L3,1 L6,1 L6,-1 L3,-1 z',
@@ -517,9 +501,8 @@ def test_offwidth_joint():
     p.turn_left(90)
     p.line_forward(3)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
+    assert_path_data(
+        p, 2,
         (
             'M-3.00,-0.50 L-3.00,0.50 L0.25,0.50 L0.25,-3.00 '
             'L-0.25,-3.00 L-0.25,-0.50 L-3.00,-0.50 z'
@@ -553,7 +536,7 @@ def test_straight_joint_headings():
         p.line_forward(10)
 
         path = p.paper.elements[0]
-        path.draw(2)  # Doesn't crash.
+        path.render_path(2)  # Doesn't crash.
 
         # Check that the joint angle is 90 degrees from the heading.
         assert_equal(len(p.paper.elements), 1)
@@ -579,8 +562,8 @@ def test_multiple_strokes():
     p.move_to((0, 3))
     p.line_forward(3)
 
-    assert_equal(
-        [path.draw(2) for path in p.paper.elements],
+    assert_path_data(
+        p, 2,
         [
             'M0.00,-0.50 L0.00,0.50 L3.00,0.50 L3.00,-0.50 L0.00,-0.50 z',
             'M0.00,-3.50 L0.00,-2.50 L3.00,-2.50 L3.00,-3.50 L0.00,-3.50 z',
@@ -623,8 +606,8 @@ def test_arc():
     p.arc_right(90, radius=5)
     p.arc_left(270, radius=5)
 
-    assert_equal(
-        [path.draw(0) for path in p.paper.elements],
+    assert_path_data(
+        p, 0,
         [
             'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
             'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
@@ -647,8 +630,8 @@ def test_arc_center():
     p.arc_right(90, center=(-5, -5))
     p.arc_left(270, center=(5, -5))
 
-    assert_equal(
-        [path.draw(0) for path in p.paper.elements],
+    assert_path_data(
+        p, 0,
         [
             'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
             'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
@@ -672,8 +655,8 @@ def test_arc_to():
     p.arc_to((0, -5))
     p.arc_to((5, 0))
 
-    assert_equal(
-        [path.draw(0) for path in p.paper.elements],
+    assert_path_data(
+        p, 0,
         [
             'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
             'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
@@ -703,9 +686,8 @@ def test_arc_normalize():
     p.turn_to(0)
     p.arc_left(360 + 90, radius=5)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+    assert_path_data(
+        p, 0,
         'M-5,0 A 5,5 0 0 0 0,-5'
     )
 
@@ -717,9 +699,8 @@ def test_arc_angle():
     p.turn_to(0)
     p.arc_left(90, radius=5, start_angle=45, end_angle=45)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(2),
+    assert_path_data(
+        p, 2,
         (
             'M0.53,-0.53 L-0.48,0.48 A 5.50,5.50 0 0 0 5.48,-5.48 '
             'L4.47,-4.47 A 4.50,4.50 0 0 1 0.53,-0.53 z'
@@ -820,9 +801,8 @@ def test_arc_pie_slice():
     p.turn_to(90)
     p.arc_left(90, 0.5)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+    assert_path_data(
+        p, 0,
         'M0,0 L1,0 A 1,1 0 0 0 0,-1 L0,0 z'
     )
 
@@ -879,9 +859,8 @@ def test_arc_line_joint():
     p.turn_left(90)
     p.arc_left(180, 3)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(3),
+    assert_path_data(
+        p, 3,
         (
             'M0.000,-0.500 L0.000,0.500 L3.464,0.500 '
             'A 3.500,3.500 0 1 0 -3.500,0.000 L-2.500,0.000 '
@@ -898,9 +877,8 @@ def test_arc_sweep_bug():
     p.turn_to(90)
     p.arc_left(270, 3)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+    assert_path_data(
+        p, 0,
         'M2,0 L4,0 A 4,4 0 1 0 0,4 L0,2 A 2,2 0 1 1 2,0 z'
     )
 
@@ -922,9 +900,8 @@ def test_arc_arc_joint():
     p.turn_left(5)
     p.arc_to(right, end_angle=0)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(3),
+    assert_path_data(
+        p, 3,
         (
             'M-2.522,0.000 L-1.477,0.000 '
             'A 30.394,30.394 0 0 1 0.000,-3.853 '
@@ -947,9 +924,8 @@ def test_arc_arc_joint():
     p.turn_right(5)
     p.arc_to(right, end_angle=0)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(3),
+    assert_path_data(
+        p, 3,
         (
             'M-2.561,0.000 L-1.441,0.000 '
             'A 31.394,31.394 0 0 0 0.000,-3.400 '
@@ -972,9 +948,8 @@ def test_arc_arc_joint():
     p.turn_right(5)
     p.arc_to(right, end_angle=0)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(3),
+    assert_path_data(
+        p, 3,
         (
             'M-2.522,0.000 L-1.477,0.000 '
             'A 30.394,30.394 0 0 1 -0.090,-3.656 '
@@ -997,9 +972,8 @@ def test_arc_arc_joint():
     p.turn_left(5)
     p.arc_to(right, end_angle=0)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(3),
+    assert_path_data(
+        p, 3,
         (
             'M-2.561,0.000 L-1.441,0.000 '
             'A 31.394,31.394 0 0 0 0.090,-3.656 '
@@ -1019,9 +993,8 @@ def test_arc_arc_joint_off_radius():
     p.arc_left(180, 1)
     p.arc_left(90, 2)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(1),
+    assert_path_data(
+        p, 1,
         (
             'M0.0,-0.5 L0.0,0.5 '
             'A 1.5,1.5 0 0 0 0.0,-2.5 '
@@ -1045,9 +1018,8 @@ def test_arc_line_joint_bug():
     p.turn_to(-90)
     p.line_forward(5)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(3),
+    assert_path_data(
+        p, 3,
         (
             'M-0.500,0.000 L0.500,0.000 '
             'A 4.500,4.500 0 0 1 4.500,-4.472 '
@@ -1073,9 +1045,8 @@ def test_various_joins():
 
     p.paper.set_view_box(-3, -3, 6, 6)
 
-    path = p.paper.elements[0]
     assert_svg_file(
-        path.draw(2),
+        p, 2,
         'test_various_joins.svg',
     )
 
@@ -1102,9 +1073,8 @@ def test_offwidth_arc_joins():
     p.stroke_mode(3.0)
     p.arc_right(90, 4)
 
-    path = p.paper.elements[0]
     assert_svg_file(
-        path.draw(3),
+        p, 3,
         'test_offwidth_arc_joins.svg'
     )
 
@@ -1289,8 +1259,8 @@ def test_color_joint():
     p.turn_right(60)
     p.line_forward(6)
 
-    assert_equal(
-        [path.draw(2) for path in p.paper.elements],
+    assert_path_data(
+        p, 2,
         [
             'M-6.00,-0.50 L-6.00,0.50 L-0.29,0.50 L0.29,-0.50 L-6.00,-0.50 z',
             'M0.29,-0.50 L-0.29,0.50 L2.57,5.45 L3.43,4.95 L0.29,-0.50 z',
@@ -1314,8 +1284,8 @@ def test_arc_joint_continue():
     p.arc_right(90, 5)
     p.arc_right(90, 5)
 
-    assert_equal(
-        [path.draw(0) for path in p.paper.elements],
+    assert_path_data(
+        p, 0,
         [
             (
                 'M0,-1 L0,1 A 6,6 0 0 0 6,-5 A 6,6 0 0 0 0,-11 '
@@ -1349,9 +1319,8 @@ def test_zero_length_side():
     p.turn_to(0)
     p.line_forward(1.0, end_angle=45)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+    assert_path_data(
+        p, 0,
         'M0,-1 L0,1 L2,-1 L0,-1 z',
     )
 
@@ -1370,17 +1339,16 @@ def test_mode():
     p.turn_left(90)
     p.line_forward(5)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(0),
+    assert_path_data(
+        p, 0,
         'M0,0 L5,0 L5,-5 L0,-5 L0,0 z',
     )
 
 
 def test_mode_repr():
     assert_equal(
-        repr(Mode('fill', 'black')),
-        "Mode('fill', 'black')"
+        repr(FillMode('black')),
+        "FillMode('black')"
     )
 
 
@@ -1420,9 +1388,8 @@ def test_outline():
     p.outline_mode(1.0, 0.2)
     p.line_forward(3)
 
-    path = p.paper.elements[0]
-    assert_equal(
-        path.draw(1),
+    assert_path_data(
+        p, 1,
         (
             'M-0.1,-0.6 L-0.1,0.6 L3.1,0.6 L3.1,-0.6 L-0.1,-0.6 z '
             'M0.1,-0.4 L2.9,-0.4 L2.9,0.4 L0.1,0.4 L0.1,-0.4 z'
@@ -1440,8 +1407,8 @@ def test_change_outline_width():
     p.outline_mode(1.0, 0.4)
     p.line_forward(3)
 
-    assert_equal(
-        [path.draw(1) for path in p.paper.elements],
+    assert_path_data(
+        p, 1,
         [
             (
                 'M-0.1,-0.6 L-0.1,0.6 L3.1,0.6 L3.1,-0.6 L-0.1,-0.6 z '
@@ -1465,8 +1432,8 @@ def test_save_mode():
     p.set_mode(old_mode)
     p.line_forward(5)
 
-    assert_equal(
-        [path.draw(0) for path in p.paper.elements],
+    assert_path_data(
+        p, 0,
         [
             'M0,-1 L0,1 L5,1 L5,-1 L0,-1 z',
             'M4,1 L6,1 L6,-1 L4,-1 L4,1 z',

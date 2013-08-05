@@ -67,7 +67,7 @@ class Segment:
     def join_with(self, other, loop=False):
         assert points_equal(self.b, other.a)
 
-        if self.mode.name == 'fill':
+        if not self.mode.thick:
             return
 
         if isinstance(other, LineSegment):
@@ -105,7 +105,7 @@ class Segment:
 
     def can_set_angle(self):
         return (
-            self.mode.name in ['stroke', 'outline'] and
+            self.mode.thick and
             not points_equal(self.a, self.b)
         )
 
