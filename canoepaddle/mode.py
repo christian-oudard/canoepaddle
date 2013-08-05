@@ -37,8 +37,6 @@ class FillMode(Mode):
     repr_fields = ['color']
 
     def __init__(self, color=None):
-        if color is None:
-            color = 'black'
         self.color = color
 
     def svg(self, path, precision):
@@ -60,8 +58,6 @@ class StrokeMode(Mode):
     repr_fields = ['width', 'color']
 
     def __init__(self, width, color=None):
-        if color is None:
-            color = 'black'
         self.color = color
         self.width = width
 
@@ -100,8 +96,6 @@ class OutlineMode(StrokeMode):
     repr_fields = ['width', 'outline_width', 'outline_color']
 
     def __init__(self, width, outline_width, outline_color=None):
-        if outline_color is None:
-            outline_color = 'black'
         self.outline_color = outline_color
         self.width = width
         self.outline_width = outline_width
@@ -123,9 +117,25 @@ class OutlineMode(StrokeMode):
         )
 
 
-class OutlinedFillMode(Mode):
-    thick = False
-    #STUB
+class OutlinedFillMode(FillMode):
+
+    thick = True
+
+    def __init__(self, width, color=None, outline_color=None):
+        self.width = width
+        self.color = color
+        self.outline_color = outline_color
+
+    def svg(self, path, precision):
+        fill_svg = path_element(
+            FillMode().render(path, precision),
+            self.color,
+        )
+        outline_svg = path_element(
+            StrokeMode(self.width).render(path, precision),
+            self.outline_color,
+        )
+        return fill_svg + outline_svg
 
 
 class OutlinedStrokeMode(Mode):

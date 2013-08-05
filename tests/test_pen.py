@@ -18,7 +18,7 @@ from util import (
     assert_path_data,
 )
 from canoepaddle.pen import Pen, Paper
-from canoepaddle.mode import FillMode
+from canoepaddle.mode import FillMode, OutlinedFillMode
 from canoepaddle.error import SegmentError
 
 sqrt2 = math.sqrt(2)
@@ -1439,4 +1439,19 @@ def test_save_mode():
             'M4,1 L6,1 L6,-1 L4,-1 L4,1 z',
             'M5,-1 L5,1 L10,1 L10,-1 L5,-1 z',
         ]
+    )
+
+
+def test_outlined_fill_mode():
+    p = Pen()
+    p.set_mode(OutlinedFillMode(0.2, 'red', 'black'))
+    p.turn_to(0)
+    p.arc_left(180, 5)
+    assert_equal(
+        p.paper.svg_elements(1)[0],
+        (
+            '<path d="M0.0,0.0 A 5.0,5.0 0 0 0 0.0,-10.0" fill="#ff0000" />'
+            '<path d="M0.0,-0.1 L0.0,0.1 A 5.1,5.1 0 0 0 0.0,-10.1 '
+            'L0.0,-9.9 A 4.9,4.9 0 0 1 0.0,-0.1 z" fill="#000000" />'
+        )
     )

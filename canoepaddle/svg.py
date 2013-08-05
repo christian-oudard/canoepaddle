@@ -12,6 +12,8 @@ def number(n, precision):
 
 
 def html_color(color):
+    if color is None:
+        return '#000000'
     if isinstance(color, Color):
         return color.html
     if isinstance(color, str):
