@@ -51,27 +51,25 @@ class Pen:
         """
         Start drawing filled paths.
         """
-        self._set_mode('fill', color)
+        self.set_mode(Mode('fill', color))
 
     def stroke_mode(self, width, color=None):
         """
         Start drawing strokes with a width.
         """
-        self._set_mode('stroke', color, width)
+        self.set_mode(Mode('stroke', color, width))
 
     def outline_mode(self, width, outline_width, color=None):
         """
         Start drawing strokes with a width drawn by thin outlines.
         """
-        self._set_mode('outline', color, width, outline_width)
+        self.set_mode(Mode('outline', color, width, outline_width))
 
-    def _set_mode(self, mode_name, color, width=None, outline_width=None):
-        self._mode.name = mode_name
-        if color is None:
-            color = self._mode.color
-        self._mode.color = color
-        self._mode.width = width
-        self._mode.outline_width = outline_width
+    def set_mode(self, mode):
+        # If the color is not specified, use the previous one.
+        if mode.color is None:
+            mode.color = self._mode.color
+        self._mode = mode
 
     def set_offset(self, offset):
         self.offset = offset

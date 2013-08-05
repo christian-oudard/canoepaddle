@@ -1453,3 +1453,23 @@ def test_change_outline_width():
             ),
         ]
     )
+
+
+def test_save_mode():
+    p = Pen()
+    p.stroke_mode(2.0, 'red')
+    old_mode = p.mode
+    p.line_forward(5)
+    p.fill_mode('blue')
+    p.square(2)
+    p.set_mode(old_mode)
+    p.line_forward(5)
+
+    assert_equal(
+        [path.draw(0) for path in p.paper.elements],
+        [
+            'M0,-1 L0,1 L5,1 L5,-1 L0,-1 z',
+            'M4,1 L6,1 L6,-1 L4,-1 L4,1 z',
+            'M5,-1 L5,1 L10,1 L10,-1 L5,-1 z',
+        ]
+    )
