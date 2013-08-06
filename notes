@@ -1,0 +1,28 @@
+Path rules.
+A path is collection of segments that were all drawn with the same mode.
+When you change from one mode to another, you start a new path.
+The rendered version of a path may have more than one svg <path> element.
+Moves do not start a new path without a mode change.
+
+Joining.
+A new segment will join with the last segment in the path if it is appended to
+the path and continues from the last point. If the appended segment closes the
+path, it is joined with the first segment. Looped segments cannot be joined onto.
+
+Modes
+Each path has exactly one mode.
+Modes are either thick or thin.
+Paths having thin modes have no per-segment properties.
+Paths having thick modes can have different color and width per segment.
+
+
+TODO:
+- OutlinedStroke mode and OutlinedFill mode 
+- Do color setting into a grapefruit color object right away, not at render time.
+- Implement different endcaps, such as round.
+- Make offwidth and joint errors just start a new path instead? We could do
+  flat cap arc joints when illegal
+
+Tests
+- test looped outlines.
+- test closing a stroked path then continuing somewhere else.

@@ -1,5 +1,3 @@
-#TODO: refactor this into an object, so we don't have to say "precision" so much.
-
 from grapefruit import Color
 
 
