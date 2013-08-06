@@ -48,7 +48,6 @@ class Path:
 
     def render_path(self, precision):
         assert len(self.segments) > 0
-        assert not self.mode.thick
 
         path_data = []
         start_point = p = Point(*self.segments[0].a)

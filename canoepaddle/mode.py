@@ -14,9 +14,9 @@ class Mode:
     """
     A strategy for rendering a Path.
 
-    For all thick mode types, the color and width attributes apply per-segment,
-    while other attributes such as outline_width and outline_color apply
-    per-path.
+    For all mode types with a width, the color and width attributes apply
+    per-segment, while other attributes such as outline_width and outline_color
+    apply per-path.
     """
 
     def __repr__(self):
@@ -46,7 +46,6 @@ class Mode:
 
 class FillMode(Mode):
 
-    thick = False
     repr_fields = ['color']
 
     def __init__(self, color=None):
@@ -62,7 +61,6 @@ class FillMode(Mode):
 
 class StrokeMode(Mode):
 
-    thick = True
     repr_fields = ['width', 'color']
 
     def __init__(self, width, color=None):
@@ -97,7 +95,6 @@ class StrokeMode(Mode):
 
 class OutlineMode(StrokeMode):
 
-    thick = True
     repr_fields = ['width', 'outline_width', 'outline_color']
 
     def __init__(self, width, outline_width, outline_color=None):
@@ -105,6 +102,10 @@ class OutlineMode(StrokeMode):
         self.color = None
         self.outline_width = outline_width
         self.outline_color = outline_color
+
+    def iter_render(self, path, precision):
+        for color, path_data in super().iter_render(path, precision):
+            yield self.outline_color, path_data
 
     def outliner_mode(self):
         return StrokeMode(self.outline_width, self.outline_color)
@@ -114,4 +115,40 @@ class OutlineMode(StrokeMode):
         return (
             self.outline_width == other.outline_width and
             self.outline_color == other.outline_color
+        )
+
+
+class StrokeFillMode(StrokeMode):
+
+    def __init__(self, width, color=None, fill_color=None):
+        self.width = width
+        self.color = color
+        self.fill_color = fill_color
+
+    def iter_render(self, path, precision):
+        fill_mode = FillMode(self.fill_color)
+        yield from fill_mode.iter_render(path, precision)
+        stroke_mode = StrokeMode(self.width, self.color)
+        yield from stroke_mode.iter_render(path, precision)
+
+
+class StrokeOutlineMode(StrokeMode):
+
+    def __init__(self, width, outline_width, color=None, outline_color=None):
+        self.width = width
+        self.outline_width = outline_width
+        self.color = color
+        self.outline_color = outline_color
+
+    def iter_render(self, path, precision):
+        stroke_mode = StrokeMode(self.width, self.color)
+        yield from stroke_mode.iter_render(path, precision)
+        outline_mode = OutlineMode(self.width, self.outline_width, self.outline_color)
+        yield from outline_mode.iter_render(path, precision)
+
+    def outliner_mode(self):
+        return StrokeFillMode(
+            self.outline_width,
+            self.outline_color,
+            self.color,
         )
