@@ -1,5 +1,9 @@
-#TODO: implement different endcaps, such as round.
-#TODO: offwidth and joint errors can just start a new path instead? flat cap
+# TODO: clean up how modes are handled per-segment and per-path. right now, a
+# segment in a mode like OutlinedStrokeMode does not match the mode that it
+# ends up being rendered with. Maybe we just don't do joins until the whole
+# path is complete? Maybe we keep pen history and replay it?
+# TODO: implement different endcaps, such as round.
+# TODO: offwidth and joint errors can just start a new path instead? flat cap
 # arc joints when illegal?
 
 import math

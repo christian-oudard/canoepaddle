@@ -1,4 +1,3 @@
-# TODO: test looped outlines.
 import math
 
 from nose.plugins.skip import SkipTest
@@ -18,7 +17,11 @@ from util import (
     assert_path_data,
 )
 from canoepaddle.pen import Pen, Paper
-from canoepaddle.mode import FillMode, OutlinedFillMode
+from canoepaddle.mode import (
+    FillMode,
+    OutlinedFillMode,
+    OutlinedStrokeMode,
+)
 from canoepaddle.error import SegmentError
 
 sqrt2 = math.sqrt(2)
@@ -1445,8 +1448,25 @@ def test_save_mode():
 def test_outlined_fill_mode():
     p = Pen()
     p.set_mode(OutlinedFillMode(0.2, 'red', 'black'))
+    p.move_to((0, 0))
     p.turn_to(0)
     p.arc_left(180, 5)
+    assert_equal(
+        p.paper.svg_elements(1)[0],
+        (
+            '<path d="M0.0,0.0 A 5.0,5.0 0 0 0 0.0,-10.0" fill="#ff0000" />'
+            '<path d="M0.0,-0.1 L0.0,0.1 A 5.1,5.1 0 0 0 0.0,-10.1 '
+            'L0.0,-9.9 A 4.9,4.9 0 0 1 0.0,-0.1 z" fill="#000000" />'
+        )
+    )
+
+
+def test_outlined_stroke_mode():
+    p = Pen()
+    p.set_mode(OutlinedStrokeMode(1.0, 0.2, 'red', 'black'))
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
     assert_equal(
         p.paper.svg_elements(1)[0],
         (

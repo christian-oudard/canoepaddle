@@ -58,8 +58,8 @@ class StrokeMode(Mode):
     repr_fields = ['width', 'color']
 
     def __init__(self, width, color=None):
-        self.color = color
         self.width = width
+        self.color = color
 
     def svg(self, path, precision):
         return path_element(
@@ -96,9 +96,9 @@ class OutlineMode(StrokeMode):
     repr_fields = ['width', 'outline_width', 'outline_color']
 
     def __init__(self, width, outline_width, outline_color=None):
-        self.outline_color = outline_color
         self.width = width
         self.outline_width = outline_width
+        self.outline_color = outline_color
 
     def svg(self, path, precision):
         return path_element(
@@ -107,7 +107,7 @@ class OutlineMode(StrokeMode):
         )
 
     def outliner_mode(self):
-        return StrokeMode(self.outline_width)
+        return StrokeMode(self.outline_width, self.outline_color)
 
     def compatible_with(self, other):
         # Outlines have to be consistent through the whole stroke.
@@ -138,6 +138,19 @@ class OutlinedFillMode(FillMode):
         return fill_svg + outline_svg
 
 
-class OutlinedStrokeMode(Mode):
+class OutlinedStrokeMode(StrokeMode):
+
     thick = True
-    #STUB
+
+    def __init__(self, width, outline_width, color=None, outline_color=None):
+        self.width = width
+        self.outline_width = outline_width
+        self.color = color
+        self.outline_color = outline_color
+
+    def outliner_mode(self):
+        return OutlinedFillMode(
+            self.outline_width,
+            self.color,
+            self.outline_color,
+        )
