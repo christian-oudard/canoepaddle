@@ -1264,8 +1264,6 @@ def test_arc_joint_continue():
     p.arc_right(90, 5)
     p.arc_right(90, 5)
 
-    print(p.paper.svg_elements(0))
-
     assert_path_data(
         p, 0,
         (
