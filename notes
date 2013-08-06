@@ -19,11 +19,11 @@ Paths having thick modes can have different color and width per segment.
 
 
 TODO:
-- OutlinedStroke mode and OutlinedFill mode 
 - Do color setting into a grapefruit color object right away, not at render time.
 - Implement different endcaps, such as round.
 - Make offwidth and joint errors just start a new path instead? We could do
   flat cap arc joints when illegal
+- Should undo put you back at the previous position?
 
 Tests
 - test looped outlines.

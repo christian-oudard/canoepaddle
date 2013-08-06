@@ -94,6 +94,10 @@ class Pen:
     def move_to(self, point):
         self._position = Point(*point)
 
+    def move_relative(self, offset):
+        # TODO: handle flipping
+        self.move_to(vec.add(self.position, offset))
+
     def move_forward(self, distance):
         self.move_to(self._calc_forward_position(distance))
 
@@ -111,8 +115,18 @@ class Pen:
         """
         self.move_to(self._calc_forward_to_x(x_target))
 
+    # Miscellaneous.
+
     def break_stroke(self):
         self._path = None
+
+    def undo(self):
+        if self.paper.elements:
+            path = self.paper.elements[-1]
+            if path.segments:
+                path.segments.pop()
+                return
+        raise IndexError('No segments in current path, cannot undo.')
 
     # Turning.
 
