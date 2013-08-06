@@ -10,6 +10,8 @@ def float_equal(a, b):
 
 
 def points_equal(a, b):
+    if a is None or b is None:
+        return False
     return all(
         float_equal(da, db)
         for (da, db) in zip(a, b)

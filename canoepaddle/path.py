@@ -22,6 +22,23 @@ class Path:
         for seg in self.segments:
             seg.translate(offset)
 
+    def add_segment(self, new_segment):
+        if not self.segments:
+            self.segments.append(new_segment)
+            return
+
+        # Check whether we need to join with the last segment.
+        last_segment = self.segments[-1]
+        if points_equal(last_segment.b, new_segment.a):
+            last_segment.join_with(new_segment)
+
+        # Check whether we need to join to the first segment.
+        first_segment = self.segments[0]
+        if points_equal(new_segment.b, first_segment.a):
+            new_segment.join_with(first_segment)
+
+        self.segments.append(new_segment)
+
     def svg(self, precision):
         # Defer to the drawing mode to actually turn our path data into
         # svg code. The mode will then call some combination of
@@ -31,14 +48,16 @@ class Path:
 
     def render_path(self, precision):
         assert len(self.segments) > 0
+        assert not self.mode.thick
 
         path_data = []
-
         start_point = p = Point(*self.segments[0].a)
-        path_data.append(path_move(p.x, p.y, precision))
-
+        last_point = None
         for seg in self.segments:
-            p = Point(*seg.b)
+            if not points_equal(seg.a, last_point):
+                start_point = seg.a
+                path_data.append(path_move(seg.a.x, seg.a.y, precision))
+            last_point = p = Point(*seg.b)
             if isinstance(seg, LineSegment):
                 path_data.append(path_line(
                     p.x,
@@ -53,23 +72,58 @@ class Path:
                     seg.radius,
                     precision,
                 ))
-
-        # Close the path if necessary.
-        if points_equal(seg.b, start_point):
-            path_data.append(path_close())
+            # Close the path if necessary.
+            if points_equal(seg.b, start_point):
+                path_data.append(path_close())
+                last_point = None
 
         return ' '.join(path_data)
 
     def draw_outline(self, pen, precision):
-        # Draw along the outline using a temporary pen we are given.
-        draw_thick_segments(pen, self.segments, self.mode)
+        # Draw along the outline of each path section using the temporary pen
+        # we are given.
+        for color, segments in group_segments(self.segments):
+            mode = pen.mode
+            mode.color = color
+            pen.set_mode(mode)
+            loop = points_equal(segments[-1].b, segments[0].a)
+            draw_thick_segments(pen, segments, loop=loop)
 
 
-def draw_thick_segments(pen, segments, mode):
+def draw_thick_segments(pen, segments, loop):
+
+    def draw_segment_right(seg, first=False, last=False):
+        if first:
+            if loop:
+                # If this segment starts a loop, start directly on right side of
+                # the loop.
+                pen.move_to(seg.a_right)
+            else:
+                # Draw the beginning edge of the stroke.
+                pen.move_to(seg.a_left)
+                pen.line_to(seg.a_right)
+
+        # Draw along the length of the segment.
+        seg.draw_right(pen)
+
+    def draw_segment_left(seg, first=False, last=False):
+        if last:
+            if loop:
+                # If this segment ends a loop, finish the right side and start the
+                # left side of the loop.
+                pen.move_to(seg.b_left)
+            else:
+                # Draw the ending thickness edge.
+                pen.line_to(seg.b_left)
+
+        # Continue path back towards the beginning.
+        seg.draw_left(pen)
+
+    # Draw segments.
     if len(segments) == 1:
         seg = segments[0]
-        draw_segment_right(pen, seg, first=True, last=True)
-        draw_segment_left(pen, seg, first=True, last=True)
+        draw_segment_right(seg, first=True, last=True)
+        draw_segment_left(seg, first=True, last=True)
     else:
         # Draw all the segments, going out along the right side, then back
         # along the left, treating the first and last segments specially.
@@ -77,41 +131,33 @@ def draw_thick_segments(pen, segments, mode):
         last_seg = segments[-1]
         middle_segments = segments[1:-1]
 
-        draw_segment_right(pen, first_seg, first=True)
+        draw_segment_right(first_seg, first=True)
         for seg in middle_segments:
-            draw_segment_right(pen, seg)
-        draw_segment_right(pen, last_seg, last=True)
+            draw_segment_right(seg)
+        draw_segment_right(last_seg, last=True)
 
-        draw_segment_left(pen, last_seg, last=True)
+        draw_segment_left(last_seg, last=True)
         for seg in reversed(middle_segments):
-            draw_segment_left(pen, seg)
-        draw_segment_left(pen, first_seg, first=True)
+            draw_segment_left(seg)
+        draw_segment_left(first_seg, first=True)
 
 
-def draw_segment_right(pen, seg, first=False, last=False):
-    if first:
-        if seg.loop_start:
-            # If this segment starts a loop, start directly on right side of
-            # the loop.
-            pen.move_to(seg.a_right)
-        else:
-            # Draw the beginning edge of the stroke.
-            pen.move_to(seg.a_left)
-            pen.line_to(seg.a_right)
-
-    # Draw along the length of the segment.
-    seg.draw_right(pen)
-
-
-def draw_segment_left(pen, seg, first=False, last=False):
-    if last:
-        if seg.loop_end:
-            # If this segment ends a loop, finish the right side and start the
-            # left side of the loop.
-            pen.move_to(seg.b_left)
-        else:
-            # Draw the ending thickness edge.
-            pen.line_to(seg.b_left)
-
-    # Continue path back towards the beginning.
-    seg.draw_left(pen)
+def group_segments(segments):
+    """
+    Split segments into continuous runs of the same color.
+    """
+    group = []
+    for seg in segments:
+        if not group:
+            group.append(seg)
+            continue
+        last_seg = group[-1]
+        if (
+            seg.color == last_seg.color and
+            points_equal(last_seg.b, seg.a)
+        ):
+            group.append(seg)
+        else:  # Finish this group and start another.
+            yield last_seg.color, group
+            group = [seg]
+    yield seg.color, group

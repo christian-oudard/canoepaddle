@@ -277,13 +277,10 @@ def test_joint_loop_color():
     p.turn_left(90)
     p.line_forward(5)
     p.turn_left(90)
-
-    assert_equal(len(p.paper.elements), 1)
-
     p.stroke_mode(2.0, color='red')
     p.line_forward(5)
 
-    assert_equal(len(p.paper.elements), 2)
+    assert_equal(len(p.paper.elements), 1)
 
     assert_path_data(
         p, 0,
@@ -432,18 +429,6 @@ def test_paper_merge():
     )
 
 
-def test_offset():
-    p = Pen()
-    p.fill_mode()
-    p.set_offset((0, 1))
-    p.move_to((0, 0))
-    p.line_to((1, 0))
-    path = p.paper.elements[0]
-    line = path.segments[0]
-    assert_equal(line.a, (0, 1))
-    assert_equal(line.b, (1, 1))
-
-
 def test_straight_joint():
     p = Pen()
     p.stroke_mode(2.0)
@@ -562,11 +547,11 @@ def test_multiple_strokes():
     p.line_forward(3)
 
     assert_path_data(
-        p, 2,
-        [
-            'M0.00,-0.50 L0.00,0.50 L3.00,0.50 L3.00,-0.50 L0.00,-0.50 z',
-            'M0.00,-3.50 L0.00,-2.50 L3.00,-2.50 L3.00,-3.50 L0.00,-3.50 z',
-        ]
+        p, 1,
+        (
+            'M0.0,-0.5 L0.0,0.5 L3.0,0.5 L3.0,-0.5 L0.0,-0.5 z '
+            'M0.0,-3.5 L0.0,-2.5 L3.0,-2.5 L3.0,-3.5 L0.0,-3.5 z'
+        )
     )
 
 
@@ -607,10 +592,10 @@ def test_arc():
 
     assert_path_data(
         p, 0,
-        [
-            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
-            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
-        ],
+        (
+            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0 '
+            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0'
+        )
     )
 
 
@@ -631,10 +616,10 @@ def test_arc_center():
 
     assert_path_data(
         p, 0,
-        [
-            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
-            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
-        ],
+        (
+            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0 '
+            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0'
+        ),
     )
 
 
@@ -656,10 +641,10 @@ def test_arc_to():
 
     assert_path_data(
         p, 0,
-        [
-            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0',
-            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0',
-        ],
+        (
+            'M-5,0 A 5,5 0 0 0 0,-5 A 5,5 0 1 1 5,0 '
+            'M-5,0 A 5,5 0 0 1 0,5 A 5,5 0 1 0 5,0'
+        ),
     )
 
 
@@ -1202,12 +1187,8 @@ def test_color_path():
             (
                 '<path d="M0.0,-0.5 L0.0,0.5 L1.0,0.5 L1.0,-0.5 L0.0,-0.5 z" '
                 'fill="#ff0000" />'
-            ),
-            (
                 '<path d="M1.0,-0.5 L1.0,0.5 L2.0,0.5 L2.0,-0.5 L1.0,-0.5 z" '
                 'fill="#00ff00" />'
-            ),
-            (
                 '<path d="M2.0,-0.5 L2.0,0.5 L3.0,0.5 L3.0,-0.5 L2.0,-0.5 z" '
                 'fill="#0000ff" />'
             ),
@@ -1283,18 +1264,16 @@ def test_arc_joint_continue():
     p.arc_right(90, 5)
     p.arc_right(90, 5)
 
+    print(p.paper.svg_elements(0))
+
     assert_path_data(
         p, 0,
-        [
-            (
-                'M0,-1 L0,1 A 6,6 0 0 0 6,-5 A 6,6 0 0 0 0,-11 '
-                'L0,-9 A 4,4 0 0 1 4,-5 A 4,4 0 0 1 0,-1 z'
-            ),
-            (
-                'M0,-1 L0,1 A 4,4 0 0 1 4,5 A 4,4 0 0 1 0,9 '
-                'L0,11 A 6,6 0 0 0 6,5 A 6,6 0 0 0 0,-1 z'
-            )
-        ]
+        (
+            'M0,-1 L0,1 A 6,6 0 0 0 6,-5 A 6,6 0 0 0 0,-11 '
+            'L0,-9 A 4,4 0 0 1 4,-5 A 4,4 0 0 1 0,-1 z '
+            'M0,-1 L0,1 A 4,4 0 0 1 4,5 A 4,4 0 0 1 0,9 '
+            'L0,11 A 6,6 0 0 0 6,5 A 6,6 0 0 0 0,-1 z'
+        ),
     )
 
 

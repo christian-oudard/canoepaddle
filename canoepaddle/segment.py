@@ -26,18 +26,16 @@ def closest_point_to(target, points):
 
 
 class Segment:
-    def __init__(self, a, b, mode):
+    def __init__(self, a, b, width, color):
         self.a = Point(*a)
         self.b = Point(*b)
-        self.mode = mode
+        self.width = width
+        self.color = color
 
         self.a_left = None
         self.a_right = None
         self.b_left = None
         self.b_right = None
-
-        self.loop_start = False
-        self.loop_end = False
 
     def __iter__(self):
         yield self.a
@@ -64,20 +62,16 @@ class Segment:
         if self.b_right is not None:
             self.b_right = vec.add(self.b_right, offset)
 
-    def join_with(self, other, loop=False):
+    def join_with(self, other):
         assert points_equal(self.b, other.a)
 
-        if not self.mode.thick:
+        if not self.width:
             return
 
         if isinstance(other, LineSegment):
             self.join_with_line(other)
         elif isinstance(other, ArcSegment):
             self.join_with_arc(other)
-
-        if loop:
-            self.loop_end = True
-            other.loop_start = True
 
     def check_degenerate_segment(self):
         if any(
@@ -105,7 +99,7 @@ class Segment:
 
     def can_set_angle(self):
         return (
-            self.mode.thick and
+            self.width is not None and
             not points_equal(self.a, self.b)
         )
 
@@ -114,8 +108,8 @@ class LineSegment(Segment):
 
     repr_fields = ['a', 'b', 'start_angle', 'end_angle']
 
-    def __init__(self, a, b, mode, start_angle, end_angle):
-        super().__init__(a, b, mode)
+    def __init__(self, a, b, width, color, start_angle, end_angle):
+        super().__init__(a, b, width, color)
 
         self.start_angle = None
         self.end_angle = None
@@ -137,7 +131,7 @@ class LineSegment(Segment):
             raise SegmentError('Turned too sharply.')
 
         # Special case equal widths.
-        if float_equal(self.mode.width, other.mode.width):
+        if float_equal(self.width, other.width):
             # When joints between segments of equal width are straight or
             # almost straight, the line-intersection method becomes very
             # numerically unstable, so we'll use another method instead.
@@ -153,7 +147,7 @@ class LineSegment(Segment):
             half_angle = vec.angle(v_other, v_bisect)
             v_bisect = vec.norm(
                 v_bisect,
-                (self.mode.width / 2) / math.sin(half_angle)
+                (self.width / 2) / math.sin(half_angle)
             )
 
             # Determine the left and right joint spots.
@@ -268,15 +262,15 @@ class LineSegment(Segment):
     def _width_vector(self):
         v = self._vector()
         v = vec.perp(v)
-        v = vec.norm(v, self.mode.width / 2)
+        v = vec.norm(v, self.width / 2)
         return v
 
     def draw_right(self, pen):
-        pen.turn_to(self._heading())
+        #pen.turn_to(self._heading())
         pen.line_to(self.b_right)
 
     def draw_left(self, pen):
-        pen.turn_to(self._heading() + 180)
+        #pen.turn_to(self._heading() + 180)
         pen.line_to(self.a_left)
 
     def _heading(self):
@@ -291,10 +285,10 @@ class ArcSegment(Segment):
     ]
 
     def __init__(
-        self, a, b, mode, start_angle, end_angle,
+        self, a, b, width, color, start_angle, end_angle,
         center, radius, arc_angle, start_heading, end_heading,
     ):
-        super().__init__(a, b, mode)
+        super().__init__(a, b, width, color)
 
         self.arc_angle = arc_angle
         self.center = Point(*center)
@@ -369,14 +363,14 @@ class ArcSegment(Segment):
         if points_equal(self.center, other.center):
             if (
                 float_equal(self.radius, other.radius) and
-                float_equal(self.mode.width, other.mode.width)
+                float_equal(self.width, other.width)
             ):
                 r = vec.vfrom(self.center, self.b)
                 if self.radius < 0:
                     r = vec.neg(r)
-                v_left = vec.norm(r, self.radius - self.mode.width / 2)
+                v_left = vec.norm(r, self.radius - self.width / 2)
                 self.b_left = other.a_left = vec.add(self.center, v_left)
-                v_right = vec.norm(r, self.radius + self.mode.width / 2)
+                v_right = vec.norm(r, self.radius + self.width / 2)
                 self.b_right = other.a_right = vec.add(self.center, v_right)
                 return
             else:
@@ -469,13 +463,13 @@ class ArcSegment(Segment):
     def offset_circle_left(self):
         return (
             self.center,
-            self.radius - self.mode.width / 2
+            self.radius - self.width / 2
         )
 
     def offset_circle_right(self):
         return (
             self.center,
-            self.radius + self.mode.width / 2,
+            self.radius + self.width / 2,
         )
 
     def draw_right(self, pen):

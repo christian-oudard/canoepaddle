@@ -39,6 +39,7 @@ def _extract_path_data(pen_or_paper, precision):
         paper = pen_or_paper
 
     elements = paper.svg_elements(precision)
+    print(elements)
     actual_path_data = []
     for element in elements:
         path_data = [

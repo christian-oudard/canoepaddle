@@ -18,11 +18,10 @@ class Pen:
         self._heading = 0
         self._position = Point(0.0, 0.0)
 
-        self.offset = (0, 0)
         self.flipped_x = False
         self.flipped_y = False
 
-        self._current_path = None
+        self._path = None
 
     # Properties.
 
@@ -56,19 +55,16 @@ class Pen:
         """
         self.set_mode(StrokeMode(width, color))
 
-    def outline_mode(self, width, outline_width, color=None):
+    def outline_mode(self, width, outline_width, outline_color=None):
         """
         Start drawing strokes with a width drawn by thin outlines.
         """
-        self.set_mode(OutlineMode(width, outline_width, color))
+        self.set_mode(OutlineMode(width, outline_width, outline_color))
 
     def set_mode(self, mode):
         if self._mode is not None:
             mode.copy_colors(self._mode)
         self._mode = mode
-
-    def set_offset(self, offset):
-        self.offset = offset
 
     def flip_x(self):
         """
@@ -116,7 +112,7 @@ class Pen:
         self.move_to(self._calc_forward_to_x(x_target))
 
     def break_stroke(self):
-        self._current_path = None
+        self._path = None
 
     # Turning.
 
@@ -154,7 +150,8 @@ class Pen:
         self._add_segment(LineSegment(
             a=old_position,
             b=self.position,
-            mode=self.mode,
+            width=self.mode.width,
+            color=self.mode.color,
             start_angle=start_angle,
             end_angle=end_angle,
         ))
@@ -302,7 +299,8 @@ class Pen:
         self._add_segment(ArcSegment(
             a=old_position,
             b=endpoint,
-            mode=self.mode,
+            width=self.mode.width,
+            color=self.mode.color,
             start_angle=start_angle,
             end_angle=end_angle,
             center=center,
@@ -317,6 +315,7 @@ class Pen:
     def circle(self, radius):
         old_position = self._position
         old_heading = self._heading
+        self.break_stroke()
         self.turn_to(0)
         self.move_forward(radius)
         self.turn_left(90)
@@ -328,6 +327,7 @@ class Pen:
     def square(self, size):
         old_position = self._position
         old_heading = self._heading
+        self.break_stroke()
         self.move_to(vec.add(self._position, (-size / 2, -size / 2)))
         self.turn_to(0)
         self.line_forward(size)
@@ -347,55 +347,18 @@ class Pen:
         if points_equal(new_segment.a, new_segment.b):
             return
 
-        # Translate the segment to match the current pen offset.
-        new_segment.translate(self.offset)
-
-        def new_path():
-            path = Path(self.mode)
-            self.paper.add_element(path)
-            path.segments.append(new_segment)
-            self._current_path = path
-
-        # Start a new path if this is the first segment added.
-        if self._current_path is None:
-            new_path()
-            return
-
-        # Check whether we are continuing the current stroke or starting a
-        # new one.
-        assert len(self._current_path.segments) > 0
-        first_segment = self._current_path.segments[0]
-        last_segment = self._current_path.segments[-1]
-
-        points_same = points_equal(last_segment.b, new_segment.a)
-        closes_path = points_equal(new_segment.b, first_segment.a)
-        mode_same = modes_compatible(last_segment.mode, new_segment.mode)
-
-        if not mode_same or not points_same:
-            # There is a break in the path or a mode change.
-            new_path()
-            return
-
-        color_same = (
-            getattr(last_segment.mode, 'color', None) ==
-            getattr(new_segment.mode, 'color', None) and
-            getattr(last_segment.mode, 'outline_color', None) ==
-            getattr(new_segment.mode, 'outline_color', None)
-        )
-        if color_same:
-            self._current_path.segments.append(new_segment)
-            last_segment.join_with(new_segment)
-            if closes_path:
-                new_segment.join_with(first_segment, loop=True)
+        # Continue the current path if possible.
+        if (
+            self._path is not None and
+            modes_compatible(self._path.mode, self.mode)
+        ):
+            self._path.add_segment(new_segment)
         else:
-            # We are continuing the old path visually, but with a new
-            # color. We implement this by starting a new path, and doing an
-            # extra "join_with" so that it looks like the same line.
-            new_path()
-            last_segment.join_with(new_segment)
-            if closes_path:
-                # Different color, so no loop argument.
-                new_segment.join_with(first_segment)
+            # Start a new path if this is the first segment or there has been a
+            # mode change.
+            self._path = path = Path(self.mode)
+            self.paper.add_element(path)
+            path.add_segment(new_segment)
 
     def _vector(self, length=1):
         """

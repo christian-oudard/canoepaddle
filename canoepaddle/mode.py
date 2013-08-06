@@ -11,6 +11,13 @@ def modes_compatible(a, b):
 
 
 class Mode:
+    """
+    A strategy for rendering a Path.
+
+    For all thick mode types, the color and width attributes apply per-segment,
+    while other attributes such as outline_width and outline_color apply
+    per-path.
+    """
 
     def __repr__(self):
         strings = []
@@ -20,6 +27,12 @@ class Mode:
                 continue
             strings.append(repr(value))
         return '{}({})'.format(self.__class__.__name__, ', '.join(strings))
+
+    def svg(self, path, precision):
+        return ''.join(
+            path_element(path_data, color)
+            for color, path_data in self.iter_render(path, precision)
+        )
 
     def copy_colors(self, other):
         # Update the current mode based on a new one, but keeping old colors if
@@ -37,16 +50,11 @@ class FillMode(Mode):
     repr_fields = ['color']
 
     def __init__(self, color=None):
+        self.width = None
         self.color = color
 
-    def svg(self, path, precision):
-        return path_element(
-            self.render(path, precision),
-            self.color,
-        )
-
-    def render(self, path, precision):
-        return path.render_path(precision)
+    def iter_render(self, path, precision):
+        yield self.color, path.render_path(precision)
 
     def compatible_with(self, other):
         return self.color == other.color
@@ -61,13 +69,7 @@ class StrokeMode(Mode):
         self.width = width
         self.color = color
 
-    def svg(self, path, precision):
-        return path_element(
-            self.render(path, precision),
-            self.color,
-        )
-
-    def render(self, path, precision):
+    def iter_render(self, path, precision):
         # Create a temporary pen to draw along the outline of the path
         # segments, taking into account the thickness of the path.
         from .pen import Pen
@@ -76,10 +78,13 @@ class StrokeMode(Mode):
         pen.set_mode(mode)
         path.draw_outline(pen, precision)
 
-        return ' '.join(
-            mode.render(path, precision)
-            for path in pen.paper.elements
-        )
+        for path in pen.paper.elements:
+            color = path.segments[0].color
+            path_data = ' '.join(
+                p for c, p in
+                mode.iter_render(path, precision)
+            )
+            yield color, path_data
 
     def outliner_mode(self):
         # Give the mode, that if used to draw the outline, will produce the
@@ -97,14 +102,9 @@ class OutlineMode(StrokeMode):
 
     def __init__(self, width, outline_width, outline_color=None):
         self.width = width
+        self.color = None
         self.outline_width = outline_width
         self.outline_color = outline_color
-
-    def svg(self, path, precision):
-        return path_element(
-            self.render(path, precision),
-            self.outline_color,
-        )
 
     def outliner_mode(self):
         return StrokeMode(self.outline_width, self.outline_color)

@@ -1,6 +1,8 @@
 Path rules.
 A path is collection of segments that were all drawn with the same mode.
-When you change from one mode to another, you start a new path.
+When you change from one mode to an incompatible mode, you start a new path.
+Incompatible mode changes are any color change in a thin mode, or an
+outline_color or outline_width change in a thick mode.
 The rendered version of a path may have more than one svg <path> element.
 Moves do not start a new path without a mode change.
 
