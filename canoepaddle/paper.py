@@ -1,7 +1,10 @@
+# TODO: Rename element to path? It is always a path right now.
+
 from textwrap import dedent
 from string import Template
 
 from .bounds import Bounds
+from .geometry import find_point_pairs
 
 
 class Paper:
@@ -17,8 +20,46 @@ class Paper:
         self.elements.append(element)
 
     def merge(self, other):
+        """
+        Add all the elements of the other paper to this one.
+        """
         self.elements.extend(other.elements)
         return self
+
+    def join_paths(self):
+        """
+        Find all paths that come to a common point with another path, and join
+        them together.
+        """
+        # Index every path by its start and end nodes.
+        paths_and_nodes = []  # [(node, path, is_start), ...]
+        for path in self.elements:
+            start_node = path.segments[0].a
+            paths_and_nodes.append((path, start_node, True))
+            end_node = path.segments[-1].b
+            paths_and_nodes.append((path, end_node, False))
+
+        # Put together paths that meet at common points.
+        points = [point for (path, point, is_start) in paths_and_nodes]
+        for left_index, right_index in find_point_pairs(points):
+            left_path, left_node, left_is_start = paths_and_nodes[left_index]
+            right_path, right_node, right_is_start = paths_and_nodes[right_index]
+            # There are four combinations of directions the paths could meet at:
+            # Front/back, front/front, back/back, and back/front.
+            # We selectively reverse the paths so that both paths are pointing
+            # to the "right". Notice that the logic is assymetrical, because we
+            # want the end node of the left path to meet the start node of the
+            # right path.
+            if left_is_start:
+                left_path.reverse()
+            if not right_is_start:
+                right_path.reverse()
+            self.elements.remove(right_path)
+            left_path.join_with(right_path)
+
+    def fuse_paths(self):
+        for path in self.elements:
+            path.fuse()
 
     def bounds(self):
         return Bounds.union_all(
@@ -39,6 +80,14 @@ class Paper:
         bounds = self.bounds()
         current_y_center = (bounds.bottom + bounds.top) / 2
         self.translate((0, y_center - current_y_center))
+
+    def mirror_x(self, x_center):
+        for element in self.elements:
+            element.mirror_x(x_center)
+
+    def mirror_y(self, y_center):
+        for element in self.elements:
+            element.mirror_y(y_center)
 
     def set_view_box(self, x, y, width, height):
         self.view_x = x

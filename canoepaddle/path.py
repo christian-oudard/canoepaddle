@@ -7,6 +7,7 @@ from .svg import (
     path_arc,
     path_close,
 )
+from .geometry import collinear
 
 
 class Path:
@@ -21,6 +22,56 @@ class Path:
     def translate(self, offset):
         for seg in self.segments:
             seg.translate(offset)
+
+    def mirror_x(self, x_center):
+        for seg in self.segments:
+            seg.mirror_x(x_center)
+
+    def mirror_y(self, y_center):
+        for seg in self.segments:
+            seg.mirror_y(y_center)
+
+    def join_with(self, other):
+        self.segments[-1].join_with(other.segments[0])
+        self.segments.extend(other.segments)
+
+    def reverse(self):
+        self.segments.reverse()
+        for segment in self.segments:
+            segment.reverse()
+
+    def fuse(self):
+        """
+        Find consecutive straight segments in this path that could be
+        combined without loss into a single segment.
+        """
+        i = 0
+        while i < len(self.segments) - 1:
+            print(i)
+            print(self.segments)
+            left = self.segments[i]
+            right = self.segments[i + 1]
+            if (
+                isinstance(left, LineSegment) and
+                isinstance(right, LineSegment) and
+                left.width == right.width and
+                left.color == right.color and
+                collinear(left.a, left.b, right.b)
+            ):
+                fused_segment = LineSegment(
+                    a=left.a,
+                    b=right.b,
+                    width=left.width,
+                    color=left.color,
+                    start_angle=left.start_angle,
+                    end_angle=right.end_angle,
+                )
+                self.segments[i:i+2] = [fused_segment]
+                # Leave i unchanged so fused_segment will be the
+                # "left" segment next iteration.
+            else:
+                # Cannot fuse, try the next pair.
+                i += 1
 
     def add_segment(self, new_segment):
         if not self.segments:

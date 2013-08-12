@@ -15,17 +15,16 @@ from util import (
     assert_points_equal,
     assert_svg_file,
     assert_path_data,
+    sqrt2,
+    sqrt3,
 )
-from canoepaddle.pen import Pen, Paper
+from canoepaddle.pen import Pen
 from canoepaddle.mode import (
     FillMode,
     StrokeFillMode,
     StrokeOutlineMode,
 )
 from canoepaddle.error import SegmentError
-
-sqrt2 = math.sqrt(2)
-sqrt3 = math.sqrt(3)
 
 
 def test_movement():
@@ -154,27 +153,6 @@ def test_line_to_coordinate():
         assert_points_equal(p.position, (x * 3, y * 3))
 
 
-def test_format_svg():
-    p = Pen()
-    svg = p.paper.format_svg()
-    assert svg.startswith('<?xml')
-
-
-def test_set_view_box():
-    # Test that the view box gets set correctly.
-    p = Pen()
-    p.paper.set_view_box(-1, -1, 3, 3)
-
-    # The view box is transformed into svg coordinates by flipping the
-    # Y-coordinate and adjusting for height.
-    svg_data = p.paper.format_svg()
-    assert 'viewBox="-1 -2 3 3"' in svg_data
-
-    p.paper.set_view_box(-10, -10, 20, 20)
-    svg_data = p.paper.format_svg()
-    assert 'viewBox="-10 -10 20 20"' in svg_data
-
-
 def test_angle():
     p = Pen()
     p.stroke_mode(1.0)
@@ -291,144 +269,6 @@ def test_joint_loop_color():
         [
             'M1,-1 L-1,1 L6,1 L6,-6 L-1,-6 L1,-4 L4,-4 L4,-1 L1,-1 z',
             'M1,-4 L-1,-6 L-1,1 L1,-1 L1,-4 z',
-        ]
-    )
-
-
-def test_flip():
-    def stroke(p):
-        p.move_to((0, 0))
-        p.turn_to(180)
-        p.move_forward(6)
-        p.turn_to(0)
-        p.line_forward(6)
-        p.turn_right(60)
-        p.line_forward(6)
-
-    p = Pen()
-    p.fill_mode()
-    stroke(p)
-    assert_path_data(
-        p, 2,
-        'M-6.00,0.00 L0.00,0.00 L3.00,5.20'
-    )
-
-    p = Pen()
-    p.fill_mode()
-    p.flip_x()
-    stroke(p)
-    assert_path_data(
-        p, 2,
-        'M6.00,0.00 L0.00,0.00 L-3.00,5.20'
-    )
-
-    p = Pen()
-    p.fill_mode()
-    p.flip_y()
-    stroke(p)
-    assert_path_data(
-        p, 2,
-        'M-6.00,0.00 L0.00,0.00 L3.00,-5.20'
-    )
-
-
-def test_translate():
-    p = Pen()
-    p.stroke_mode(1.0)
-
-    p.move_to((0, 0))
-    p.turn_to(0)
-    p.line_forward(3)
-    p.arc_left(90, 3)
-    p.turn_left(90)
-    p.move_forward(3)
-    p.fill_mode()
-    p.circle(0.5)
-    p.move_forward(3)
-    p.square(1)
-
-    p.paper.translate((1, 1))
-
-    assert_equal(
-        p.paper.svg_elements(1),
-        [
-            (
-                '<path d="M1.0,-1.5 L1.0,-0.5 L4.0,-0.5 A 3.5,3.5 0 0 0 '
-                '7.5,-4.0 L6.5,-4.0 A 2.5,2.5 0 0 1 4.0,-1.5 L1.0,-1.5 z" '
-                'fill="#000000" />'
-            ),
-            (
-                '<path d="M4.5,-4.0 A 0.5,0.5 0 0 0 3.5,-4.0 '
-                'A 0.5,0.5 0 0 0 4.5,-4.0 z" fill="#000000" />'
-            ),
-            (
-                '<path d="M0.5,-3.5 L1.5,-3.5 L1.5,-4.5 L0.5,-4.5 L0.5,-3.5 z" '
-                'fill="#000000" />'
-            ),
-        ]
-    )
-
-
-def test_center_on_xy():
-    p = Pen()
-    p.stroke_mode(2.0)
-    p.move_to((0, 0))
-    p.turn_to(0)
-    p.line_forward(4)
-
-    p.move_to((2, 1))
-    p.circle(1)
-
-    p.paper.center_on_x(0)
-
-    assert_equal(
-        p.paper.svg_elements(0),
-        [
-            '<path d="M-2,-1 L-2,1 L2,1 L2,-1 L-2,-1 z" fill="#000000" />',
-            '<path d="M2,-1 A 2,2 0 0 0 -2,-1 A 2,2 0 0 0 2,-1 z" fill="#000000" />',
-        ]
-    )
-
-    p.paper.center_on_y(0)
-
-    assert_equal(
-        p.paper.svg_elements(1),
-        [
-            (
-                '<path d="M-2.0,0.0 L-2.0,2.0 L2.0,2.0 L2.0,0.0 L-2.0,0.0 z" '
-                'fill="#000000" />'
-            ),
-            (
-                '<path d="M2.0,0.0 A 2.0,2.0 0 0 0 -2.0,0.0 '
-                'A 2.0,2.0 0 0 0 2.0,0.0 z" fill="#000000" />'
-            ),
-        ]
-    )
-
-
-def test_paper_merge():
-    # Merge two drawings together.
-    paper = Paper()
-
-    p = Pen()
-    p.fill_mode()
-    p.turn_to(0)
-    p.arc_left(180, 5)
-    p.paper.center_on_x(0)
-    paper.merge(p.paper)
-
-    p = Pen()
-    p.fill_mode()
-    p.turn_to(180)
-    p.arc_left(180, 5)
-    p.paper.center_on_x(0)
-    paper.merge(p.paper)
-
-    assert_path_data(
-        paper, 1,
-        [
-            'M-2.5,0.0 A 5.0,5.0 0 0 0 -2.5,-10.0',
-            'M2.5,0.0 A 5.0,5.0 0 0 0 2.5,10.0',
         ]
     )
 

@@ -1,9 +1,13 @@
+import math
 import re
 import os.path
 
 from nose.tools import assert_equal, assert_almost_equal
 
 from canoepaddle.pen import Pen
+
+sqrt2 = math.sqrt(2)
+sqrt3 = math.sqrt(3)
 
 
 def assert_points_equal(a, b):

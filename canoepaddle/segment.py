@@ -26,7 +26,7 @@ def closest_point_to(target, points):
 
 
 class Segment:
-    def __init__(self, a, b, width, color):
+    def __init__(self, a, b, width, color, start_angle, end_angle):
         self.a = Point(*a)
         self.b = Point(*b)
         self.width = width
@@ -36,6 +36,11 @@ class Segment:
         self.a_right = None
         self.b_left = None
         self.b_right = None
+
+        self.start_angle = None
+        self.end_angle = None
+        self.set_start_angle(start_angle)
+        self.set_end_angle(end_angle)
 
     def __iter__(self):
         yield self.a
@@ -51,16 +56,58 @@ class Segment:
         return '{}({})'.format(self.__class__.__name__, ', '.join(strings))
 
     def translate(self, offset):
-        self.a = Point(*vec.add(self.a, offset))
-        self.b = Point(*vec.add(self.b, offset))
-        if self.a_left is not None:
-            self.a_left = vec.add(self.a_left, offset)
-        if self.a_right is not None:
-            self.a_right = vec.add(self.a_right, offset)
-        if self.b_left is not None:
-            self.b_left = vec.add(self.b_left, offset)
-        if self.b_right is not None:
-            self.b_right = vec.add(self.b_right, offset)
+
+        def f(p):
+            if p is not None:
+                return Point(*vec.add(p, offset))
+
+        self._translate(f)
+
+    def _translate(self, f):
+        self.a = f(self.a)
+        self.b = f(self.b)
+        self.a_left = f(self.a_left)
+        self.a_right = f(self.a_right)
+        self.b_left = f(self.b_left)
+        self.b_right = f(self.b_right)
+
+    def mirror_x(self, x_center):
+
+        def f(p):
+            if p is not None:
+                return Point(x_center - p.x, p.y)
+
+        def f_angle(angle):
+            if angle is not None:
+                return 180 - angle
+
+        self._mirror(f, f_angle)
+
+    def mirror_y(self, y_center):
+
+        def f(p):
+            if p is not None:
+                return Point(p.x, y_center - p.y)
+
+        def f_angle(angle):
+            if angle is not None:
+                return -angle
+
+        self._mirror(f, f_angle)
+
+    def _mirror(self, f, f_angle):
+        self.a = f(self.a)
+        self.b = f(self.b)
+        # The corners need to be swapped left for right as they are
+        # mirrored, to maintain counterclockwise thick segment drawing
+        # order.
+        self.a_left, self.a_right = f(self.a_right), f(self.a_left)
+        self.b_left, self.b_right = f(self.b_right), f(self.b_left)
+
+    def reverse(self):
+        self.a, self.b = self.b, self.a
+        self.a_left, self.b_right = self.b_right, self.a_left
+        self.a_right, self.b_left = self.b_left, self.a_right
 
     def join_with(self, other):
         assert points_equal(self.b, other.a)
@@ -108,19 +155,15 @@ class LineSegment(Segment):
 
     repr_fields = ['a', 'b', 'start_angle', 'end_angle']
 
-    def __init__(self, a, b, width, color, start_angle, end_angle):
-        super().__init__(a, b, width, color)
-
-        self.start_angle = None
-        self.end_angle = None
-        self.set_start_angle(start_angle)
-        self.set_end_angle(end_angle)
-
     def bounds(self):
         return Bounds.union_all([
             Bounds.from_point(self.a),
             Bounds.from_point(self.b),
         ])
+
+    def reverse(self):
+        self.start_angle, self.end_angle = self.end_angle, self.start_angle
+        super().reverse()
 
     def join_with_line(self, other):
         # Check turn angle, and don't turn close to straight back.
@@ -151,10 +194,10 @@ class LineSegment(Segment):
             )
 
             # Determine the left and right joint spots.
-            self.b_left = vec.add(self.b, v_bisect)
-            self.b_right = vec.sub(self.b, v_bisect)
-            other.a_left = vec.add(other.a, v_bisect)
-            other.a_right = vec.sub(other.a, v_bisect)
+            self.b_left = Point(*vec.add(self.b, v_bisect))
+            self.b_right = Point(*vec.sub(self.b, v_bisect))
+            other.a_left = Point(*vec.add(other.a, v_bisect))
+            other.a_right = Point(*vec.sub(other.a, v_bisect))
             return
 
         a, b = self.offset_line_left()
@@ -168,8 +211,8 @@ class LineSegment(Segment):
         if p_left is None or p_right is None:
             raise SegmentError('Joint not allowed.')
 
-        self.b_left = other.a_left = p_left
-        self.b_right = other.a_right = p_right
+        self.b_left = other.a_left = Point(*p_left)
+        self.b_right = other.a_right = Point(*p_right)
 
     def join_with_arc(self, other):
         a, b = self.offset_line_left()
@@ -180,8 +223,8 @@ class LineSegment(Segment):
         center, radius = other.offset_circle_right()
         points_right = intersect_circle_line(center, radius, a, b)
 
-        self.b_left = other.a_left = closest_point_to(self.b, points_left)
-        self.b_right = other.a_right = closest_point_to(self.b, points_right)
+        self.b_left = other.a_left = Point(*closest_point_to(self.b, points_left))
+        self.b_right = other.a_right = Point(*closest_point_to(self.b, points_right))
 
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle
@@ -199,15 +242,18 @@ class LineSegment(Segment):
         b = vec.add(self.a, v_slant)
 
         c, d = self.offset_line_left()
-        self.a_left = intersect_lines(a, b, c, d)
+        left = intersect_lines(a, b, c, d)
 
         c, d = self.offset_line_right()
-        self.a_right = intersect_lines(a, b, c, d)
+        right = intersect_lines(a, b, c, d)
 
-        if self.a_left is None or self.a_right is None:
+        if left is None or right is None:
             raise SegmentError(
                 'Could not set start angle to {}'.format(start_angle)
             )
+
+        self.a_left = Point(*left)
+        self.a_right = Point(*right)
 
         self.check_degenerate_segment()
 
@@ -227,15 +273,18 @@ class LineSegment(Segment):
         b = vec.add(self.b, v_slant)
 
         c, d = self.offset_line_left()
-        self.b_left = intersect_lines(a, b, c, d)
+        left = intersect_lines(a, b, c, d)
 
         c, d = self.offset_line_right()
-        self.b_right = intersect_lines(a, b, c, d)
+        right = intersect_lines(a, b, c, d)
 
-        if self.b_left is None or self.b_right is None:
+        if left is None or right is None:
             raise SegmentError(
                 'Could not set end angle to {}'.format(end_angle)
             )
+
+        self.b_left = Point(*left)
+        self.b_right = Point(*right)
 
         self.check_degenerate_segment()
 
@@ -288,18 +337,12 @@ class ArcSegment(Segment):
         self, a, b, width, color, start_angle, end_angle,
         center, radius, arc_angle, start_heading, end_heading,
     ):
-        super().__init__(a, b, width, color)
-
         self.arc_angle = arc_angle
         self.center = Point(*center)
         self.radius = radius
         self.start_heading = start_heading
         self.end_heading = end_heading
-
-        self.start_angle = None
-        self.end_angle = None
-        self.set_start_angle(start_angle)
-        self.set_end_angle(end_angle)
+        super().__init__(a, b, width, color, start_angle, end_angle)
 
     def bounds(self):
         # Find the four "compass points" around the center.
@@ -343,20 +386,28 @@ class ArcSegment(Segment):
             [self.a, self.b] + occupied_points
         ])
 
-    def translate(self, offset):
-        self.center = Point(*vec.add(self.center, offset))
-        super().translate(offset)
+    def _translate(self, f):
+        super()._translate(f)
+        self.center = f(self.center)
+
+    def _mirror(self, f, f_angle):
+        super()._mirror(f, f_angle)
+        self.center = f(self.center)
+        self.arc_angle = -self.arc_angle
+        self.radius = -self.radius
+        self.start_heading = f_angle(self.start_heading)
+        self.end_heading = f_angle(self.end_heading)
 
     def join_with_line(self, other):
         a, b = other.offset_line_left()
         center, radius = self.offset_circle_left()
         points = intersect_circle_line(center, radius, a, b)
-        self.b_left = other.a_left = closest_point_to(self.b, points)
+        self.b_left = other.a_left = Point(*closest_point_to(self.b, points))
 
         a, b = other.offset_line_right()
         center, radius = self.offset_circle_right()
         points = intersect_circle_line(center, radius, a, b)
-        self.b_right = other.a_right = closest_point_to(self.b, points)
+        self.b_right = other.a_right = Point(*closest_point_to(self.b, points))
 
     def join_with_arc(self, other):
         # Special case coincident arcs.
@@ -369,9 +420,9 @@ class ArcSegment(Segment):
                 if self.radius < 0:
                     r = vec.neg(r)
                 v_left = vec.norm(r, self.radius - self.width / 2)
-                self.b_left = other.a_left = vec.add(self.center, v_left)
+                self.b_left = other.a_left = Point(*vec.add(self.center, v_left))
                 v_right = vec.norm(r, self.radius + self.width / 2)
-                self.b_right = other.a_right = vec.add(self.center, v_right)
+                self.b_right = other.a_right = Point(*vec.add(self.center, v_right))
                 return
             else:
                 raise SegmentError(
@@ -390,8 +441,8 @@ class ArcSegment(Segment):
         if len(points_left) == 0 or len(points_right) == 0:
             raise SegmentError('Joint not allowed.')
 
-        self.b_left = other.a_left = closest_point_to(self.b, points_left)
-        self.b_right = other.a_right = closest_point_to(self.b, points_right)
+        self.b_left = other.a_left = Point(*closest_point_to(self.b, points_left))
+        self.b_right = other.a_right = Point(*closest_point_to(self.b, points_right))
 
     def set_start_angle(self, start_angle):
         self.start_angle = start_angle
@@ -419,8 +470,8 @@ class ArcSegment(Segment):
                 'Could not set start angle to {}'.format(start_angle)
             )
 
-        self.a_left = closest_point_to(self.a, points_left)
-        self.a_right = closest_point_to(self.a, points_right)
+        self.a_left = Point(*closest_point_to(self.a, points_left))
+        self.a_right = Point(*closest_point_to(self.a, points_right))
 
         self.check_degenerate_segment()
 
@@ -450,8 +501,8 @@ class ArcSegment(Segment):
                 'Could not set end angle to {}'.format(end_angle)
             )
 
-        self.b_left = closest_point_to(self.b, points_left)
-        self.b_right = closest_point_to(self.b, points_right)
+        self.b_left = Point(*closest_point_to(self.b, points_left))
+        self.b_right = Point(*closest_point_to(self.b, points_right))
 
         self.check_degenerate_segment()
 

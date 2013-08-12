@@ -1,18 +1,17 @@
-import math
 from nose.tools import (
     assert_equal,
     assert_almost_equal,
 )
-from util import assert_points_equal
+from util import assert_points_equal, sqrt2, sqrt3
 from canoepaddle.geometry import (
     intersect_lines,
     intersect_circle_line,
     intersect_circles,
     quadratic_formula,
+    collinear,
+    find_point_pairs,
 )
-
-sqrt2 = math.sqrt(2)
-sqrt3 = math.sqrt(3)
+from canoepaddle.point import epsilon
 
 
 def test_quadratic_formula():
@@ -172,4 +171,84 @@ def test_intersect_circles_numerical():
             (0.5, 0.5), -72.25000000000001,
         ),
         [(-27.55938126499886, 67.07877757232733)],
+    )
+
+
+def test_collinear():
+    assert collinear(
+        (0, 0),
+        (1, 1),
+        (2, 2),
+    )
+    assert not collinear(
+        (0, 0),
+        (1, 1),
+        (2, 1),
+    )
+    # Order matters.
+    assert not collinear(
+        (0, 0),
+        (2, 2),
+        (1, 1),
+    )
+
+
+def test_find_point_pairs():
+    # No pairs.
+    assert_equal(
+        find_point_pairs([
+            (3, 0),
+            (4, 0),
+            (5, 0),
+        ]),
+        []
+    )
+    # Simple pair.
+    assert_equal(
+        find_point_pairs([
+            (3, 0),
+            (3, 0),
+            (4, 0),
+        ]),
+        [(0, 1)]
+    )
+    # Multiple pairs.
+    assert_equal(
+        find_point_pairs([
+            (3, 0),
+            (4, 0),
+            (10, 0),
+            (3, 0),
+            (4, 0),
+        ]),
+        [(0, 3), (1, 4)]
+    )
+    # Three or more the same does not count as a pair.
+    assert_equal(
+        find_point_pairs([
+            (3, 0),
+            (3, 0),
+            (3, 0),
+        ]),
+        []
+    )
+    assert_equal(
+        find_point_pairs([
+            (3, 0),
+            (3, 0),
+            (3, 0),
+            (3, 0),
+        ]),
+        []
+    )
+    # Partial pair interference.
+    # Because of the epsilon equality test, equality is not strictly
+    # transitive. In this test case, A == B, and B == C, but A != C.
+    assert_equal(
+        find_point_pairs([
+            (0, 0),
+            (epsilon * 0.6, 0),
+            (epsilon * 1.2, 0),
+        ]),
+        [],
     )

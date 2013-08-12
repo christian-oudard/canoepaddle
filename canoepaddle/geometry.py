@@ -1,7 +1,9 @@
+from collections import defaultdict
+import itertools
 from math import sqrt
 
 import vec
-from .point import float_equal, points_equal
+from .point import float_equal, points_equal, epsilon
 
 
 def intersect_lines(a, b, c, d, segment=False):
@@ -161,3 +163,71 @@ def intersect_circles(center1, radius1, center2, radius2):
         vec.add(chord_middle, vec.norm(perp, a / 2)),
         vec.add(chord_middle, vec.norm(perp, -a / 2)),
     ]
+
+
+def pairwise(iterable):
+    """s -> (s0,s1), (s1,s2), (s2, s3), ...
+
+    >>> list(pairwise([1, 2, 3, 4]))
+    [(1, 2), (2, 3), (3, 4)]
+    """
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def collinear(*points):
+    """
+    Determine whether the given points are collinear in the order they were
+    passed in.
+    """
+    # Find vectors between successive points, in a chain.
+    vectors = []
+    for a, b in pairwise(points):
+        vectors.append(vec.vfrom(a, b))
+    # Find the angles between successive vectors in the chain. Actually we skip
+    # the inverse cosine calculation required to find angle, and just use ratio
+    # instead. The ratio is the cosine of the angle between the vectors.
+    for u, v in pairwise(vectors):
+        ratio = vec.dot(u, v) / (vec.mag(u) * vec.mag(v))
+        if ratio < 1.0 - epsilon:
+            return False
+    return True
+
+
+def find_point_pairs(points):
+    """
+    Collect pairs of points that are in the same spot, with no other
+    points nearby.
+    """
+
+    # Construct an equality graph.
+    # TODO: Optimize this using a grid hash, it's O(N^2) right now.
+    # http://programmers.stackexchange.com/questions/129892
+    graph = defaultdict(list)
+    n = len(points)
+    for i in range(n):
+        a = points[i]
+        for j in range(i + 1, n):
+            b = points[j]
+            if points_equal(a, b):
+                graph[i].append(j)
+                graph[j].append(i)
+
+    # If two points are paired, then they will each only have one
+    # neighbor, each other.
+    pairs = []
+    paired_indexes = set()
+    for i in range(n):
+        if i in paired_indexes:
+            continue
+        neighbors_i = graph[i]
+        if len(neighbors_i) == 1:
+            j = neighbors_i[0]
+            neighbors_j = graph[j]
+            if len(neighbors_j) == 1:
+                pairs.append((i, j))
+                paired_indexes.add(i)
+                paired_indexes.add(j)
+
+    return pairs

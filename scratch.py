@@ -4,50 +4,47 @@ from canoepaddle import Pen, Paper
 from canoepaddle.mode import *
 from grapefruit import Color
 
-slant45 = 1 / math.sin(math.radians(45))
-WIDTH = 1
-
-def shape(p):
-
-    p.turn_to(-135)
-    p.move_forward(WIDTH * slant45 / 2)
-    a = p.position
-
-    p.move_forward(WIDTH * slant45)
-
-    p.turn_to(0)
-    p.arc_right(20, 10 * WIDTH)
-    b = p.position
-    p.undo()
-
-    p.move_to(a)
-    p.turn_to(0)
-    p.arc_to(b)
-    heading = p.heading
-    p.undo()
-
-    p.move_to(a)
-    p.turn_to(-135)
-    p.line_forward(WIDTH * slant45)
-
-    p.turn_to(0)
-    p.arc_to(b)
-    p.turn_to(heading + 180)
-    p.arc_to(a)
+sqrt2 = math.sqrt(2)
 
 
 def draw():
+    paper = Paper()
+
+    def stroke(p):
+        #p.fill_mode()
+        #p.stroke_mode(1)
+        #p.outline_mode(1, 0.2)
+
+        #p.move_to((0, 0))
+        #p.turn_to(0)
+        #p.arc_left(90, 3)
+        #p.turn_left(90)
+        #p.line_forward(2)
+        #p.turn_right(90)
+        #p.arc_right(90, 3)
+
+        p.stroke_mode(2)
+        p.move_to((0, 0))
+        p.turn_to(0)
+        p.arc_left(90, 5)
+
     p = Pen()
+    stroke(p)
+    paper.merge(p.paper)
 
-    #p.set_mode(StrokeOutlineMode(WIDTH, 0.2, '#f51700', '#1d0603').outliner_mode())
-    p.stroke_mode(0.2, '#1d0603')
-    #.outline_mode(0.2, 0.06, '#1d0603')
-    #p.fill_mode('#f51700')
+    p = Pen()
+    stroke(p)
+    p.paper.mirror_x(0)
+    paper.merge(p.paper)
 
-    shape(p)
+    p = Pen()
+    stroke(p)
+    p.paper.mirror_y(0)
+    paper.merge(p.paper)
 
-    return p.paper
+    return paper
+
 
 if __name__ == '__main__':
     paper = draw()
-    print(paper.format_svg())
+    print(paper.format_svg(4))
