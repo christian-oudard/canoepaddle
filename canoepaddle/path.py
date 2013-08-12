@@ -65,8 +65,6 @@ class Path:
         """
         i = 0
         while i < len(self.segments) - 1:
-            print(i)
-            print(self.segments)
             left = self.segments[i]
             right = self.segments[i + 1]
             if (
