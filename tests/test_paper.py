@@ -256,6 +256,14 @@ def test_mirror_lines():
 
     p = Pen()
     stroke(p)
+    p.paper.mirror_x(1)
+    assert_path_data(
+        p, 2,
+        'M8.00,0.00 L2.00,0.00 L-1.00,5.20'
+    )
+
+    p = Pen()
+    stroke(p)
     p.paper.mirror_y(0)
     assert_path_data(
         p, 2,

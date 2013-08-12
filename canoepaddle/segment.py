@@ -75,7 +75,8 @@ class Segment:
 
         def f(p):
             if p is not None:
-                return Point(x_center - p.x, p.y)
+                new_x = x_center - p.x
+                return Point(x_center + new_x, p.y)
 
         def f_angle(angle):
             if angle is not None:
@@ -87,7 +88,8 @@ class Segment:
 
         def f(p):
             if p is not None:
-                return Point(p.x, y_center - p.y)
+                new_y = y_center - p.y
+                return Point(p.x, y_center + new_y)
 
         def f_angle(angle):
             if angle is not None:
