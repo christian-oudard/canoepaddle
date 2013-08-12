@@ -32,8 +32,26 @@ class Path:
             seg.mirror_y(y_center)
 
     def join_with(self, other):
+        # Selectively reverse paths so that the last point of this path leads
+        # into the first point of the other path.
+        self_first = self.segments[0].a
+        self_last = self.segments[-1].b
+        other_first = other.segments[0].a
+        other_last = other.segments[-1].b
+        if points_equal(self_first, other_last):
+            self.reverse()
+            other.reverse()
+        elif points_equal(self_first, other_first):
+            self.reverse()
+        elif points_equal(self_last, other_last):
+            other.reverse()
+
         self.segments[-1].join_with(other.segments[0])
         self.segments.extend(other.segments)
+
+        # See if we have created a circular path.
+        if points_equal(self.segments[-1].b, self.segments[0].a):
+            self.segments[-1].join_with(self.segments[0])
 
     def reverse(self):
         self.segments.reverse()

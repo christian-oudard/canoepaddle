@@ -31,29 +31,15 @@ class Paper:
         Find all paths that come to a common point with another path, and join
         them together.
         """
-        # Index every path by its start and end nodes.
-        paths_and_nodes = []  # [(node, path, is_start), ...]
+        nodes_and_paths = []
         for path in self.elements:
-            start_node = path.segments[0].a
-            paths_and_nodes.append((path, start_node, True))
-            end_node = path.segments[-1].b
-            paths_and_nodes.append((path, end_node, False))
-
-        # Put together paths that meet at common points.
-        points = [point for (path, point, is_start) in paths_and_nodes]
-        for left_index, right_index in find_point_pairs(points):
-            left_path, left_node, left_is_start = paths_and_nodes[left_index]
-            right_path, right_node, right_is_start = paths_and_nodes[right_index]
-            # There are four combinations of directions the paths could meet at:
-            # Front/back, front/front, back/back, and back/front.
-            # We selectively reverse the paths so that both paths are pointing
-            # to the "right". Notice that the logic is assymetrical, because we
-            # want the end node of the left path to meet the start node of the
-            # right path.
-            if left_is_start:
-                left_path.reverse()
-            if not right_is_start:
-                right_path.reverse()
+            nodes_and_paths.append((path.segments[0].a, path))
+            nodes_and_paths.append((path.segments[-1].b, path))
+        nodes = [n for (n, p) in nodes_and_paths]
+        pair_indexes = find_point_pairs(nodes)
+        for left_index, right_index in pair_indexes:
+            left_node, left_path = nodes_and_paths[left_index]
+            right_node, right_path = nodes_and_paths[right_index]
             self.elements.remove(right_path)
             left_path.join_with(right_path)
 

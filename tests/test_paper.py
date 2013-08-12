@@ -130,6 +130,28 @@ def test_paper_merge():
     )
 
 
+def test_join_paths():
+    # Join up three paths that are going different directions.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((2, 0))
+    p.line_to((1, 0))
+    p.break_stroke()
+    p.move_to((2, 0))
+    p.line_to((3, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((0, 0))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M3,0 L2,0 L1,0 L0,0',
+    )
+
+
 def test_fuse_paths():
     # Create two halves of a stroke in the same direction.
     p = Pen()
