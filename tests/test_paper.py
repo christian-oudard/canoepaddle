@@ -170,7 +170,7 @@ def test_fuse_paths():
     )
 
 
-def test_join_and_fuse_paths():
+def test_join_and_fuse_simple():
     # Create two halves of a stroke in separate directions.
     p = Pen()
     p.stroke_mode(sqrt2)
@@ -190,7 +190,40 @@ def test_join_and_fuse_paths():
 
     assert_path_data(
         p, 1,
-        ['M2.0,3.0 L4.0,3.0 L-2.0,-3.0 L-4.0,-3.0 L2.0,3.0 z']
+        'M2.0,3.0 L4.0,3.0 L-2.0,-3.0 L-4.0,-3.0 L2.0,3.0 z'
+    )
+
+
+def test_fuse_with_joint():
+    p = Pen()
+    p.stroke_mode(2)
+
+    p.move_to((0, 0))
+    p.turn_to(180)
+    p.line_forward(5)
+    p.turn_left(90)
+    p.line_forward(5)
+
+    p.break_stroke()
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
+
+    assert_path_data(
+        p, 0,
+        [
+            'M0,1 L0,-1 L-6,-1 L-6,5 L-4,5 L-4,1 L0,1 z',
+            'M0,-1 L0,1 L5,1 L5,-1 L0,-1 z',
+        ]
+    )
+
+    p.paper.join_paths()
+    p.paper.fuse_paths()
+
+    assert_path_data(
+        p, 0,
+        'M-6,5 L-4,5 L-4,1 L5,1 L5,-1 L-6,-1 L-6,5 z'
     )
 
 

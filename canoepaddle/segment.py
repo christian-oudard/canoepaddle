@@ -120,6 +120,24 @@ class Segment:
         elif isinstance(other, ArcSegment):
             self.join_with_arc(other)
 
+    def fused_with(self, other):
+        """
+        Create a segment that is equivalent to self and other fused together.
+        """
+        seg = LineSegment(
+            a=self.a,
+            b=other.b,
+            width=self.width,
+            color=self.color,
+            start_angle=self.start_angle,
+            end_angle=other.end_angle,
+        )
+        seg.a_left = self.a_left
+        seg.a_right = self.a_right
+        seg.b_left = other.b_left
+        seg.b_right = other.b_right
+        return seg
+
     def check_degenerate_segment(self):
         if any(
             p is None for p in

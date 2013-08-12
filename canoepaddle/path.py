@@ -74,14 +74,7 @@ class Path:
                 left.color == right.color and
                 collinear(left.a, left.b, right.b)
             ):
-                fused_segment = LineSegment(
-                    a=left.a,
-                    b=right.b,
-                    width=left.width,
-                    color=left.color,
-                    start_angle=left.start_angle,
-                    end_angle=right.end_angle,
-                )
+                fused_segment = left.fused_with(right)
                 self.segments[i:i+2] = [fused_segment]
                 # Leave i unchanged so fused_segment will be the
                 # "left" segment next iteration.
