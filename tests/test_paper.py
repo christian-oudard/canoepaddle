@@ -384,3 +384,30 @@ def test_mirror_arcs_thick():
             'L6.0,5.0 A 6.0,6.0 0 0 0 0.0,-1.0 z'
         )
     )
+
+
+def test_mirror_end_angle():
+    paper = Paper()
+
+    p = Pen()
+    p.stroke_mode(sqrt2)
+    p.move_to((0, 0))
+    p.turn_to(-45)
+    p.line_forward(5 * sqrt2, end_angle=45)
+    p.paper.mirror_x(0)
+    paper.merge(p.paper)
+
+    p = Pen()
+    p.stroke_mode(sqrt2)
+    p.move_to((0, 0))
+    p.turn_to(45)
+    p.line_forward(5 * sqrt2)
+    paper.merge(p.paper)
+
+    paper.join_paths()
+    paper.fuse_paths()
+
+    assert_path_data(
+        paper, 1,
+        'M-5.5,4.5 L-4.5,5.5 L5.5,-4.5 L4.5,-5.5 L-5.5,4.5 z'
+    )

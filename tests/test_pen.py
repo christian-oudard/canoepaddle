@@ -286,7 +286,6 @@ def test_joint_loop_multiple():
         p.turn_left(90)
         p.line_forward(1)
         p.turn_left(90)
-        print('join')
         p.line_forward(1)
 
     p.move_to((0, 0))

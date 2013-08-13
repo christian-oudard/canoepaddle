@@ -106,6 +106,9 @@ class Segment:
         self.a_left, self.a_right = f(self.a_right), f(self.a_left)
         self.b_left, self.b_right = f(self.b_right), f(self.b_left)
 
+        self.start_angle = f_angle(self.start_angle)
+        self.end_angle = f_angle(self.end_angle)
+
     def reverse(self):
         self.a, self.b = self.b, self.a
         self.a_left, self.b_right = self.b_right, self.a_left

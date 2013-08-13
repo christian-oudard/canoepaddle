@@ -8,40 +8,27 @@ sqrt2 = math.sqrt(2)
 
 
 def draw():
-    #p = Pen()
-    #p.set_mode(OutlineMode(1.0, 0.2, '#1d0603'))
-
-    #p.move_to((-4.000000000000001, 3.6))
-    #p.turn_to(270)
-
-    #p.line_to_y(0.5, end_angle=45)
-
-    #p.turn_to(45)
-    #p.move_forward(1.2071067811865475)
-    #p.turn_to(-45)
-    #p.line_to_y(0, end_angle=0)
-
-    ###
+    paper = Paper()
 
     p = Pen()
-    p.set_mode(StrokeMode(0.2))
-
-    def square():
-        p.turn_to(180)
-        p.line_forward(1)
-        p.turn_left(90)
-        p.line_forward(1)
-        p.turn_left(90)
-        p.line_forward(1)
-        p.turn_left(90)
-        p.line_forward(1)
-
+    p.stroke_mode(sqrt2)
     p.move_to((0, 0))
-    square()
-    p.move_to((2, 0))
-    square()
+    p.turn_to(-45)
+    p.line_forward(5 * sqrt2, end_angle=45)
+    p.paper.mirror_x(0)
+    paper.merge(p.paper)
 
-    return p.paper
+    p = Pen()
+    p.stroke_mode(sqrt2)
+    p.move_to((0, 0))
+    p.turn_to(45)
+    p.line_forward(5 * sqrt2)
+    paper.merge(p.paper)
+
+    paper.join_paths()
+    #paper.fuse_paths()
+
+    return paper
 
 
 if __name__ == '__main__':
