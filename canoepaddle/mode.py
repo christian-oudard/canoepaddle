@@ -1,3 +1,4 @@
+# TODO: User friendly mode argument validation.
 from .svg import (
     path_element,
 )
@@ -120,6 +121,8 @@ class OutlineMode(StrokeMode):
 
 class StrokeFillMode(StrokeMode):
 
+    repr_fields = ['width', 'color', 'fill_color']
+
     def __init__(self, width, color=None, fill_color=None):
         self.width = width
         self.color = color
@@ -133,6 +136,8 @@ class StrokeFillMode(StrokeMode):
 
 
 class StrokeOutlineMode(StrokeMode):
+
+    repr_fields = ['width', 'outline_width', 'color', 'outline_color']
 
     def __init__(self, width, outline_width, color=None, outline_color=None):
         self.width = width
