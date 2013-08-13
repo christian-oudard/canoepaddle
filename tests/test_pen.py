@@ -1294,3 +1294,24 @@ def test_stroke_outline_mode():
             'fill="#000000" />'
         )
     )
+
+
+def test_log():
+    p = Pen()
+    p.stroke_mode(1)
+    p.move_to((-6, 0))
+    p.turn_to(0)
+    p.line_forward(6)
+    p.turn_right(60)
+    p.line_forward(6)
+    assert_equal(
+        p.log(),
+        [
+            'stroke_mode(1)',
+            'move_to((-6, 0))',
+            'turn_to(0)',
+            'line_forward(6)',
+            'turn_right(60)',
+            'line_forward(6)',
+        ]
+    )

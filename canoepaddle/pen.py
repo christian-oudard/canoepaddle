@@ -1,5 +1,6 @@
 import math
 from copy import copy
+from functools import wraps
 
 import vec
 from .paper import Paper
@@ -8,6 +9,20 @@ from .segment import LineSegment, ArcSegment
 from .point import Point, points_equal
 from .geometry import intersect_lines
 from .mode import FillMode, StrokeMode, OutlineMode, modes_compatible
+
+
+def logged(method):
+    """
+    Decorator to keep track of each time this method is called.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        self._log.append((method.__name__, copy(args), copy(kwargs)))
+        # Don't keep extra log entries added through this call.
+        len_before = len(self._log)
+        method(self, *args, **kwargs)
+        del self._log[len_before:]
+    return wrapper
 
 
 class Pen:
@@ -19,6 +34,8 @@ class Pen:
         self._position = Point(0.0, 0.0)
 
         self._path = None
+
+        self._log = []
 
     # Properties.
 
@@ -36,24 +53,28 @@ class Pen:
             raise AttributeError('Mode not set.')
         return copy(self._mode)
 
+    @logged
     def fill_mode(self, color=None):
         """
         Start drawing filled paths.
         """
         self.set_mode(FillMode(color))
 
+    @logged
     def stroke_mode(self, width, color=None):
         """
         Start drawing strokes with a width.
         """
         self.set_mode(StrokeMode(width, color))
 
+    @logged
     def outline_mode(self, width, outline_width, outline_color=None):
         """
         Start drawing strokes with a width drawn by thin outlines.
         """
         self.set_mode(OutlineMode(width, outline_width, outline_color))
 
+    @logged
     def set_mode(self, mode):
         if self._mode is not None:
             mode.copy_colors(self._mode)
@@ -72,15 +93,19 @@ class Pen:
 
     # Movement.
 
+    @logged
     def move_to(self, point):
         self._position = Point(*point)
 
+    @logged
     def move_relative(self, offset):
         self.move_to(vec.add(self.position, offset))
 
+    @logged
     def move_forward(self, distance):
         self.move_to(self._calc_forward_position(distance))
 
+    @logged
     def move_to_y(self, y_target):
         """
         Move forward in the current orientation, until the y coordinate
@@ -88,6 +113,7 @@ class Pen:
         """
         self.move_to(self._calc_forward_to_y(y_target))
 
+    @logged
     def move_to_x(self, x_target):
         """
         Move forward in the current orientation, until the x coordinate
@@ -97,12 +123,14 @@ class Pen:
 
     # Miscellaneous.
 
+    @logged
     def break_stroke(self):
         """
         Break the current path and start a new one.
         """
         self._path = None
 
+    @logged
     def undo(self):
         if self.paper.elements:
             path = self.paper.elements[-1]
@@ -113,22 +141,27 @@ class Pen:
 
     # Turning.
 
+    @logged
     def turn_to(self, heading):
         self._heading = heading % 360
 
+    @logged
     def turn_toward(self, point):
         v = vec.vfrom(self._position, point)
         heading = math.degrees(vec.heading(v))
         self.turn_to(heading)
 
+    @logged
     def turn_left(self, angle):
         self.turn_to(self.heading + angle)
 
+    @logged
     def turn_right(self, angle):
         self.turn_left(-angle)
 
     # Lines.
 
+    @logged
     def line_to(self, point, start_angle=None, end_angle=None):
         old_position = self._position
         self.move_to(point)
@@ -142,6 +175,7 @@ class Pen:
             end_angle=end_angle,
         ))
 
+    @logged
     def line_forward(self, distance, start_angle=None, end_angle=None):
         self.line_to(
             self._calc_forward_position(distance),
@@ -149,6 +183,7 @@ class Pen:
             end_angle=end_angle,
         )
 
+    @logged
     def line_to_y(self, y_target, start_angle=None, end_angle=None):
         """
         Draw a line, forward in the current orientation, until the y coordinate
@@ -161,6 +196,7 @@ class Pen:
             end_angle=end_angle,
         )
 
+    @logged
     def line_to_x(self, x_target, start_angle=None, end_angle=None):
         """
         Draw a line, forward in the current orientation, until the x coordinate
@@ -175,6 +211,7 @@ class Pen:
 
     # Arcs.
 
+    @logged
     def arc_left(
         self, arc_angle, radius=None, center=None, start_angle=None, end_angle=None,
     ):
@@ -203,12 +240,14 @@ class Pen:
             end_angle=end_angle,
         )
 
+    @logged
     def arc_right(
         self, arc_angle, radius=None, center=None, start_angle=None, end_angle=None,
     ):
         # Reverse the arc angle so we go to the right.
         self.arc_left(-arc_angle, radius, center, start_angle, end_angle)
 
+    @logged
     def arc_to(self, endpoint, center=None, start_angle=None, end_angle=None):
         """
         Draw an arc ending at the specified point, starting tangent to the
@@ -298,6 +337,7 @@ class Pen:
 
     # Shapes.
 
+    @logged
     def circle(self, radius):
         old_position = self._position
         old_heading = self._heading
@@ -310,6 +350,7 @@ class Pen:
         self.move_to(old_position)
         self.turn_to(old_heading)
 
+    @logged
     def square(self, size):
         old_position = self._position
         old_heading = self._heading
@@ -370,3 +411,19 @@ class Pen:
         x_diff = x_target - x
         y_diff = x_diff * math.tan(math.radians(self._heading))
         return vec.add(self.position, (x_diff, y_diff))
+
+    def log(self):
+        result = []
+        for name, args, kwargs in self._log:
+            arg_strings = []
+            for arg in args:
+                arg_strings.append(repr(arg))
+            for key, value in kwargs.items():
+                arg_strings.append('{}={}'.format(key, repr(value)))
+            result.append(
+                '{}({})'.format(
+                    name,
+                    ', '.join(arg_strings),
+                )
+            )
+        return result
