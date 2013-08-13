@@ -417,6 +417,8 @@ class Pen:
         for name, args, kwargs in self._log:
             arg_strings = []
             for arg in args:
+                if isinstance(arg, Point):
+                    arg = tuple(arg)
                 arg_strings.append(repr(arg))
             for key, value in kwargs.items():
                 arg_strings.append('{}={}'.format(key, repr(value)))
