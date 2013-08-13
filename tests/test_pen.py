@@ -274,6 +274,37 @@ def test_joint_loop_color():
     )
 
 
+def test_joint_loop_multiple():
+    p = Pen()
+    p.stroke_mode(0.2)
+
+    def square():
+        p.turn_to(180)
+        p.line_forward(1)
+        p.turn_left(90)
+        p.line_forward(1)
+        p.turn_left(90)
+        p.line_forward(1)
+        p.turn_left(90)
+        print('join')
+        p.line_forward(1)
+
+    p.move_to((0, 0))
+    square()
+    p.move_to((2, 0))
+    square()
+
+    assert_path_data(
+        p, 1,
+        (
+            'M0.1,-0.1 L-1.1,-0.1 L-1.1,1.1 L0.1,1.1 L0.1,-0.1 z '
+            'M-0.1,0.1 L-0.1,0.9 L-0.9,0.9 L-0.9,0.1 L-0.1,0.1 z '
+            'M2.1,-0.1 L0.9,-0.1 L0.9,1.1 L2.1,1.1 L2.1,-0.1 z '
+            'M1.9,0.1 L1.9,0.9 L1.1,0.9 L1.1,0.1 L1.9,0.1 z'
+        )
+    )
+
+
 def test_straight_joint():
     p = Pen()
     p.stroke_mode(2.0)

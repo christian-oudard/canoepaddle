@@ -165,7 +165,6 @@ class Pen:
     def line_to(self, point, start_angle=None, end_angle=None):
         old_position = self._position
         self.move_to(point)
-
         self._add_segment(LineSegment(
             a=old_position,
             b=self.position,

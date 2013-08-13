@@ -16,6 +16,8 @@ class Path:
         self.mode = mode
         self.segments = []
 
+        self.start_join_location = None
+
     def bounds(self):
         return Bounds.union_all(seg.bounds() for seg in self.segments)
 
@@ -85,17 +87,25 @@ class Path:
     def add_segment(self, new_segment):
         if not self.segments:
             self.segments.append(new_segment)
+            self.loop_start_segment = new_segment
             return
 
         # Check whether we need to join with the last segment.
         last_segment = self.segments[-1]
         if points_equal(last_segment.b, new_segment.a):
             last_segment.join_with(new_segment)
+        else:
+            # The new segment does not connect to the last one, so it starts a
+            # new potential loop.
+            self.loop_start_segment = new_segment
 
         # Check whether we need to join to the first segment.
-        first_segment = self.segments[0]
-        if points_equal(new_segment.b, first_segment.a):
-            new_segment.join_with(first_segment)
+        if (
+            self.loop_start_segment is not None and
+            points_equal(new_segment.b, self.loop_start_segment.a)
+        ):
+            new_segment.join_with(self.loop_start_segment)
+            self.loop_start_segment = None
 
         self.segments.append(new_segment)
 
