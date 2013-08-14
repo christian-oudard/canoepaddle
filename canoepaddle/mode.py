@@ -1,4 +1,7 @@
 # TODO: User friendly mode argument validation.
+
+from copy import copy
+
 from .svg import (
     path_element,
 )
@@ -34,6 +37,9 @@ class Mode:
             path_element(path_data, color)
             for color, path_data in self.iter_render(path, precision)
         )
+
+    def copy(self):
+        return copy(self)
 
     def copy_colors(self, other):
         # Update the current mode based on a new one, but keeping old colors if

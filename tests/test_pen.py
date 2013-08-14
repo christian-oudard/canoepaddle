@@ -435,7 +435,10 @@ def test_last_slant_width():
     p.stroke_mode(1.0)
 
     # If we haven't drawn any path segments yet, there is no last slant width.
-    assert_equal(p.last_slant_width(), None)
+    assert_raises(
+        IndexError,
+        lambda: p.last_slant_width()
+    )
 
     # 45 degree slant.
     p.move_to((0, 0))

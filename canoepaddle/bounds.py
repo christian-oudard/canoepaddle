@@ -59,6 +59,13 @@ class Bounds:
     def height(self):
         return self.top - self.bottom
 
+    def translate(self, offset):
+        x, y = offset
+        self.left += x
+        self.bottom += y
+        self.right += x
+        self.top += y
+
     def draw(self, pen):
         pen.move_to((self.left, self.bottom))
         pen.turn_to(0)

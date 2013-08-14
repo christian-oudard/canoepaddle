@@ -51,7 +51,7 @@ class Pen:
     def mode(self):
         if self._mode is None:
             raise AttributeError('Mode not set.')
-        return copy(self._mode)
+        return self._mode.copy()
 
     @logged
     def fill_mode(self, color=None):
@@ -81,14 +81,8 @@ class Pen:
         self._mode = mode
 
     def last_slant_width(self):
-        for element in reversed(self.paper.elements):
-            if isinstance(element, Path):
-                last_path = element
-                break
-        else:
-            return None
-
-        seg = last_path.segments[-1]
+        path = self.paper.elements[-1]
+        seg = path.segments[-1]
         return vec.mag(vec.vfrom(seg.b_left, seg.b_right))
 
     # Movement.
@@ -354,7 +348,7 @@ class Pen:
         old_position = self._position
         old_heading = self._heading
         self.break_stroke()
-        self.move_to(vec.add(self._position, (-size / 2, -size / 2)))
+        self.move_relative((-size / 2, -size / 2))
         self.turn_to(0)
         self.line_forward(size)
         self.turn_left(90)

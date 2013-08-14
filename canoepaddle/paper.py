@@ -21,9 +21,16 @@ class Paper:
 
     def merge(self, other):
         """
-        Add all the elements of the other paper to this one.
+        Add all the elements of the other on top of this one.
         """
         self.elements.extend(other.elements)
+        return self
+
+    def merge_under(self, other):
+        """
+        Add all the elements of the other paper underneath this one.
+        """
+        self.elements = other.elements + self.elements
         return self
 
     def join_paths(self):
