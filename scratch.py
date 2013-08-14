@@ -8,25 +8,26 @@ sqrt2 = math.sqrt(2)
 
 
 def draw():
+
+    def shape():
+        p = Pen()
+        p.stroke_mode(1.0)
+        p.turn_to(0)
+        p.line_forward(3)
+        p.fill_mode()
+        p.square(2)
+        return p.paper
+
     paper = Paper()
 
-    p = Pen()
-    p.stroke_mode(sqrt2)
-    p.move_to((0, 0))
-    p.turn_to(-45)
-    p.line_forward(5 * sqrt2, end_angle=45)
-    p.paper.mirror_x(0)
-    paper.merge(p.paper)
+    paper_a = shape()
+    paper_a.translate((-3, 0))
+    paper.merge(paper_a)
 
-    p = Pen()
-    p.stroke_mode(sqrt2)
-    p.move_to((0, 0))
-    p.turn_to(45)
-    p.line_forward(5 * sqrt2)
-    paper.merge(p.paper)
-
-    paper.join_paths()
-    #paper.fuse_paths()
+    paper_b = shape()
+    paper_b.translate((3, 0))
+    paper_b.join_paths()
+    paper.merge(paper_b)
 
     return paper
 

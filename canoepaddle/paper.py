@@ -5,6 +5,7 @@ from string import Template
 
 from .bounds import Bounds
 from .geometry import find_point_pairs
+from .point import points_equal
 
 
 class Paper:
@@ -38,10 +39,17 @@ class Paper:
         Find all paths that come to a common point with another path, and join
         them together.
         """
+        # Index paths by their end nodes.
         nodes_and_paths = []
         for path in self.elements:
-            nodes_and_paths.append((path.segments[0].a, path))
-            nodes_and_paths.append((path.segments[-1].b, path))
+            start = path.segments[0].a
+            end = path.segments[-1].b
+            if points_equal(start, end):
+                continue  # This is a path looping back on itself.
+            nodes_and_paths.append((start, path))
+            nodes_and_paths.append((end, path))
+
+        # Find paths that meet at a common point and join them.
         nodes = [n for (n, p) in nodes_and_paths]
         pair_indexes = find_point_pairs(nodes)
         for left_index, right_index in pair_indexes:

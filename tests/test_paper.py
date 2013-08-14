@@ -152,6 +152,20 @@ def test_join_paths():
     )
 
 
+def test_join_paths_loop():
+    # Looped paths should not be affected by join_paths.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((0, 0))
+    p.square(2)
+
+    target = 'M-1,1 L1,1 L1,-1 L-1,-1 L-1,1 z'
+    assert_path_data(p, 0, target)
+    p.paper.join_paths()
+    assert_path_data(p, 0, target)
+
+
 def test_fuse_paths():
     # Create two halves of a stroke in the same direction.
     p = Pen()
