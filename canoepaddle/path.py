@@ -65,6 +65,7 @@ class Path:
         Find consecutive straight segments in this path that could be
         combined without loss into a single segment.
         """
+        # TODO: Don't fuse unless they have None as the end angles?
         i = 0
         while i < len(self.segments) - 1:
             left = self.segments[i]

@@ -75,16 +75,16 @@ def test_line_segment_bounds():
         Bounds(1, 0, 2, 3)
     )
 
-    # Pen mode is ignored for bounds checking purposes.
+    # Stroke mode segment.
     p = Pen()
-    p.stroke_mode(1.0)
-    p.move_to((1, 0))
-    p.line_to((2, 3))
+    p.stroke_mode(sqrt2)
+    p.move_to((0, 0))
+    p.line_to((5, 5))
 
     line = p.paper.elements[0].segments[0]
     assert_equal(
         line.bounds(),
-        Bounds(1, 0, 2, 3)
+        Bounds(-0.5, -0.5, 5.5, 5.5)
     )
 
 
@@ -114,7 +114,7 @@ def test_arc_segment_bounds():
     arc = p.paper.elements[0].segments[0]
     assert_equal(
         arc.bounds(),
-        Bounds(0.5, 0.5, sqrt3 / 2, sqrt3 / 2),
+        Bounds(0.5, 0.5, sqrt3 / 2, sqrt3 / 2)
     )
 
     # Arc which pushes the boundary with the middle in one spot.
@@ -157,5 +157,20 @@ def test_arc_segment_bounds():
     arc = p.paper.elements[0].segments[0]
     assert_equal(
         arc.bounds(),
-        Bounds(0, -10, 5, 0),
+        Bounds(0, -10, 5, 0)
+    )
+
+    # Thick circle,
+    p = Pen()
+    p.stroke_mode(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.move_forward(5)
+    p.turn_left(90)
+    p.arc_left(180, 5, start_angle=45)
+
+    arc = p.paper.elements[0].segments[0]
+    assert_equal(
+        arc.bounds(),
+        Bounds(-5.5, -0.5314980314970469, 5.5, 5.5)
     )

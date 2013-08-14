@@ -179,10 +179,11 @@ class LineSegment(Segment):
     repr_fields = ['a', 'b', 'start_angle', 'end_angle']
 
     def bounds(self):
-        return Bounds.union_all([
-            Bounds.from_point(self.a),
-            Bounds.from_point(self.b),
-        ])
+        if self.width is None:
+            endpoints = [self.a, self.b]
+        else:
+            endpoints = [self.a_left, self.a_right, self.b_left, self.b_right]
+        return Bounds.union_all([Bounds.from_point(p) for p in endpoints])
 
     def reverse(self):
         self.start_angle, self.end_angle = self.end_angle, self.start_angle
@@ -338,11 +339,9 @@ class LineSegment(Segment):
         return v
 
     def draw_right(self, pen):
-        #pen.turn_to(self._heading())
         pen.line_to(self.b_right)
 
     def draw_left(self, pen):
-        #pen.turn_to(self._heading() + 180)
         pen.line_to(self.a_left)
 
     def _heading(self):
@@ -368,8 +367,14 @@ class ArcSegment(Segment):
         super().__init__(a, b, width, color, start_angle, end_angle)
 
     def bounds(self):
-        # Find the four "compass points" around the center.
+        # We use the outside radius, because the inside of the arc cannot be
+        # tangent to the boundary. This is not a perfect approximation, as
+        # setting end angles could fail to shrink the bounding box as they should.
         r = abs(self.radius)
+        if self.width is not None:
+            r += self.width / 2
+
+        # Find the four "compass points" around the center.
         compass_points = [
             vec.add(self.center, direction)
             for direction in [
@@ -403,10 +408,16 @@ class ArcSegment(Segment):
 
         # The bounding box of the arc is the combined bounding box of the start
         # point, the end point, and the compass points occupied by the body of
-        # the arc.
+        # the arc. If the arc is a thick arc, then the edge points also can
+        # push the boundary.
+        if self.width is None:
+            endpoints = [self.a, self.b]
+        else:
+            endpoints = [self.a_left, self.a_right, self.b_left, self.b_right]
+
         return Bounds.union_all([
             Bounds.from_point(p) for p in
-            [self.a, self.b] + occupied_points
+            endpoints + occupied_points
         ])
 
     def _translate(self, f):
