@@ -167,7 +167,7 @@ def test_arc_segment_bounds():
     p.turn_to(0)
     p.move_forward(5)
     p.turn_left(90)
-    p.arc_left(180, 5, start_angle=45)
+    p.arc_left(180, 5, start_slant=45)
 
     arc = p.paper.elements[0].segments[0]
     assert_equal(

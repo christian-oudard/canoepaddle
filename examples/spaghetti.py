@@ -1,5 +1,6 @@
 import math
 from canoepaddle import Pen
+from canoepaddle.heading import Heading, Angle
 
 p = Pen()
 p.paper.set_view_box(-120, -120, 240, 240)
@@ -17,11 +18,11 @@ def f(n):
     e = 0.5
     wobble = a * math.exp(-b * n) * math.sin(c * n + d * n**e)
     return (
-        -24 + wobble,
-        24 + wobble
+        Angle(-24 + wobble),
+        Angle(24 + wobble),
     )
 
-center_heading = 90
+center_heading = Heading(90)
 center = p.position
 
 p.turn_to(center_heading)
@@ -32,10 +33,10 @@ for layer in range(num_layers):
     lo = center_heading + lo
     hi = center_heading + hi
 
-    p.arc_right((p.heading + 90) - lo, center=center)
+    p.arc_right((p.heading - lo) + 90, center=center)
     p.arc_left(180, 1)
 
-    p.arc_left(hi - (p.heading - 90), center=center)
+    p.arc_left((hi - p.heading) + 90, center=center)
     if layer < (num_layers - 1):
         p.arc_right(180, 1)
 

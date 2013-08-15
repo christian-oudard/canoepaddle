@@ -8,7 +8,7 @@ def draw(p):
     p.turn_to(90)
     p.line_forward(4)
     p.arc_left(270, 3)
-    p.line_forward(1, end_angle=45)
+    p.line_forward(1, end_slant=45)
 
 if __name__ == '__main__':
     p = Pen()

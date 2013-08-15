@@ -159,7 +159,7 @@ def test_angle():
     p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
-    p.line_forward(10, start_angle=-45, end_angle=30)
+    p.line_forward(10, start_slant=-45, end_slant=30)
 
     assert_path_data(
         p, 2,
@@ -170,7 +170,7 @@ def test_angle():
     p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(-45)
-    p.line_forward(10, start_angle=90, end_angle=None)
+    p.line_forward(10, start_slant=90, end_slant=None)
 
     assert_path_data(
         p, 2,
@@ -184,13 +184,13 @@ def test_angle_error():
     p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
-        lambda: p.line_forward(10, start_angle=0)
+        lambda: p.line_forward(10, start_slant=0)
     )
     p = Pen()
     p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
-        lambda: p.line_forward(10, end_angle=0)
+        lambda: p.line_forward(10, end_slant=0)
     )
 
     # A combination of angles can also create a degenerate segment.
@@ -198,7 +198,7 @@ def test_angle_error():
     p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
-        lambda: p.line_forward(1, start_angle=40, end_angle=-40)
+        lambda: p.line_forward(1, start_slant=40, end_slant=-40)
     )
 
 
@@ -443,13 +443,13 @@ def test_last_slant_width():
     # 45 degree slant.
     p.move_to((0, 0))
     p.turn_to(-45)
-    p.line_forward(1, end_angle=90)
+    p.line_forward(1, end_slant=90)
     assert_almost_equal(p.last_slant_width(), sqrt2)
 
     # 30 degree slant.
     p.move_to((0, 0))
     p.turn_to(30)
-    p.line_forward(1, end_angle=90)
+    p.line_forward(1, end_slant=90)
     assert_almost_equal(p.last_slant_width(), 2 / sqrt3)
 
 
@@ -559,7 +559,7 @@ def test_arc_angle():
     p.stroke_mode(1.0)
     p.move_to((0, 0))
     p.turn_to(0)
-    p.arc_left(90, radius=5, start_angle=45, end_angle=45)
+    p.arc_left(90, radius=5, start_slant=45, end_slant=45)
 
     assert_path_data(
         p, 2,
@@ -577,13 +577,13 @@ def test_arc_angle_error():
     p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
-        lambda: p.arc_left(90, 10, start_angle=0)
+        lambda: p.arc_left(90, 10, start_slant=0)
     )
     p = Pen()
     p.stroke_mode(1.0)
     assert_raises(
         SegmentError,
-        lambda: p.arc_left(90, 10, end_angle=90)
+        lambda: p.arc_left(90, 10, end_slant=90)
     )
     p = Pen()
     p.stroke_mode(1.0)
@@ -591,7 +591,7 @@ def test_arc_angle_error():
     p.turn_to(0)
     assert_raises(
         SegmentError,
-        lambda: p.arc_left(90, radius=5, start_angle=25)
+        lambda: p.arc_left(90, radius=5, start_slant=25)
     )
 
     # A combination of angles can also create a degenerate arc.
@@ -601,7 +601,7 @@ def test_arc_angle_error():
     p.turn_left(1)
     assert_raises(
         SegmentError,
-        lambda: p.arc_to((1, 0), start_angle=40, end_angle=-40)
+        lambda: p.arc_to((1, 0), start_slant=40, end_slant=-40)
     )
 
 
@@ -648,8 +648,8 @@ def test_degenerate_arc():
         lambda: p.arc_to(
             (5, 0),
             center=(0, -200),
-            start_angle=-5,
-            end_angle=5,
+            start_slant=-5,
+            end_slant=5,
         )
     )
 
@@ -669,8 +669,8 @@ def test_arc_pie_slice():
     )
 
 
-def test_arc_start_angle_bug():
-    # Some arcs are not reporting their start and end angles correctly.
+def test_arc_start_slant_bug():
+    # Some arcs are not reporting their start and end slants correctly.
 
     # Set up positions on a circle at angles -120 and 30
     p = Pen()
@@ -707,8 +707,8 @@ def test_arc_start_angle_bug():
     p.turn_to(h1)
     p.arc_to(p2)
     arc = p.paper.elements[0].segments[0]
-    assert_almost_equal(arc.start_heading, 120)
-    assert_almost_equal(arc.end_heading, 330)
+    assert_almost_equal(arc.start_heading.theta, 120)
+    assert_almost_equal(arc.end_heading.theta, 330)
 
 
 def test_arc_line_joint():
@@ -757,10 +757,10 @@ def test_arc_arc_joint():
     p.move_to(left)
     p.turn_toward(top)
     p.turn_left(5)
-    p.arc_to(top, start_angle=0)
+    p.arc_to(top, start_slant=0)
     p.turn_toward(right)
     p.turn_left(5)
-    p.arc_to(right, end_angle=0)
+    p.arc_to(right, end_slant=0)
 
     assert_path_data(
         p, 3,
@@ -781,10 +781,10 @@ def test_arc_arc_joint():
     p.move_to(left)
     p.turn_toward(top)
     p.turn_right(5)
-    p.arc_to(top, start_angle=0)
+    p.arc_to(top, start_slant=0)
     p.turn_toward(right)
     p.turn_right(5)
-    p.arc_to(right, end_angle=0)
+    p.arc_to(right, end_slant=0)
 
     assert_path_data(
         p, 3,
@@ -805,10 +805,10 @@ def test_arc_arc_joint():
     p.move_to(left)
     p.turn_toward(top)
     p.turn_left(5)
-    p.arc_to(top, start_angle=0)
+    p.arc_to(top, start_slant=0)
     p.turn_toward(right)
     p.turn_right(5)
-    p.arc_to(right, end_angle=0)
+    p.arc_to(right, end_slant=0)
 
     assert_path_data(
         p, 3,
@@ -829,10 +829,10 @@ def test_arc_arc_joint():
     p.move_to(left)
     p.turn_toward(top)
     p.turn_right(5)
-    p.arc_to(top, start_angle=0)
+    p.arc_to(top, start_slant=0)
     p.turn_toward(right)
     p.turn_left(5)
-    p.arc_to(right, end_angle=0)
+    p.arc_to(right, end_slant=0)
 
     assert_path_data(
         p, 3,
@@ -1171,7 +1171,7 @@ def test_zero_length_side():
     p.stroke_mode(2.0)
     p.move_to((0, 0))
     p.turn_to(0)
-    p.line_forward(1.0, end_angle=45)
+    p.line_forward(1.0, end_slant=45)
 
     assert_path_data(
         p, 0,

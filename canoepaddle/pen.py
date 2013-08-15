@@ -6,9 +6,10 @@ import vec
 from .paper import Paper
 from .path import Path
 from .segment import LineSegment, ArcSegment
+from .mode import FillMode, StrokeMode, OutlineMode, modes_compatible
 from .point import Point, points_equal
 from .geometry import intersect_lines
-from .mode import FillMode, StrokeMode, OutlineMode, modes_compatible
+from .heading import Heading, Angle
 
 
 def logged(method):
@@ -30,7 +31,7 @@ class Pen:
     def __init__(self):
         self.paper = Paper()
         self._mode = None
-        self._heading = 0
+        self._heading = Heading(0)
         self._position = Point(0.0, 0.0)
 
         self._path = None
@@ -80,9 +81,11 @@ class Pen:
             mode.copy_colors(self._mode)
         self._mode = mode
 
+    def last_segment(self):
+        return self.paper.elements[-1].segments[-1]
+
     def last_slant_width(self):
-        path = self.paper.elements[-1]
-        seg = path.segments[-1]
+        seg = self.last_segment()
         return vec.mag(vec.vfrom(seg.b_left, seg.b_right))
 
     # Movement.
@@ -124,6 +127,7 @@ class Pen:
         """
         self._path = None
 
+    # TODO: remove undo and add arc movement methods
     @logged
     def undo(self):
         if self.paper.elements:
@@ -137,7 +141,7 @@ class Pen:
 
     @logged
     def turn_to(self, heading):
-        self._heading = heading % 360
+        self._heading = Heading(heading)
 
     @logged
     def turn_toward(self, point):
@@ -151,12 +155,12 @@ class Pen:
 
     @logged
     def turn_right(self, angle):
-        self.turn_left(-angle)
+        self.turn_to(self.heading - angle)
 
     # Lines.
 
     @logged
-    def line_to(self, point, start_angle=None, end_angle=None):
+    def line_to(self, point, start_slant=None, end_slant=None):
         old_position = self._position
         self.move_to(point)
         self._add_segment(LineSegment(
@@ -164,20 +168,20 @@ class Pen:
             b=self.position,
             width=self.mode.width,
             color=self.mode.color,
-            start_angle=start_angle,
-            end_angle=end_angle,
+            start_slant=start_slant,
+            end_slant=end_slant,
         ))
 
     @logged
-    def line_forward(self, distance, start_angle=None, end_angle=None):
+    def line_forward(self, distance, start_slant=None, end_slant=None):
         self.line_to(
             self._calc_forward_position(distance),
-            start_angle=start_angle,
-            end_angle=end_angle,
+            start_slant=start_slant,
+            end_slant=end_slant,
         )
 
     @logged
-    def line_to_y(self, y_target, start_angle=None, end_angle=None):
+    def line_to_y(self, y_target, start_slant=None, end_slant=None):
         """
         Draw a line, forward in the current orientation, until the y coordinate
         equals the given value.
@@ -185,12 +189,12 @@ class Pen:
         new_position = self._calc_forward_to_y(y_target)
         self.line_to(
             new_position,
-            start_angle=start_angle,
-            end_angle=end_angle,
+            start_slant=start_slant,
+            end_slant=end_slant,
         )
 
     @logged
-    def line_to_x(self, x_target, start_angle=None, end_angle=None):
+    def line_to_x(self, x_target, start_slant=None, end_slant=None):
         """
         Draw a line, forward in the current orientation, until the x coordinate
         equals the given value.
@@ -198,16 +202,17 @@ class Pen:
         new_position = self._calc_forward_to_x(x_target)
         self.line_to(
             new_position,
-            start_angle=start_angle,
-            end_angle=end_angle,
+            start_slant=start_slant,
+            end_slant=end_slant,
         )
 
     # Arcs.
 
     @logged
     def arc_left(
-        self, arc_angle, radius=None, center=None, start_angle=None, end_angle=None,
+        self, arc_angle, radius=None, center=None, start_slant=None, end_slant=None,
     ):
+        arc_angle = Angle(arc_angle)
         # Create a radius vector, which is a vector from the arc center to the
         # current position. Subtract to find the center, then rotate the radius
         # vector to find the arc end point.
@@ -222,26 +227,26 @@ class Pen:
             if arc_angle < 0:
                 radius = -radius
 
-        endpoint = vec.add(center, vec.rotate(v_radius, math.radians(arc_angle)))
+        endpoint = vec.add(center, vec.rotate(v_radius, arc_angle.rad))
 
         self._arc(
             center,
             radius,
             endpoint,
             arc_angle,
-            start_angle=start_angle,
-            end_angle=end_angle,
+            start_slant=start_slant,
+            end_slant=end_slant,
         )
 
     @logged
     def arc_right(
-        self, arc_angle, radius=None, center=None, start_angle=None, end_angle=None,
+        self, arc_angle, radius=None, center=None, start_slant=None, end_slant=None,
     ):
         # Reverse the arc angle so we go to the right.
-        self.arc_left(-arc_angle, radius, center, start_angle, end_angle)
+        self.arc_left(-arc_angle, radius, center, start_slant, end_slant)
 
     @logged
-    def arc_to(self, endpoint, center=None, start_angle=None, end_angle=None):
+    def arc_to(self, endpoint, center=None, start_slant=None, end_slant=None):
         """
         Draw an arc ending at the specified point, starting tangent to the
         current position and heading.
@@ -298,11 +303,11 @@ class Pen:
             radius,
             endpoint,
             arc_angle,
-            start_angle,
-            end_angle,
+            start_slant,
+            end_slant,
         )
 
-    def _arc(self, center, radius, endpoint, arc_angle, start_angle, end_angle):
+    def _arc(self, center, radius, endpoint, arc_angle, start_slant, end_slant):
         """
         Internal implementation of arcs.
 
@@ -319,8 +324,8 @@ class Pen:
             b=endpoint,
             width=self.mode.width,
             color=self.mode.color,
-            start_angle=start_angle,
-            end_angle=end_angle,
+            start_slant=start_slant,
+            end_slant=end_slant,
             center=center,
             radius=radius,
             arc_angle=arc_angle,
@@ -385,7 +390,7 @@ class Pen:
         Create a vector pointing in the same direction as the pen, with the
         specified length.
         """
-        return vec.from_heading(math.radians(self._heading), length)
+        return vec.from_heading(self._heading.rad, length)
 
     def _calc_forward_position(self, distance):
         return vec.add(
@@ -396,13 +401,13 @@ class Pen:
     def _calc_forward_to_y(self, y_target):
         x, y = self.position
         y_diff = y_target - y
-        x_diff = y_diff / math.tan(math.radians(self._heading))
+        x_diff = y_diff / math.tan(self._heading.rad)
         return vec.add(self.position, (x_diff, y_diff))
 
     def _calc_forward_to_x(self, x_target):
         x, y = self.position
         x_diff = x_target - x
-        y_diff = x_diff * math.tan(math.radians(self._heading))
+        y_diff = x_diff * math.tan(self._heading.rad)
         return vec.add(self.position, (x_diff, y_diff))
 
     def log(self):

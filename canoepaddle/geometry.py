@@ -6,6 +6,13 @@ import vec
 from .point import float_equal, points_equal, epsilon
 
 
+def closest_point_to(target, points):
+    return min(
+        points,
+        key=lambda p: vec.mag2(vec.vfrom(target, p))
+    )
+
+
 def intersect_lines(a, b, c, d, segment=False):
     """
     Find the intersection of lines a-b and c-d.

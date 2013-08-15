@@ -173,8 +173,8 @@ def test_fuse_paths():
 
     p.move_to((-3, 3))
     p.turn_to(-45)
-    p.line_forward(3 * sqrt2, start_angle=0)
-    p.line_forward(3 * sqrt2, end_angle=0)
+    p.line_forward(3 * sqrt2, start_slant=0)
+    p.line_forward(3 * sqrt2, end_slant=0)
 
     p.paper.fuse_paths()
 
@@ -191,13 +191,13 @@ def test_join_and_fuse_simple():
 
     p.move_to((0, 0))
     p.turn_to(-45)
-    p.line_forward(3 * sqrt2, end_angle=0)
+    p.line_forward(3 * sqrt2, end_slant=0)
 
     p.break_stroke()
 
     p.move_to((0, 0))
     p.turn_to(-45 + 180)
-    p.line_forward(3 * sqrt2, end_angle=0)
+    p.line_forward(3 * sqrt2, end_slant=0)
 
     p.paper.join_paths()
     p.paper.fuse_paths()
@@ -400,14 +400,14 @@ def test_mirror_arcs_thick():
     )
 
 
-def test_mirror_end_angle():
+def test_mirror_end_slant():
     paper = Paper()
 
     p = Pen()
     p.stroke_mode(sqrt2)
     p.move_to((0, 0))
     p.turn_to(-45)
-    p.line_forward(5 * sqrt2, end_angle=45)
+    p.line_forward(5 * sqrt2, end_slant=45)
     p.paper.mirror_x(0)
     paper.merge(p.paper)
 
