@@ -19,6 +19,9 @@ class HeadingBase:
     def __lt__(self, other):
         return not self >= other
 
+    def __le__(self, other):
+        return not self > other
+
     def __ge__(self, other):
         return self > other or self == other
 
@@ -48,6 +51,11 @@ class Angle(HeadingBase):
         other = Angle(other)
         return self.theta > other.theta
 
+    def __lt__(self, other):
+        return not self >= other
+        other = Angle(other)
+        return self.theta > other.theta
+
     def __add__(self, other):
         other = Angle(other)
         return Angle(self.theta + other.theta)
@@ -55,6 +63,12 @@ class Angle(HeadingBase):
     def __sub__(self, other):
         other = Angle(other)
         return Angle(self.theta - other.theta)
+
+    def __mul__(self, other):
+        return Angle(self.theta * other)
+
+    def __truediv__(self, other):
+        return Angle(self.theta / other)
 
     def __neg__(self):
         return Angle(-self.theta)

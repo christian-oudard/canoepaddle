@@ -135,6 +135,7 @@ class Pen:
             if path.segments:
                 path.segments.pop()
                 return
+
         raise IndexError('No segments in current path, cannot undo.')
 
     # Turning.
