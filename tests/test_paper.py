@@ -16,7 +16,6 @@ def test_override_bounds():
     # The view box is transformed into svg coordinates by flipping the
     # Y-coordinate and adjusting for height.
     svg_data = paper.format_svg()
-    print(svg_data)
     assert 'viewBox="0 -11 8 11"' in svg_data
 
     paper.override_bounds(-10, -10, 10, 10)

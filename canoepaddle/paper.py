@@ -22,16 +22,12 @@ class Paper:
         Add all the elements of the other paper on top of this one.
         """
         self.elements.extend(other.elements)
-        bounds = self.bounds()
-        bounds.union(other.bounds())
-        self.override_bounds(bounds)
-        return self
 
     def merge_under(self, other):
         """
         Add all the elements of the other paper underneath this one.
         """
-        return other.merge(self)
+        self.elements[0:0] = other.elements
 
     def join_paths(self):
         """
@@ -65,7 +61,7 @@ class Paper:
         if self._bounds_override is not None:
             return self._bounds_override
         if len(self.elements) == 0:
-            raise ValueError('No elements, cannot calculate bounds.')
+            return None
         return Bounds.union_all(
             element.bounds()
             for element in self.elements
