@@ -8,24 +8,19 @@ from canoepaddle.pen import Pen
 from canoepaddle.paper import Paper
 
 
-def test_format_svg():
-    p = Pen()
-    svg = p.paper.format_svg()
-    assert svg.startswith('<?xml')
-
-
-def test_set_view_box():
+def test_override_bounds():
     # Test that the view box gets set correctly.
-    p = Pen()
-    p.paper.set_view_box(-1, -1, 3, 3)
+    paper = Paper()
+    paper.override_bounds(0, 0, 8, 11)
 
     # The view box is transformed into svg coordinates by flipping the
     # Y-coordinate and adjusting for height.
-    svg_data = p.paper.format_svg()
-    assert 'viewBox="-1 -2 3 3"' in svg_data
+    svg_data = paper.format_svg()
+    print(svg_data)
+    assert 'viewBox="0 -11 8 11"' in svg_data
 
-    p.paper.set_view_box(-10, -10, 20, 20)
-    svg_data = p.paper.format_svg()
+    paper.override_bounds(-10, -10, 10, 10)
+    svg_data = paper.format_svg()
     assert 'viewBox="-10 -10 20 20"' in svg_data
 
 

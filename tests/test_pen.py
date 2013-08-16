@@ -905,7 +905,7 @@ def test_various_joins():
     p.turn_left(90)
     p.line_forward(1)
 
-    p.paper.set_view_box(-3, -3, 6, 6)
+    p.paper.override_bounds(-3, -3, 3, 3)
 
     assert_svg_file(
         p, 2,

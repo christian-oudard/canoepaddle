@@ -12,27 +12,26 @@ class Paper:
 
     def __init__(self):
         self.elements = []
-
-        # Default values.
-        self.set_view_box(-10, -10, 20, 20)
-        self.set_pixel_size(800, 800)
+        self._bounds_override = None
 
     def add_element(self, element):
         self.elements.append(element)
 
     def merge(self, other):
         """
-        Add all the elements of the other on top of this one.
+        Add all the elements of the other paper on top of this one.
         """
         self.elements.extend(other.elements)
+        bounds = self.bounds()
+        bounds.union(other.bounds())
+        self.override_bounds(bounds)
         return self
 
     def merge_under(self, other):
         """
         Add all the elements of the other paper underneath this one.
         """
-        self.elements = other.elements + self.elements
-        return self
+        return other.merge(self)
 
     def join_paths(self):
         """
@@ -63,12 +62,39 @@ class Paper:
             path.fuse()
 
     def bounds(self):
+        if self._bounds_override is not None:
+            return self._bounds_override
+        if len(self.elements) == 0:
+            raise ValueError('No elements, cannot calculate bounds.')
         return Bounds.union_all(
             element.bounds()
             for element in self.elements
         )
 
+    def override_bounds(self, *args):
+        """
+        Manually determine the bounding box.
+
+        You can pass in a Bounds object,
+        >>> paper = Paper()
+        >>> paper.override_bounds(Bounds(1, 2, 3, 4))
+
+        or you can pass left, bottom, right, and top individually.
+        >>> paper.override_bounds(1, 2, 3, 4)
+
+        Passing in None will clear the bounds overriding, and revert to
+        automatic bounds calculation.
+        >>> paper.override_bounds(None)
+        """
+        if len(args) == 1:
+            bounds = args[0]
+            self._bounds_override = bounds
+        else:
+            self._bounds_override = Bounds(*args)
+
     def translate(self, offset):
+        if self._bounds_override is not None:
+            self._bounds_override.translate(offset)
         for element in self.elements:
             element.translate(offset)
 
@@ -90,24 +116,19 @@ class Paper:
         for element in self.elements:
             element.mirror_y(y_center)
 
-    def set_view_box(self, x, y, width, height):
-        self.view_x = x
-        self.view_y = y
-        self.view_width = width
-        self.view_height = height
-
-    def set_pixel_size(self, width, height):
-        self.pixel_width = width
-        self.pixel_height = height
-
-    def format_svg(self, precision=12):
+    def format_svg(self, precision=12, resolution=10):
         element_data = '\n'.join(self.svg_elements(precision))
 
-        # Transform world-coordinate view box into svg-coordinate view box.
-        view_x = self.view_x
-        view_y = -self.view_y - self.view_height
-        view_width = self.view_width
-        view_height = self.view_height
+        # Transform world-coordinate bounding box into svg-coordinate view box.
+        bounds = self.bounds()
+        view_x = bounds.left
+        view_y = -bounds.top
+        view_width = bounds.width
+        view_height = bounds.height
+
+        # Calculate pixel size.
+        pixel_width = resolution * bounds.width
+        pixel_height = resolution * bounds.height
 
         #TODO: remove background rectangle?
         svg_template = dedent('''\
@@ -133,12 +154,12 @@ class Paper:
         t = Template(svg_template)
         return t.substitute(
             element_data=element_data,
-            pixel_width=self.pixel_width,
-            pixel_height=self.pixel_height,
             view_x=view_x,
             view_y=view_y,
             view_height=view_height,
             view_width=view_width,
+            pixel_width=pixel_width,
+            pixel_height=pixel_height,
         )
 
     def svg_elements(self, precision):

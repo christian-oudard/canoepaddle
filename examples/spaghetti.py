@@ -3,8 +3,7 @@ from canoepaddle import Pen
 from canoepaddle.heading import Heading, Angle
 
 p = Pen()
-p.paper.set_view_box(-120, -120, 240, 240)
-p.paper.set_pixel_size(720, 720)
+p.paper.override_bounds(-120, -120, 120, 120)
 p.stroke_mode(1.0, '#15A')
 
 p.move_to((0.5, 0.5))
@@ -40,4 +39,4 @@ for layer in range(num_layers):
     if layer < (num_layers - 1):
         p.arc_right(180, 1)
 
-print(p.paper.format_svg())
+print(p.paper.format_svg(resolution=720 / p.paper.bounds().width))
