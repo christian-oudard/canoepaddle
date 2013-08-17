@@ -61,7 +61,7 @@ class Paper:
         if self._bounds_override is not None:
             return self._bounds_override
         if len(self.elements) == 0:
-            return None
+            raise ValueError('Empty page, cannot calculate bounds.')
         return Bounds.union_all(
             element.bounds()
             for element in self.elements

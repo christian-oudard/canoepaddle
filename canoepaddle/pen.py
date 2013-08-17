@@ -81,8 +81,11 @@ class Pen:
             mode.copy_colors(self._mode)
         self._mode = mode
 
+    def last_path(self):
+        return self.paper.elements[-1]
+
     def last_segment(self):
-        return self.paper.elements[-1].segments[-1]
+        return self.last_path().segments[-1]
 
     def last_slant_width(self):
         seg = self.last_segment()
@@ -127,16 +130,18 @@ class Pen:
         """
         self._path = None
 
-    # TODO: remove undo and add arc movement methods
     @logged
     def undo(self):
         if self.paper.elements:
             path = self.paper.elements[-1]
             if path.segments:
                 path.segments.pop()
+                if not path.segments:
+                    self.paper.elements.pop()
+                    self._path = None
                 return
 
-        raise IndexError('No segments in current path, cannot undo.')
+        raise IndexError('Nothing to undo.')
 
     # Turning.
 
