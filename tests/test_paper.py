@@ -6,6 +6,7 @@ from util import (
 )
 from canoepaddle.pen import Pen
 from canoepaddle.paper import Paper
+from canoepaddle.bounds import Bounds
 
 
 def test_override_bounds():
@@ -121,6 +122,62 @@ def test_paper_merge():
             'M-2.5,0.0 A 5.0,5.0 0 0 0 -2.5,-10.0',
             'M2.5,0.0 A 5.0,5.0 0 0 0 2.5,10.0',
         ]
+    )
+
+
+def test_merge_bounds():
+    def draw():
+        p = Pen()
+        p.move_to((0, 0))
+        p.circle(2)
+        p.fill_mode()
+        paper1 = p.paper
+
+        p = Pen()
+        p.fill_mode()
+        p.move_to((3, 0))
+        p.circle(1)
+        paper2 = p.paper
+
+        return paper1, paper2
+
+    # No bounds overriding or merging.
+    paper1, paper2 = draw()
+    assert_equal(
+        paper1.bounds(),
+        Bounds(-2, -2, 2, 2)
+    )
+    assert_equal(
+        paper2.bounds(),
+        Bounds(2, -1, 4, 1)
+    )
+
+    # Merge with no overriding.
+    paper1, paper2 = draw()
+    paper1.merge(paper2)
+    assert_equal(
+        paper1.bounds(),
+        Bounds(-2, -2, 4, 2)
+    )
+
+    # Override the top one.
+    paper1, paper2 = draw()
+    paper2.override_bounds(-1, -1, 1, 1)
+    paper1.merge(paper2)
+    assert_equal(
+        paper1.bounds(),
+        Bounds(-2, -2, 2, 2)
+    )
+
+    # Override the bottom one.
+    paper1, paper2 = draw()
+    bounds = paper1.bounds()
+    bounds.top = 10
+    paper1.override_bounds(bounds)
+    paper1.merge(paper2)
+    assert_equal(
+        paper1.bounds(),
+        Bounds(-2, -2, 4, 10)
     )
 
 

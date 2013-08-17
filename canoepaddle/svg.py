@@ -20,6 +20,22 @@ def html_color(color):
     return Color.RgbToHtml(*color)
 
 
+def text_element(text, position, font_family, font_size, color, precision):
+    color = html_color(color)
+    return (
+        '<text x="{x}" y="{y}" '
+        'font-family="{font_family}" font-size="{font_size}" '
+        'fill="{color}">{text}</text>'
+    ).format(
+        x=number(position.x, precision),
+        y=number(-position.y, precision),
+        font_family=font_family,
+        font_size=font_size,
+        color=color,
+        text=text,
+    )
+
+
 def path_element(path_data, color):
     color = html_color(color)
     return '<path d="{path_data}" fill="{color}" />'.format(

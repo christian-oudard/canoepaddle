@@ -38,17 +38,19 @@ class Bounds:
         return Bounds(p.x, p.y, p.x, p.y)
 
     def union(self, other):
-        self.left = min(self.left, other.left)
-        self.bottom = min(self.bottom, other.bottom)
-        self.right = max(self.right, other.right)
-        self.top = max(self.top, other.top)
+        return Bounds(
+            min(self.left, other.left),
+            min(self.bottom, other.bottom),
+            max(self.right, other.right),
+            max(self.top, other.top),
+        )
 
     @staticmethod
     def union_all(bounds_list):
         bounds_list = iter(bounds_list)
         current = Bounds(*next(bounds_list))
         for b in bounds_list:
-            current.union(b)
+            current = current.union(b)
         return current
 
     @property

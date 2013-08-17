@@ -5,29 +5,48 @@ from string import Template
 
 from .bounds import Bounds
 from .geometry import find_point_pairs
-from .point import points_equal
+from .point import Point, points_equal
+from .svg import text_element
 
 
 class Paper:
 
     def __init__(self):
         self.elements = []
+        self.text_elements = []
         self._bounds_override = None
 
     def add_element(self, element):
         self.elements.append(element)
 
+    def add_text(self, text, position, size, font_family='sans-serif', color=None):
+        self.text_elements.append([
+            text,
+            Point(*position),
+            font_family,
+            size,
+            color,
+        ])
+
     def merge(self, other):
         """
         Add all the elements of the other paper on top of this one.
         """
+        self._merge_bounds(other)
         self.elements.extend(other.elements)
 
     def merge_under(self, other):
         """
         Add all the elements of the other paper underneath this one.
         """
+        self._merge_bounds(other)
         self.elements[0:0] = other.elements
+
+    def _merge_bounds(self, other):
+        # If the other paper has overridden boundaries, make sure that self
+        # expands to include those boundaries.
+        if other._bounds_override is not None:
+            self.override_bounds(self.bounds().union(other._bounds_override))
 
     def join_paths(self):
         """
@@ -114,6 +133,9 @@ class Paper:
 
     def format_svg(self, precision=12, resolution=10):
         element_data = '\n'.join(self.svg_elements(precision))
+        for text_args in self.text_elements:
+            text_args.append(precision)
+            element_data += '\n' + text_element(*text_args)
 
         # Transform world-coordinate bounding box into svg-coordinate view box.
         bounds = self.bounds()
