@@ -23,7 +23,7 @@ class Mode:
     apply per-path.
     """
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         strings = []
         for field in self.repr_fields:
             value = getattr(self, field)

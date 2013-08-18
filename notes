@@ -19,6 +19,7 @@ Paths having thick modes can have different color and width per segment.
 
 
 TODO:
+- A learning mode where you don't construct pen objects. You just use global functions and a single pen and paper.
 - Do color setting into a grapefruit color object right away, not at render time.
 - Implement different endcaps, such as round.
 - Make offwidth and joint errors just start a new path instead? We could do

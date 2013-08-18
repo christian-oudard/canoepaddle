@@ -1296,6 +1296,20 @@ def test_save_mode():
     )
 
 
+def test_keep_mode_colors():
+    # Setting a mode with no color specified usually gives a default color.
+    p = Pen()
+    p.stroke_mode(1.0)
+    assert_equal(p.mode.color, None)
+
+    # You can change mode width only, without affecting color.
+    p = Pen()
+    p.stroke_mode(1.0, 'red')
+    p.stroke_mode(0.5)
+    assert_equal(p.mode.width, 0.5)
+    assert_equal(p.mode.color, 'red')
+
+
 def test_stroke_fill_mode():
     p = Pen()
     p.set_mode(StrokeFillMode(0.2, 'black', 'red'))
@@ -1327,6 +1341,43 @@ def test_stroke_outline_mode():
             'M0.1,-0.4 L4.9,-0.4 L4.9,0.4 L0.1,0.4 L0.1,-0.4 z" '
             'fill="#000000" />'
         )
+    )
+
+
+def test_outliner_mode():
+    # We can set up a pattern in one mode,
+    p = Pen()
+    p.set_mode(StrokeOutlineMode(sqrt3, 0.2 * sqrt3, 'blue', 'black'))
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5, end_slant=60)
+
+    # Then continue it in another mode without caring what the first mode was.
+    old_mode = p.mode
+    p.set_mode(p.mode.outliner_mode())
+
+    p.turn_to(60)
+    p.move_forward(1.0)
+
+    p.turn_left(60)
+    p.line_forward(2.0)
+    p.turn_right(120)
+    p.line_forward(2.0)
+    p.turn_right(120)
+    p.line_forward(2.0)
+
+    p.turn_to(60)
+    p.move_forward(3.0)
+    p.turn_to(120)
+
+    p.set_mode(old_mode)
+
+    p.line_forward(5, start_slant=60)
+
+    assert_svg_file(
+        p, 3,
+        'test_outliner_mode.svg'
     )
 
 
