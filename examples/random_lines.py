@@ -2,8 +2,6 @@ from collections import defaultdict
 import random
 
 from canoepaddle import Pen
-from canoepaddle.path import Path
-from canoepaddle.segment import Segment
 from canoepaddle.error import SegmentError
 
 
@@ -19,7 +17,6 @@ def gen_points(num_points):
 
 def gen_lines(num_points, num_lines):
     points = list(gen_points(num_points))
-    lines = []
     point_occupancy = defaultdict(int)
     for _ in range(num_lines):
         a = random.choice(points)
