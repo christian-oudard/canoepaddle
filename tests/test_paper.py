@@ -202,6 +202,12 @@ def test_merge_bounds():
 
         return paper1, paper2
 
+    # Empty papers, no overridden bounds.
+    paper1 = Paper()
+    paper2 = Paper()
+    paper1.merge(paper2)
+    assert_raises(ValueError, lambda: paper1.bounds())
+
     # Empty papers with overridden bounds on both sides.
     paper1 = Paper()
     paper1.override_bounds(0, 0, 1, 1)
