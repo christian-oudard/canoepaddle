@@ -71,6 +71,36 @@ def test_translate_override_bounds():
         Bounds(3, 4, 4, 5)
     )
 
+    # When bounds=False is passed, then the bounds do not update.
+    paper = Paper()
+    paper.override_bounds(0, 0, 1, 1)
+    paper.translate((3, 4), bounds=False)
+    assert_equal(
+        paper.bounds(),
+        Bounds(0, 0, 1, 1)
+    )
+
+    # This also works if the bounds are not overridden.
+    p = Pen()
+    p.fill_mode()
+    p.move_to((0.5, 0.5))
+    p.circle(0.5)
+    assert_equal(
+        p.paper.bounds(),
+        Bounds(0, 0, 1, 1)
+    )
+
+    p.paper.translate((3, 4), bounds=False)
+
+    assert_equal(
+        p.paper.bounds(),
+        Bounds(0, 0, 1, 1)
+    )
+    assert_equal(
+        p.paper.elements[0].bounds(),
+        Bounds(3, 4, 4, 5)
+    )
+
 
 def test_center_on_xy():
     p = Pen()

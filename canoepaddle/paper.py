@@ -119,9 +119,22 @@ class Paper:
         else:
             self._bounds_override = Bounds(*args)
 
-    def translate(self, offset):
-        if self._bounds_override is not None:
-            self._bounds_override.translate(offset)
+    def translate(self, offset, bounds=True):
+        """
+        Move all the elements in the paper by `offset`.
+
+        If `bounds` is True, then the paper bounds will update as well.
+        If `bounds` is False, the bounds will stay the same.
+        """
+        if bounds:
+            if self._bounds_override is not None:
+                self._bounds_override.translate(offset)
+        else:
+            # There are no overridden bounds, and all the elements are about to
+            # move. Override the bounds to stay in place.
+            if self._bounds_override is None:
+                self.override_bounds(self.bounds())
+
         for element in self.elements:
             element.translate(offset)
 
