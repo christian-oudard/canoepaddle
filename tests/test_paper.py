@@ -284,6 +284,23 @@ def test_join_paths():
         'M3,0 L2,0 L1,0 L0,0',
     )
 
+    # Join up two paths both going left.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((1, 0))
+    p.line_to((0, 0))
+    p.break_stroke()
+    p.move_to((2, 0))
+    p.line_to((1, 0))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M0,0 L1,0 L2,0',
+    )
+
 
 def test_join_paths_loop():
     # Looped paths should not be affected by join_paths.
