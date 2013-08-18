@@ -532,3 +532,27 @@ def test_mirror_end_slant():
         paper, 1,
         'M-5.5,4.5 L-4.5,5.5 L5.5,-4.5 L4.5,-5.5 L-5.5,4.5 z'
     )
+
+
+def test_text():
+    paper = Paper()
+    paper.add_text('abcd', (0, 0), 1)
+    svg_data = paper.format_svg(0)
+    assert (
+        '<text x="0" y="0" font-family="sans-serif" font-size="1" '
+        'fill="#000000">abcd</text>'
+    ) in svg_data
+
+
+def test_text_merge():
+    paper1 = Paper()
+    paper1.add_text('abcd', (0, 0), 1)
+    assert '<text' in paper1.format_svg(0)
+
+    paper2 = Paper()
+    paper2.merge(paper1)
+    assert '<text' in paper2.format_svg(0)
+
+    paper3 = Paper()
+    paper3.merge_under(paper1)
+    assert '<text' in paper3.format_svg(0)

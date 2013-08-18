@@ -21,13 +21,13 @@ class Paper:
         self.elements.append(element)
 
     def add_text(self, text, position, size, font_family='sans-serif', color=None):
-        self.text_elements.append([
+        self.text_elements.append((
             text,
             Point(*position),
             font_family,
             size,
             color,
-        ])
+        ))
 
     def merge(self, other):
         """
@@ -35,6 +35,7 @@ class Paper:
         """
         self._merge_bounds(other)
         self.elements.extend(other.elements)
+        self.text_elements.extend(other.text_elements)
 
     def merge_under(self, other):
         """
@@ -42,6 +43,7 @@ class Paper:
         """
         self._merge_bounds(other)
         self.elements[0:0] = other.elements
+        self.text_elements[0:0] = other.text_elements
 
     def _merge_bounds(self, other):
         if self._bounds_override is None and other._bounds_override is None:
@@ -160,11 +162,13 @@ class Paper:
     def format_svg(self, precision=12, resolution=10):
         element_data = '\n'.join(self.svg_elements(precision))
         for text_args in self.text_elements:
-            text_args.append(precision)
-            element_data += '\n' + text_element(*text_args)
+            element_data += '\n' + text_element(*text_args + (precision,))
 
         # Transform world-coordinate bounding box into svg-coordinate view box.
-        bounds = self.bounds()
+        try:
+            bounds = self.bounds()
+        except ValueError:
+            bounds = Bounds(-10, -10, 10, 10)
         view_x = bounds.left
         view_y = -bounds.top
         view_width = bounds.width
