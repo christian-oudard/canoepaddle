@@ -33,7 +33,7 @@ class Paper:
         """
         Add all the elements of the other paper on top of this one.
         """
-        self._merge_bounds(other)
+        self.override_bounds(self._merged_bounds(other))
         self.elements.extend(other.elements)
         self.text_elements.extend(other.text_elements)
 
@@ -41,27 +41,28 @@ class Paper:
         """
         Add all the elements of the other paper underneath this one.
         """
-        self._merge_bounds(other)
+        self.override_bounds(self._merged_bounds(other))
         self.elements[0:0] = other.elements
         self.text_elements[0:0] = other.text_elements
 
-    def _merge_bounds(self, other):
-        if self._bounds_override is None and other._bounds_override is None:
-            return
+    def _merged_bounds(self, other):
+        try:
+            self_bounds = self.bounds()
+        except ValueError:
+            self_bounds = None
+        try:
+            other_bounds = other.bounds()
+        except ValueError:
+            other_bounds = None
 
-        # If there are overridden boundaries, make sure that the merged
-        # boundaries account for this.
-        self_empty = (len(self.elements) == 0)
-        other_empty = (len(other.elements) == 0)
-        if self_empty and other_empty:
+        if self_bounds is None and other_bounds is None:
             return
-        elif self_empty:
-            bounds = other.bounds()
-        elif other_empty:
-            bounds = self.bounds()
+        elif self_bounds is None:
+            return other_bounds
+        elif other_bounds is None:
+            return self_bounds
         else:
-            bounds = Bounds.union_all([self.bounds(), other.bounds()])
-        self.override_bounds(bounds)
+            return Bounds.union_all([self_bounds, other_bounds])
 
     def join_paths(self):
         """

@@ -1,4 +1,4 @@
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 
 from util import (
     assert_path_data,
@@ -182,6 +182,10 @@ def test_paper_merge():
     )
 
 
+def test_empty_bounds():
+    assert_raises(ValueError, lambda: Paper().bounds())
+
+
 def test_merge_bounds():
     def draw():
         p = Pen()
@@ -197,6 +201,16 @@ def test_merge_bounds():
         paper2 = p.paper
 
         return paper1, paper2
+
+    # Empty papers with overridden bounds on both sides.
+    paper1 = Paper()
+    paper1.override_bounds(0, 0, 1, 1)
+
+    paper2 = Paper()
+    paper2.override_bounds(1, 0, 2, 1)
+
+    paper1.merge(paper2)
+    assert_equal(paper1.bounds(), Bounds(0, 0, 2, 1))
 
     # No bounds overriding or merging.
     paper1, paper2 = draw()
