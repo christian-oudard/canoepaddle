@@ -5,6 +5,7 @@ from functools import wraps
 import vec
 from .paper import Paper
 from .path import Path
+from .text import Text
 from .segment import LineSegment, ArcSegment
 from .mode import FillMode, StrokeMode, OutlineMode, modes_compatible
 from .point import Point, points_equal
@@ -370,6 +371,17 @@ class Pen:
         self.line_forward(size)
         self.move_to(old_position)
         self.turn_to(old_heading)
+
+    # Text.
+
+    def text(self, text, size, font_family='sans-serif', color=None):
+        self.paper.add_element(Text(
+            text,
+            self.position,
+            font_family,
+            size,
+            color,
+        ))
 
     # Internal.
 

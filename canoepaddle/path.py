@@ -18,6 +18,13 @@ class Path:
 
         self.start_join_location = None
 
+    def svg(self, precision):
+        # Defer to the drawing mode to actually turn our path data into
+        # svg code. The mode will then call some combination of
+        # Path.render_path() and Path.draw_outline() to produce the finished
+        # styled drawing.
+        return self.mode.svg(self, precision)
+
     def bounds(self):
         return Bounds.union_all(seg.bounds() for seg in self.segments)
 
@@ -109,13 +116,6 @@ class Path:
             self.loop_start_segment = None
 
         self.segments.append(new_segment)
-
-    def svg(self, precision):
-        # Defer to the drawing mode to actually turn our path data into
-        # svg code. The mode will then call some combination of
-        # Path.render_path() and Path.draw_outline() to produce the finished
-        # styled drawing.
-        return self.mode.svg(self, precision)
 
     def render_path(self, precision):
         assert len(self.segments) > 0
