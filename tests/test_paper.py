@@ -24,6 +24,34 @@ def test_override_bounds():
     assert 'viewBox="-10 -10 20 20"' in svg_data
 
 
+def test_override_bounds_copy():
+    # Get the bounds of a Paper, modify them, then set them back changed.
+    paper = Paper()
+    paper.override_bounds(0, 0, 1, 1)
+
+    bounds = paper.bounds()
+    bounds.right = 5
+
+    assert_equal(paper.bounds(), Bounds(0, 0, 1, 1))
+    paper.override_bounds(bounds)
+    assert_equal(paper.bounds(), Bounds(0, 0, 5, 1))
+
+    # This works on non-overridden Papers as well.
+    paper = Paper()
+
+    p = Pen()
+    p.fill_mode()
+    p.move_to((0.5, 0.5))
+    p.circle(0.5)
+
+    bounds = p.paper.bounds()
+    bounds.right = 5
+
+    assert_equal(p.paper.bounds(), Bounds(0, 0, 1, 1))
+    p.paper.override_bounds(bounds)
+    assert_equal(p.paper.bounds(), Bounds(0, 0, 5, 1))
+
+
 def test_translate():
     p = Pen()
     p.stroke_mode(1.0)
@@ -75,31 +103,19 @@ def test_translate_override_bounds():
     paper = Paper()
     paper.override_bounds(0, 0, 1, 1)
     paper.translate((3, 4), bounds=False)
-    assert_equal(
-        paper.bounds(),
-        Bounds(0, 0, 1, 1)
-    )
+    assert_equal(paper.bounds(), Bounds(0, 0, 1, 1))
 
     # This also works if the bounds are not overridden.
     p = Pen()
     p.fill_mode()
     p.move_to((0.5, 0.5))
     p.circle(0.5)
-    assert_equal(
-        p.paper.bounds(),
-        Bounds(0, 0, 1, 1)
-    )
+    assert_equal(p.paper.bounds(), Bounds(0, 0, 1, 1))
 
     p.paper.translate((3, 4), bounds=False)
 
-    assert_equal(
-        p.paper.bounds(),
-        Bounds(0, 0, 1, 1)
-    )
-    assert_equal(
-        p.paper.elements[0].bounds(),
-        Bounds(3, 4, 4, 5)
-    )
+    assert_equal(p.paper.bounds(), Bounds(0, 0, 1, 1))
+    assert_equal(p.paper.elements[0].bounds(), Bounds(3, 4, 4, 5))
 
 
 def test_center_on_xy():
@@ -184,31 +200,19 @@ def test_merge_bounds():
 
     # No bounds overriding or merging.
     paper1, paper2 = draw()
-    assert_equal(
-        paper1.bounds(),
-        Bounds(-2, -2, 2, 2)
-    )
-    assert_equal(
-        paper2.bounds(),
-        Bounds(2, -1, 4, 1)
-    )
+    assert_equal(paper1.bounds(), Bounds(-2, -2, 2, 2))
+    assert_equal(paper2.bounds(), Bounds(2, -1, 4, 1))
 
     # Merge with no overriding.
     paper1, paper2 = draw()
     paper1.merge(paper2)
-    assert_equal(
-        paper1.bounds(),
-        Bounds(-2, -2, 4, 2)
-    )
+    assert_equal(paper1.bounds(), Bounds(-2, -2, 4, 2))
 
     # Override the top one.
     paper1, paper2 = draw()
     paper2.override_bounds(-1, -1, 1, 1)
     paper1.merge(paper2)
-    assert_equal(
-        paper1.bounds(),
-        Bounds(-2, -2, 2, 2)
-    )
+    assert_equal(paper1.bounds(), Bounds(-2, -2, 2, 2))
 
     # Override the bottom one.
     paper1, paper2 = draw()
@@ -216,30 +220,21 @@ def test_merge_bounds():
     bounds.top = 10
     paper1.override_bounds(bounds)
     paper1.merge(paper2)
-    assert_equal(
-        paper1.bounds(),
-        Bounds(-2, -2, 4, 10)
-    )
+    assert_equal(paper1.bounds(), Bounds(-2, -2, 4, 10))
 
     # Empty bounds on bottom page.
     paper1, paper2 = draw()
     paper1.override_bounds(-1, -1, 1, 1)
     paper3 = Paper()
     paper3.merge(paper1)
-    assert_equal(
-        paper3.bounds(),
-        Bounds(-1, -1, 1, 1),
-    )
+    assert_equal(paper3.bounds(), Bounds(-1, -1, 1, 1))
 
     # Empty bounds on top page.
     paper1, paper2 = draw()
     paper3 = Paper()
     paper1.override_bounds(-1, -1, 1, 1)
     paper1.merge(paper3)
-    assert_equal(
-        paper1.bounds(),
-        Bounds(-1, -1, 1, 1),
-    )
+    assert_equal(paper1.bounds(), Bounds(-1, -1, 1, 1))
 
 
 def test_join_paths():

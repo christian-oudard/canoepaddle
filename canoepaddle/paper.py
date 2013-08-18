@@ -1,5 +1,6 @@
 # TODO: Rename element to path? It is always a path right now.
 
+from copy import copy
 from textwrap import dedent
 from string import Template
 
@@ -90,7 +91,7 @@ class Paper:
 
     def bounds(self):
         if self._bounds_override is not None:
-            return self._bounds_override
+            return copy(self._bounds_override)
         if len(self.elements) == 0:
             raise ValueError('Empty page, cannot calculate bounds.')
         return Bounds.union_all(
