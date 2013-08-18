@@ -69,11 +69,16 @@ class Paper:
         # Find paths that meet at a common point and join them.
         nodes = [n for (n, p) in nodes_and_paths]
         pair_indexes = find_point_pairs(nodes)
+        paths_to_remove = {}
         for left_index, right_index in pair_indexes:
             left_node, left_path = nodes_and_paths[left_index]
             right_node, right_path = nodes_and_paths[right_index]
-            self.elements.remove(right_path)
+            paths_to_remove[id(right_path)] = right_path
             left_path.join_with(right_path)
+        self.elements = [
+            e for e in self.elements
+            if id(e) not in paths_to_remove
+        ]
 
     def fuse_paths(self):
         for path in self.elements:

@@ -17,7 +17,7 @@ from .heading import Heading
 from .error import SegmentError
 
 
-MAX_TURN_ANGLE = 179
+MAX_TURN_ANGLE = 175
 
 
 class Segment:
