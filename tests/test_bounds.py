@@ -17,6 +17,14 @@ def test_repr():
     )
 
 
+def test_iter():
+    bounds = Bounds(1, 2, 3, 4)
+    assert_equal(
+        tuple(bounds),
+        (1, 2, 3, 4),
+    )
+
+
 def test_bounds_union():
     assert_equal(
         Bounds.union_all([

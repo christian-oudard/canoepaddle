@@ -61,6 +61,17 @@ def test_translate():
     )
 
 
+def test_translate_override_bounds():
+    # Translate a paper that has overridden bounds. The bounds update as well.
+    paper = Paper()
+    paper.override_bounds(0, 0, 1, 1)
+    paper.translate((3, 4))
+    assert_equal(
+        paper.bounds(),
+        Bounds(3, 4, 4, 5)
+    )
+
+
 def test_center_on_xy():
     p = Pen()
     p.stroke_mode(2.0)

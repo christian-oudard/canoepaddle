@@ -28,3 +28,23 @@ TODO:
 Tests
 - test looped outlines.
 - test closing a stroked path then continuing somewhere else.
+
+Coverage
+
+
+Name                   Stmts   Miss  Cover   Missing
+----------------------------------------------------
+canoepaddle                2      0   100%
+canoepaddle.bounds        46      0   100%
+canoepaddle.error          2      0   100%
+canoepaddle.geometry     108      0   100%
+canoepaddle.heading       98     11    89%   33, 35, 41, 44, 56-57, 68, 71, 87, 89, 98
+canoepaddle.mode          92      3    97%   31, 51, 161
+canoepaddle.paper        100      7    93%   23, 42-43, 54, 95, 149-150
+canoepaddle.path         131      5    96%   44-45, 48-49, 56
+canoepaddle.pen          212     10    95%   135-144, 428
+canoepaddle.point          9      0   100%
+canoepaddle.segment      318      1    99%   347
+canoepaddle.svg           29      2    93%   24-25
+----------------------------------------------------
+TOTAL                   1147     39    97%
