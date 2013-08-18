@@ -43,10 +43,22 @@ class Paper:
         self.elements[0:0] = other.elements
 
     def _merge_bounds(self, other):
-        # If the other paper has overridden boundaries, make sure that self
-        # expands to include those boundaries.
-        if other._bounds_override is not None:
-            self.override_bounds(self.bounds().union(other._bounds_override))
+        if self._bounds_override is None and other._bounds_override is None:
+            return
+
+        # If there are overridden boundaries, make sure that the merged
+        # boundaries account for this.
+        self_empty = (len(self.elements) == 0)
+        other_empty = (len(other.elements) == 0)
+        if self_empty and other_empty:
+            return
+        elif self_empty:
+            bounds = other.bounds()
+        elif other_empty:
+            bounds = self.bounds()
+        else:
+            bounds = Bounds.union_all([self.bounds(), other.bounds()])
+        self.override_bounds(bounds)
 
     def join_paths(self):
         """

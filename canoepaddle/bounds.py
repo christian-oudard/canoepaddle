@@ -37,21 +37,14 @@ class Bounds:
         p = Point(*point)
         return Bounds(p.x, p.y, p.x, p.y)
 
-    def union(self, other):
-        return Bounds(
-            min(self.left, other.left),
-            min(self.bottom, other.bottom),
-            max(self.right, other.right),
-            max(self.top, other.top),
-        )
-
     @staticmethod
     def union_all(bounds_list):
-        bounds_list = iter(bounds_list)
-        current = Bounds(*next(bounds_list))
-        for b in bounds_list:
-            current = current.union(b)
-        return current
+        bounds_list = list(bounds_list)
+        left = min(b.left for b in bounds_list)
+        bottom = min(b.bottom for b in bounds_list)
+        right = max(b.right for b in bounds_list)
+        top = max(b.top for b in bounds_list)
+        return Bounds(left, bottom, right, top)
 
     @property
     def width(self):

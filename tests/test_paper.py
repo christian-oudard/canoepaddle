@@ -128,9 +128,9 @@ def test_paper_merge():
 def test_merge_bounds():
     def draw():
         p = Pen()
+        p.fill_mode()
         p.move_to((0, 0))
         p.circle(2)
-        p.fill_mode()
         paper1 = p.paper
 
         p = Pen()
@@ -178,6 +178,26 @@ def test_merge_bounds():
     assert_equal(
         paper1.bounds(),
         Bounds(-2, -2, 4, 10)
+    )
+
+    # Empty bounds on bottom page.
+    paper1, paper2 = draw()
+    paper1.override_bounds(-1, -1, 1, 1)
+    paper3 = Paper()
+    paper3.merge(paper1)
+    assert_equal(
+        paper3.bounds(),
+        Bounds(-1, -1, 1, 1),
+    )
+
+    # Empty bounds on top page.
+    paper1, paper2 = draw()
+    paper3 = Paper()
+    paper1.override_bounds(-1, -1, 1, 1)
+    paper1.merge(paper3)
+    assert_equal(
+        paper1.bounds(),
+        Bounds(-1, -1, 1, 1),
     )
 
 
