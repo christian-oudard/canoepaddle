@@ -9,6 +9,12 @@ from canoepaddle.paper import Paper
 from canoepaddle.bounds import Bounds
 
 
+def test_format_empty_bounds():
+    paper = Paper()
+    svg_data = paper.format_svg()
+    assert 'viewBox="-10 -10 20 20"' in svg_data
+
+
 def test_override_bounds():
     # Test that the view box gets set correctly.
     paper = Paper()
