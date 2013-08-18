@@ -264,24 +264,38 @@ def test_merge_bounds():
 
 
 def test_join_paths():
-    # Join up three paths that are going different directions.
+    # Join up two paths starting from the same point.
     p = Pen()
     p.fill_mode()
 
-    p.move_to((2, 0))
-    p.line_to((1, 0))
-    p.break_stroke()
-    p.move_to((2, 0))
-    p.line_to((3, 0))
-    p.break_stroke()
     p.move_to((1, 0))
     p.line_to((0, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((2, 0))
 
     p.paper.join_paths()
 
     assert_path_data(
         p, 0,
-        'M3,0 L2,0 L1,0 L0,0',
+        'M0,0 L1,0 L2,0',
+    )
+
+    # Join up two paths that end in the same point.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((1, 0))
+    p.line_to((0, 0))
+    p.break_stroke()
+    p.move_to((2, 0))
+    p.line_to((1, 0))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M0,0 L1,0 L2,0',
     )
 
     # Join up two paths both going left.
@@ -301,6 +315,67 @@ def test_join_paths():
         'M0,0 L1,0 L2,0',
     )
 
+    # Join up two paths both going right.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((1, 0))
+    p.line_to((2, 0))
+    p.break_stroke()
+    p.move_to((0, 0))
+    p.line_to((1, 0))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M2,0 L1,0 L0,0',
+    )
+
+    # Join multiple paths together.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((1, 0))
+    p.line_to((0, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((1, 1))
+    p.break_stroke()
+    p.move_to((1, 1))
+    p.line_to((2, 1))
+    p.break_stroke()
+    p.move_to((2, 2))
+    p.line_to((2, 1))
+    p.break_stroke()
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M0,0 L1,0 L1,-1'
+    )
+
+    # Join up paths so one path must reverse multiple times.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((2, 0))
+    p.line_to((1, 0))
+    p.break_stroke()
+    p.move_to((2, 0))
+    p.line_to((3, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((0, 0))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M3,0 L2,0 L1,0 L0,0',
+    )
+
 
 def test_join_paths_loop():
     # Looped paths should not be affected by join_paths.
@@ -314,6 +389,23 @@ def test_join_paths_loop():
     assert_path_data(p, 0, target)
     p.paper.join_paths()
     assert_path_data(p, 0, target)
+
+
+def test_join_paths_thick():
+    # Segments join together if possible when join_paths is called.
+    p = Pen()
+    p.stroke_mode(2.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
+    p.break_stroke()
+    p.turn_left(90)
+    p.line_forward(5)
+    p.paper.join_paths()
+    assert_path_data(
+        p, 0,
+        'M0,-1 L0,1 L6,1 L6,-5 L4,-5 L4,-1 L0,-1 z'
+    )
 
 
 def test_fuse_paths():

@@ -19,6 +19,7 @@ Paths having thick modes can have different color and width per segment.
 
 
 TODO:
+- Margins on format_svg
 - A learning mode where you don't construct pen objects. You just use global functions and a single pen and paper.
 - Do color setting into a grapefruit color object right away, not at render time.
 - Implement different endcaps, such as round.
@@ -40,7 +41,7 @@ canoepaddle.geometry     108      0   100%
 canoepaddle.heading       88      0   100%
 canoepaddle.mode          84      0   100%
 canoepaddle.paper        103      0   100%
-canoepaddle.path         131      5    96%   51-52, 55-56, 63
+canoepaddle.path         131      5    96%   55-56, 63
 canoepaddle.pen          215     10    95%   136-145, 440
 canoepaddle.point          9      0   100%
 canoepaddle.segment      318      1    99%   347
