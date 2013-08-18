@@ -1,6 +1,30 @@
+from nose.tools import assert_raises
+
 import math
 
 from canoepaddle.heading import Heading, Angle
+
+
+def test_init_error():
+    # Make sure that we catch errors in algorithms early.
+    # Don't allow None to be treated as an Angle.
+    assert_raises(
+        ValueError,
+        lambda: Angle(None)
+    )
+    assert_raises(
+        ValueError,
+        lambda: Heading(None)
+    )
+    # Don't allow Headings and Angles to be conflated. They are conceptually different.
+    assert_raises(
+        ValueError,
+        lambda: Angle(Heading(45)),
+    )
+    assert_raises(
+        ValueError,
+        lambda: Heading(Angle(45)),
+    )
 
 
 def test_eq():
@@ -36,16 +60,17 @@ def test_compare_heading():
     assert Heading(270) > Heading(90)
 
 
-def test_add_angle():
+def test_angle_arithmetic():
     assert Angle(10) + Angle(20) == Angle(30)
     assert Angle(350) + Angle(20) == Angle(370)
 
-
-def test_subtract_angle():
     assert Angle(30) - Angle(10) == Angle(20)
     assert Angle(10) - Angle(30) == Angle(-20)
     assert Angle(10) - Angle(-10) == Angle(20)
     assert Angle(-10) - Angle(10) == Angle(-20)
+
+    assert Angle(45) * 4 == Angle(180)
+    assert Angle(180) / 4 == Angle(45)
 
 
 def test_subtract_heading():

@@ -37,10 +37,11 @@ class Angle(HeadingBase):
             theta = theta.theta
         self.theta = theta
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return str(self.theta)
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
+        #COVER
         return 'Angle({})'.format(self.theta)
 
     def __eq__(self, other):
@@ -53,8 +54,6 @@ class Angle(HeadingBase):
 
     def __lt__(self, other):
         return not self >= other
-        other = Angle(other)
-        return self.theta > other.theta
 
     def __add__(self, other):
         other = Angle(other)
@@ -91,10 +90,10 @@ class Heading(HeadingBase):
             theta = theta.theta
         self.theta = theta % 360
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return str(self.theta)
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return 'Heading({})'.format(self.theta)
 
     def __eq__(self, other):
