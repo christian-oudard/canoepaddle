@@ -343,9 +343,6 @@ class LineSegment(Segment):
     def draw_left(self, pen):
         pen.line_to(self.a_left)
 
-    def _heading(self):
-        return math.degrees(vec.heading(self._vector()))
-
 
 class ArcSegment(Segment):
 

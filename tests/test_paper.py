@@ -482,6 +482,32 @@ def test_join_paths_loop():
         'M1,-1 L1,0 L0,0 L0,-1 L1,-1 z'
     )
 
+    # The joins can get complicated.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((3, 0))
+    p.line_to((2, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((2, 2))
+    p.break_stroke()
+    p.move_to((4, 0))
+    p.line_to((3, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((2, 0))
+    p.break_stroke()
+    p.move_to((4, 0))
+    p.line_to((2, 2))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M1,0 L2,-2 L4,0 L3,0 L2,0 L1,0 z',
+    )
+
 
 def test_join_paths_thick():
     # Segments join together if possible when join_paths is called.

@@ -109,9 +109,8 @@ class Paper:
 
                 # Continue from the other end of the path we just joined.
                 other_end = other_end_of[paired_node]
+                assert other_end in node_set
                 assert endpoint_to_path[other_end] == endpoint_to_path[paired_node]
-                if other_end not in node_set:
-                    break
                 current_node = other_end
                 node_set.remove(other_end)
                 current_path = endpoint_to_path[current_node]
