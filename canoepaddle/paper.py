@@ -56,47 +56,65 @@ class Paper:
         Find all paths that come to a common point with another path, and join
         them together.
         """
-        #TODO: This is so complex. Can it be simplified?
-
         # Index paths by their end nodes.
-        nodes_and_paths = []
+        paths = []
+        nodes = []
+        endpoint_to_path = {}
+        other_end_of = {}
         for path in self.elements:
             start = path.segments[0].a
             end = path.segments[-1].b
             if points_equal(start, end):
                 continue  # This is a path looping back on itself.
-            nodes_and_paths.append((start, path))
-            nodes_and_paths.append((end, path))
 
-        # Find paths that meet at a common point and join them.
-        nodes = [n for (n, p) in nodes_and_paths]
+            path_index = len(paths)
+            paths.append(path)
+            start_index = len(nodes)
+            nodes.append(start)
+            end_index = len(nodes)
+            nodes.append(end)
+
+            other_end_of[start_index] = end_index
+            other_end_of[end_index] = start_index
+            endpoint_to_path[start_index] = path_index
+            endpoint_to_path[end_index] = path_index
+
+        # Find paths that meet at a common point.
         pair_indexes = find_point_pairs(nodes)
+        pairs = {}
+        for a, b in pair_indexes:
+            pairs[a] = b
+            pairs[b] = a
+
+        # Join up the paths.
         path_ids_to_remove = set()
-        path_references = {}
-
-        def get_node_and_path(index):
-            node, path = nodes_and_paths[index]
-
-            seen = set()
-            id_path = id(path)
-            while id_path in path_references:
-                path = path_references[id_path]
-                id_path = id(path)
-                if id_path in seen:
+        node_set = set(range(len(nodes)))
+        while node_set:
+            current_node = node_set.pop()
+            current_path = endpoint_to_path[current_node]
+            while True:
+                # Make a join if possible.
+                if current_node not in pairs:
                     break
-                seen.add(id_path)
-            path_references[id_path] = path
+                paired_node = pairs[current_node]
+                paired_path = endpoint_to_path[paired_node]
+                if paths[current_path] is paths[paired_path]:
+                    break
+                paths[current_path].join_with(paths[paired_path])
 
-            return node, path
+                # Update indexes.
+                node_set.remove(paired_node)
+                path_ids_to_remove.add(id(paths[paired_path]))
+                paths[paired_path] = paths[current_path]
 
-        for left_index, right_index in pair_indexes:
-            left_node, left_path = get_node_and_path(left_index)
-            right_node, right_path = get_node_and_path(right_index)
-            if left_path is right_path:
-                continue
-            left_path.join_with(right_path)
-            path_ids_to_remove.add(id(right_path))
-            path_references[id(right_path)] = left_path
+                # Continue from the other end of the path we just joined.
+                other_end = other_end_of[paired_node]
+                assert endpoint_to_path[other_end] == endpoint_to_path[paired_node]
+                if other_end not in node_set:
+                    break
+                current_node = other_end
+                node_set.remove(other_end)
+                current_path = endpoint_to_path[current_node]
 
         # Handle removed paths.
         self.elements = [

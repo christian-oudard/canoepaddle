@@ -67,7 +67,6 @@ class Path:
         self.segments.extend(other.segments)
 
     def reverse(self):
-        print('reverse', id(self))
         self.segments.reverse()
         for segment in self.segments:
             segment.reverse()

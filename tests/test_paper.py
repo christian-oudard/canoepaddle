@@ -448,7 +448,7 @@ def test_join_paths_reference():
 
     assert_path_data(
         p, 0,
-        'M0,0 L1,0 L2,0 L3,0 L4,0 L5,0'
+        'M5,0 L4,0 L3,0 L2,0 L1,0 L0,0'
     )
 
 
