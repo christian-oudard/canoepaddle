@@ -84,10 +84,9 @@ class Paper:
             path_ids_to_remove.add(id(right_path))
             # We add a reference so that further joins on the right path will
             # defer to the left path.
-            if id(left_path) in path_references:
-                path_references[id(right_path)] = path_references[id(left_path)]
-            else:
-                path_references[id(right_path)] = left_path
+            path_references[id(right_path)] = left_path
+            # Paths consumed as right paths should not get re-used.
+            assert id(left_path) not in path_references
 
         # Remove condemned paths.
         self.elements = [

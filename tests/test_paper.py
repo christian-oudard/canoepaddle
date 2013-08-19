@@ -264,7 +264,7 @@ def test_merge_bounds():
 
 
 def test_join_paths():
-    # Join up two paths starting from the same point.
+    # Join two paths starting from the same point.
     p = Pen()
     p.fill_mode()
 
@@ -281,7 +281,7 @@ def test_join_paths():
         'M0,0 L1,0 L2,0',
     )
 
-    # Join up two paths that end in the same point.
+    # Join two paths that end in the same point.
     p = Pen()
     p.fill_mode()
 
@@ -298,7 +298,47 @@ def test_join_paths():
         'M0,0 L1,0 L2,0',
     )
 
-    # Join up two paths both going left.
+    # Join three paths going left in normal order.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((3, 0))
+    p.line_to((2, 0))
+    p.break_stroke()
+    p.move_to((2, 0))
+    p.line_to((1, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((0, 0))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M3,0 L2,0 L1,0 L0,0',
+    )
+
+    # Join three paths going right in normal order.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((0, 0))
+    p.line_to((1, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((2, 0))
+    p.break_stroke()
+    p.move_to((2, 0))
+    p.line_to((3, 0))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M0,0 L1,0 L2,0 L3,0',
+    )
+
+    # Join three paths going left in reverse order.
     p = Pen()
     p.fill_mode()
 
@@ -307,18 +347,24 @@ def test_join_paths():
     p.break_stroke()
     p.move_to((2, 0))
     p.line_to((1, 0))
+    p.break_stroke()
+    p.move_to((3, 0))
+    p.line_to((2, 0))
 
     p.paper.join_paths()
 
     assert_path_data(
         p, 0,
-        'M0,0 L1,0 L2,0',
+        'M0,0 L1,0 L2,0 L3,0',
     )
 
-    # Join up two paths both going right.
+    # Join three paths going right in reverse order.
     p = Pen()
     p.fill_mode()
 
+    p.move_to((2, 0))
+    p.line_to((3, 0))
+    p.break_stroke()
     p.move_to((1, 0))
     p.line_to((2, 0))
     p.break_stroke()
@@ -329,7 +375,7 @@ def test_join_paths():
 
     assert_path_data(
         p, 0,
-        'M2,0 L1,0 L0,0',
+        'M3,0 L2,0 L1,0 L0,0',
     )
 
     # Join multiple paths together.
@@ -356,7 +402,7 @@ def test_join_paths():
         'M0,0 L1,0 L1,-1 L2,-1 L2,-2'
     )
 
-    # Join up paths so one path must reverse multiple times.
+    # Join three paths so one path must reverse multiple times.
     p = Pen()
     p.fill_mode()
 
