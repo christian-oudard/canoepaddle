@@ -33,6 +33,7 @@ Tests
 - test closing a stroked path then continuing somewhere else.
 
 Coverage
+
 Name                   Stmts   Miss  Cover   Missing
 ----------------------------------------------------
 canoepaddle                2      0   100%
@@ -41,13 +42,12 @@ canoepaddle.error          2      0   100%
 canoepaddle.geometry     108      0   100%
 canoepaddle.heading       88      0   100%
 canoepaddle.mode          84      0   100%
-canoepaddle.paper        103      0   100%
-canoepaddle.path         131      5    96%   55-56, 63
+canoepaddle.paper        112      0   100%
+canoepaddle.path         129      0   100%
 canoepaddle.pen          215     10    95%   136-145, 440
 canoepaddle.point          9      0   100%
 canoepaddle.segment      318      1    99%   347
 canoepaddle.svg           29      0   100%
 canoepaddle.text          25      6    76%   40-42, 45-47
 ----------------------------------------------------
-TOTAL                   1160     22    98%
-
+TOTAL                   1167     17    99%

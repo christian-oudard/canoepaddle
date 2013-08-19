@@ -374,13 +374,14 @@ class Pen:
 
     # Text.
 
-    def text(self, text, size, font_family='sans-serif', color=None):
+    def text(self, text, size, font_family='sans-serif', color=None, centered=False):
         self.paper.add_element(Text(
             text,
             self.position,
             font_family,
             size,
             color,
+            centered,
         ))
 
     # Internal.

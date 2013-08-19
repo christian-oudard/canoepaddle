@@ -7,12 +7,13 @@ from .svg import text_element
 
 class Text:
 
-    def __init__(self, text, position, font_family, size, color):
+    def __init__(self, text, position, font_family, size, color, centered=False):
         self.text = text
         self.position = Point(*position)
         self.font_family = font_family
         self.size = size
         self.color = color
+        self.centered = centered
 
     def svg(self, precision):
         return text_element(

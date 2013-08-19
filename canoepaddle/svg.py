@@ -20,18 +20,24 @@ def html_color(color):
     return Color.RgbToHtml(*color)
 
 
-def text_element(text, position, font_family, font_size, color, precision):
+def text_element(text, position, font_family, font_size, color, centered, precision):
     color = html_color(color)
+
+    if centered:
+        centered_attr = ' text-align="center"'
+    else:
+        centered_attr = ''
     return (
         '<text x="{x}" y="{y}" '
         'font-family="{font_family}" font-size="{font_size}" '
-        'fill="{color}">{text}</text>'
+        'fill="{color}"{centered_attr}>{text}</text>'
     ).format(
         x=number(position.x, precision),
         y=number(-position.y, precision),
         font_family=font_family,
         font_size=font_size,
         color=color,
+        centered_attr=centered_attr,
         text=text,
     )
 
