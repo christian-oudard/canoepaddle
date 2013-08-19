@@ -423,6 +423,35 @@ def test_join_paths():
     )
 
 
+def test_join_paths_reference():
+    # Join paths in such a way that a single path object must be
+    # used as both the "left" and "right" path in different joins.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((3, 0))
+    p.line_to((2, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((0, 0))
+    p.break_stroke()
+    p.move_to((4, 0))
+    p.line_to((3, 0))
+    p.break_stroke()
+    p.move_to((1, 0))
+    p.line_to((2, 0))
+    p.break_stroke()
+    p.move_to((4, 0))
+    p.line_to((5, 0))
+
+    p.paper.join_paths()
+
+    assert_path_data(
+        p, 0,
+        'M0,0 L1,0 L2,0 L3,0 L4,0 L5,0'
+    )
+
+
 def test_join_paths_loop():
     # Already looped paths should not be affected by join_paths.
     p = Pen()

@@ -56,6 +56,8 @@ class Paper:
         Find all paths that come to a common point with another path, and join
         them together.
         """
+        #TODO: This is so complex. Can it be simplified?
+
         # Index paths by their end nodes.
         nodes_and_paths = []
         for path in self.elements:
@@ -71,24 +73,32 @@ class Paper:
         pair_indexes = find_point_pairs(nodes)
         path_ids_to_remove = set()
         path_references = {}
+
+        def get_node_and_path(index):
+            node, path = nodes_and_paths[index]
+
+            seen = set()
+            id_path = id(path)
+            while id_path in path_references:
+                path = path_references[id_path]
+                id_path = id(path)
+                if id_path in seen:
+                    break
+                seen.add(id_path)
+            path_references[id_path] = path
+
+            return node, path
+
         for left_index, right_index in pair_indexes:
-            left_node, left_path = nodes_and_paths[left_index]
-            left_path = path_references.get(id(left_path), left_path)
-            right_node, right_path = nodes_and_paths[right_index]
-            right_path = path_references.get(id(right_path), right_path)
+            left_node, left_path = get_node_and_path(left_index)
+            right_node, right_path = get_node_and_path(right_index)
             if left_path is right_path:
                 continue
-            # Join the paths and mark the right path for removal from
-            # self.elements.
             left_path.join_with(right_path)
             path_ids_to_remove.add(id(right_path))
-            # We add a reference so that further joins on the right path will
-            # defer to the left path.
             path_references[id(right_path)] = left_path
-            # Paths consumed as right paths should not get re-used.
-            assert id(left_path) not in path_references
 
-        # Remove condemned paths.
+        # Handle removed paths.
         self.elements = [
             e for e in self.elements
             if id(e) not in path_ids_to_remove

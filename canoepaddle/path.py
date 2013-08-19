@@ -55,10 +55,19 @@ class Path:
         elif points_equal(self_last, other_last):
             other.reverse()
 
+        #print('join {}-{} < {}-{} ({} < {})'.format(
+            #tuple(self.segments[0].a),
+            #tuple(self.segments[-1].b),
+            #tuple(other.segments[0].a),
+            #tuple(other.segments[-1].b),
+            #id(self), id(other),
+        #))
+
         self.segments[-1].join_with(other.segments[0])
         self.segments.extend(other.segments)
 
     def reverse(self):
+        print('reverse', id(self))
         self.segments.reverse()
         for segment in self.segments:
             segment.reverse()

@@ -35,7 +35,6 @@ def gen_lines(num_points, num_lines):
 
 
 if __name__ == '__main__':
-    # Now that the lines are calculated, draw the figure.
     while True:
         p = Pen()
         p.stroke_mode(0.01)
@@ -47,6 +46,9 @@ if __name__ == '__main__':
             p.paper.join_paths()
         except SegmentError:
             continue
-        else:
+        except AssertionError:
+            print(p.log())
             break
-    print(p.paper.format_svg(6, resolution=1000))
+        else:
+            print(p.paper.format_svg(6, resolution=1000))
+            break
