@@ -1388,7 +1388,7 @@ def test_log():
     p.turn_to(0)
     p.line_forward(6)
     p.turn_right(60)
-    p.line_forward(6)
+    p.line_forward(6, end_slant=0)
     assert_equal(
         p.log(),
         [
@@ -1397,6 +1397,6 @@ def test_log():
             'turn_to(0)',
             'line_forward(6)',
             'turn_right(60)',
-            'line_forward(6)',
+            'line_forward(6, end_slant=0)',
         ]
     )
