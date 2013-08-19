@@ -49,4 +49,4 @@ if __name__ == '__main__':
             continue
         else:
             break
-    print(p.paper.format_svg(6, resolution=1000, background='#808080'))
+    print(p.paper.format_svg(6, resolution=1000))

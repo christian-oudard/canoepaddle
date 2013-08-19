@@ -353,7 +353,7 @@ def test_join_paths():
 
     assert_path_data(
         p, 0,
-        'M0,0 L1,0 L1,-1'
+        'M0,0 L1,0 L1,-1 L2,-1 L2,-2'
     )
 
     # Join up paths so one path must reverse multiple times.
@@ -378,7 +378,7 @@ def test_join_paths():
 
 
 def test_join_paths_loop():
-    # Looped paths should not be affected by join_paths.
+    # Already looped paths should not be affected by join_paths.
     p = Pen()
     p.fill_mode()
 
@@ -389,6 +389,23 @@ def test_join_paths_loop():
     assert_path_data(p, 0, target)
     p.paper.join_paths()
     assert_path_data(p, 0, target)
+
+    # Loops can also be created by joining paths.
+    p = Pen()
+    p.fill_mode()
+
+    p.move_to((0, 0))
+    p.line_to((1, 0))
+    p.line_to((1, 1))
+    p.break_stroke()
+    p.line_to((0, 1))
+    p.line_to((0, 0))
+
+    p.paper.join_paths()
+    assert_path_data(
+        p, 0,
+        'M1,-1 L1,0 L0,0 L0,-1 L1,-1 z'
+    )
 
 
 def test_join_paths_thick():

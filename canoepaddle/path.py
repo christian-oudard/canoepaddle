@@ -16,7 +16,7 @@ class Path:
         self.mode = mode
         self.segments = []
 
-        self.start_join_location = None
+        self.loop_start_segment = None
 
     def svg(self, precision):
         # Defer to the drawing mode to actually turn our path data into
@@ -57,10 +57,6 @@ class Path:
 
         self.segments[-1].join_with(other.segments[0])
         self.segments.extend(other.segments)
-
-        # See if we have created a circular path.
-        if points_equal(self.segments[-1].b, self.segments[0].a):
-            self.segments[-1].join_with(self.segments[0])
 
     def reverse(self):
         self.segments.reverse()
