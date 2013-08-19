@@ -22,11 +22,13 @@ class Text:
             self.font_family,
             self.size,
             self.color,
+            self.centered,
             precision,
         )
 
     def bounds(self):
         # Approximate bounds with one letter.
+        #XXX: Is there any way to do better?
         return Bounds(
             self.position.x,
             self.position.y,
