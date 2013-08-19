@@ -21,7 +21,7 @@ def test_text_centered():
     print(svg_data)
     assert (
         '<text x="0" y="0" font-family="sans-serif" font-size="1" '
-        'fill="#000000" text-align="center">abcd</text>'
+        'fill="#000000" text-anchor="middle">abcd</text>'
     ) in svg_data
 
 

@@ -24,7 +24,7 @@ def text_element(text, position, font_family, font_size, color, centered, precis
     color = html_color(color)
 
     if centered:
-        centered_attr = ' text-align="center"'
+        centered_attr = ' text-anchor="middle"'
     else:
         centered_attr = ''
     return (
