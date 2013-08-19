@@ -70,22 +70,26 @@ class Paper:
         nodes = [n for (n, p) in nodes_and_paths]
         pair_indexes = find_point_pairs(nodes)
         path_ids_to_remove = set()
+        path_references = {}
         for left_index, right_index in pair_indexes:
             left_node, left_path = nodes_and_paths[left_index]
+            left_path = path_references.get(id(left_path), left_path)
             right_node, right_path = nodes_and_paths[right_index]
+            right_path = path_references.get(id(right_path), right_path)
             if left_path is right_path:
                 continue
-            # Join the paths. Mark the right path for removal from
-            # self.elements, and update references to it in nodes_and_paths.
+            # Join the paths and mark the right path for removal from
+            # self.elements.
             left_path.join_with(right_path)
             path_ids_to_remove.add(id(right_path))
-            new_nodes_and_paths = []
-            for node, path in nodes_and_paths:
-                if path is right_path:
-                    path = left_path
-                new_nodes_and_paths.append((node, path))
-            nodes_and_paths = new_nodes_and_paths
+            # We add a reference so that further joins on the right path will
+            # defer to the left path.
+            if id(left_path) in path_references:
+                path_references[id(right_path)] = path_references[id(left_path)]
+            else:
+                path_references[id(right_path)] = left_path
 
+        # Remove condemned paths.
         self.elements = [
             e for e in self.elements
             if id(e) not in path_ids_to_remove
