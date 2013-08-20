@@ -121,7 +121,7 @@ def test_translate_override_bounds():
     p.paper.translate((3, 4), bounds=False)
 
     assert_equal(p.paper.bounds(), Bounds(0, 0, 1, 1))
-    assert_equal(p.paper.elements[0].bounds(), Bounds(3, 4, 4, 5))
+    assert_equal(p.last_path().bounds(), Bounds(3, 4, 4, 5))
 
 
 def test_center_on_xy():

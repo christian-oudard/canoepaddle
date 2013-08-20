@@ -1,7 +1,8 @@
+from copy import copy
+
 import vec
 
 from .point import Point
-from .bounds import Bounds
 from .svg import text_element
 
 
@@ -26,15 +27,8 @@ class Text:
             precision,
         )
 
-    def bounds(self):
-        # Approximate bounds with one letter.
-        #XXX: Is there any way to do better?
-        return Bounds(
-            self.position.x,
-            self.position.y,
-            self.position.x + self.size,
-            self.position.y + self.size,
-        )
+    def copy(self):
+        return copy(self)
 
     def translate(self, offset):
         self.position = Point(*vec.add(self.position, offset))

@@ -34,10 +34,10 @@ class Pen:
         self._mode = None
         self._heading = Heading(0)
         self._position = Point(0.0, 0.0)
-
-        self._path = None
-
         self._log = []
+        # If self._break is False, then self.last_path() is the current
+        # drawing path.
+        self._break = True
 
     # Properties.
 
@@ -83,7 +83,7 @@ class Pen:
         self._mode = mode
 
     def last_path(self):
-        return self.paper.elements[-1]
+        return self.paper.paths[-1]
 
     def last_segment(self):
         return self.last_path().segments[-1]
@@ -129,20 +129,17 @@ class Pen:
         """
         Break the current path and start a new one.
         """
-        self._path = None
+        self._break = True
 
-    @logged
-    def undo(self):
-        if self.paper.elements:
-            path = self.paper.elements[-1]
-            if path.segments:
-                path.segments.pop()
-                if not path.segments:
-                    self.paper.elements.pop()
-                    self._path = None
-                return
-
-        raise IndexError('Nothing to undo.')
+    def copy(self):
+        other = Pen()
+        other.paper = self.paper.copy()
+        other._mode = self._mode.copy()
+        other._heading = self._heading.copy()
+        other._position = Point(*self._position)
+        other._log = copy(self._log)
+        other._break = self._break
+        return other
 
     # Turning.
 
@@ -375,7 +372,7 @@ class Pen:
     # Text.
 
     def text(self, text, size, font_family='sans-serif', color=None, centered=False):
-        self.paper.add_element(Text(
+        self.paper.text_elements.append(Text(
             text,
             self.position,
             font_family,
@@ -393,16 +390,16 @@ class Pen:
 
         # Continue the current path if possible.
         if (
-            self._path is not None and
-            modes_compatible(self._path.mode, self.mode)
+            not self._break and
+            modes_compatible(self.last_path().mode, self.mode)
         ):
-            self._path.add_segment(new_segment)
+            self.last_path().add_segment(new_segment)
         else:
             # Start a new path if this is the first segment or there has been a
             # mode change.
-            self._path = path = Path(self.mode)
-            self.paper.add_element(path)
-            path.add_segment(new_segment)
+            self._break = False
+            self.paper.paths.append(Path(self.mode))
+            self.last_path().add_segment(new_segment)
 
     def _vector(self, length=1):
         """

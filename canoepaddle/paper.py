@@ -12,25 +12,25 @@ from .point import points_equal
 class Paper:
 
     def __init__(self):
-        self.elements = []
+        self.paths = []
+        self.text_elements = []
         self._bounds_override = None
-
-    def add_element(self, element):
-        self.elements.append(element)
 
     def merge(self, other):
         """
-        Add all the elements of the other paper on top of this one.
+        Add all the paths of the other paper on top of this one.
         """
         self.override_bounds(self._merged_bounds(other))
-        self.elements.extend(other.elements)
+        self.paths.extend(other.paths)
+        self.text_elements.extend(other.text_elements)
 
     def merge_under(self, other):
         """
-        Add all the elements of the other paper underneath this one.
+        Add all the paths of the other paper underneath this one.
         """
         self.override_bounds(self._merged_bounds(other))
-        self.elements[0:0] = other.elements
+        self.paths[0:0] = other.paths
+        self.text_elements[0:0] = other.text_elements
 
     def _merged_bounds(self, other):
         try:
@@ -61,7 +61,7 @@ class Paper:
         nodes = []
         endpoint_to_path = {}
         other_end_of = {}
-        for path in self.elements:
+        for path in self.paths:
             start = path.segments[0].a
             end = path.segments[-1].b
             if points_equal(start, end):
@@ -116,23 +116,31 @@ class Paper:
                 current_path = endpoint_to_path[current_node]
 
         # Handle removed paths.
-        self.elements = [
-            e for e in self.elements
-            if id(e) not in path_ids_to_remove
+        self.paths = [
+            p for p in self.paths
+            if id(p) not in path_ids_to_remove
         ]
 
     def fuse_paths(self):
-        for path in self.elements:
+        for path in self.paths:
             path.fuse()
+
+    def copy(self):
+        other = Paper()
+        other.paths = [p.copy() for p in self.paths]
+        other.text_elements = [e.copy() for e in self.text_elements]
+        if self._bounds_override is not None:
+            other._bounds_override = self._bounds_override.copy()
+        return other
 
     def bounds(self):
         if self._bounds_override is not None:
             return copy(self._bounds_override)
-        if len(self.elements) == 0:
+        if len(self.paths) == 0:
             raise ValueError('Empty page, cannot calculate bounds.')
         return Bounds.union_all(
-            element.bounds()
-            for element in self.elements
+            path.bounds()
+            for path in self.paths
         )
 
     def override_bounds(self, *args):
@@ -158,7 +166,7 @@ class Paper:
 
     def translate(self, offset, bounds=True):
         """
-        Move all the elements in the paper by `offset`.
+        Move all the paths and text in the paper by `offset`.
 
         If `bounds` is True, then the paper bounds will update as well.
         If `bounds` is False, the bounds will stay the same.
@@ -172,8 +180,10 @@ class Paper:
             if self._bounds_override is None:
                 self.override_bounds(self.bounds())
 
-        for element in self.elements:
-            element.translate(offset)
+        for path in self.paths:
+            path.translate(offset)
+        for text_element in self.text_elements:
+            text_element.translate(offset)
 
     def center_on_x(self, x_center):
         bounds = self.bounds()
@@ -186,11 +196,11 @@ class Paper:
         self.translate((0, y_center - current_y_center))
 
     def mirror_x(self, x_center):
-        for element in self.elements:
+        for element in self.paths + self.text_elements:
             element.mirror_x(x_center)
 
     def mirror_y(self, y_center):
-        for element in self.elements:
+        for element in self.paths + self.text_elements:
             element.mirror_y(y_center)
 
     def format_svg(self, precision=12, resolution=10):
@@ -245,5 +255,5 @@ class Paper:
     def svg_elements(self, precision):
         return [
             element.svg(precision)
-            for element in self.elements
+            for element in self.paths + self.text_elements
         ]

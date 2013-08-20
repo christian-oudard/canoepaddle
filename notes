@@ -1,36 +1,18 @@
-Path rules.
-A path is collection of segments that were all drawn with the same mode.
-When you change from one mode to an incompatible mode, you start a new path.
-Incompatible mode changes are any color change in a thin mode, or an
-outline_color or outline_width change in a thick mode.
-The rendered version of a path may have more than one svg <path> element.
-Moves do not start a new path without a mode change.
-
-Joining.
-A new segment will join with the last segment in the path if it is appended to
-the path and continues from the last point. If the appended segment closes the
-path, it is joined with the first segment. Looped segments cannot be joined onto.
-
-Modes
-Each path has exactly one mode.
-Modes are either thick or thin.
-Paths having thin modes have no per-segment properties.
-Paths having thick modes can have different color and width per segment.
-
-
 TODO:
+- Remove undo(), add copy()
+- change Pen._path into a boolean
+- Bounds has no mirror functions. What happens when you mirror overridden bounds?
+- Test joining and merging coincident segments.
+    - Don't join paths whose end segments can't join.
+- Make offwidth and joint errors just start a new path instead? We could do
+  flat cap arc joints when illegal
+- move text arguments to be settings of Pen
 - more things in the top level canoepaddle namespace. essentially everything you would normally need.
-- Margins on format_svg
+- Auto margins on format_svg
 - A learning mode where you don't construct pen objects. You just use global functions and a single pen and paper.
 - Do color setting into a grapefruit color object right away, not at render time.
 - Implement different endcaps, such as round.
-- Make offwidth and joint errors just start a new path instead? We could do
-  flat cap arc joints when illegal
-- Should undo put you back at the previous position?
 
-Tests
-- test looped outlines.
-- test closing a stroked path then continuing somewhere else.
 
 Coverage
 
@@ -51,3 +33,26 @@ canoepaddle.svg           29      0   100%
 canoepaddle.text          25      6    76%   40-42, 45-47
 ----------------------------------------------------
 TOTAL                   1167     17    99%
+
+
+
+Path rules.
+A path is collection of segments that were all drawn with the same mode.
+When you change from one mode to an incompatible mode, you start a new path.
+Incompatible mode changes are any color change in a thin mode, or an
+outline_color or outline_width change in a thick mode.
+The rendered version of a path may have more than one svg <path> element.
+Moves do not start a new path without a mode change.
+
+Joining.
+A new segment will join with the last segment in the path if it is appended to
+the path and continues from the last point. If the appended segment closes the
+path, it is joined with the first segment. Looped segments cannot be joined onto.
+
+Modes
+Each path has exactly one mode.
+Modes are either thick or thin.
+Paths having thin modes have no per-segment properties.
+Paths having thick modes can have different color and width per segment.
+
+

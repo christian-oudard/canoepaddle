@@ -77,7 +77,7 @@ def test_line_segment_bounds():
     p.move_to((1, 0))
     p.line_to((2, 3))
 
-    line = p.paper.elements[0].segments[0]
+    line = p.last_segment()
     assert_equal(
         line.bounds(),
         Bounds(1, 0, 2, 3)
@@ -89,7 +89,7 @@ def test_line_segment_bounds():
     p.move_to((0, 0))
     p.line_to((5, 5))
 
-    line = p.paper.elements[0].segments[0]
+    line = p.last_segment()
     assert_equal(
         line.bounds(),
         Bounds(-0.5, -0.5, 5.5, 5.5)
@@ -104,7 +104,7 @@ def test_arc_segment_bounds():
     p.turn_to(90)
     p.arc_left(359, 1)
 
-    arc = p.paper.elements[0].segments[0]
+    arc = p.last_segment()
     assert_equal(
         arc.bounds(),
         Bounds(-1, -1, 1, 1)
@@ -119,7 +119,7 @@ def test_arc_segment_bounds():
     p.turn_left(90)
     p.arc_left(30, center=(0, 0))
 
-    arc = p.paper.elements[0].segments[0]
+    arc = p.last_segment()
     assert_equal(
         arc.bounds(),
         Bounds(0.5, 0.5, sqrt3 / 2, sqrt3 / 2)
@@ -134,7 +134,7 @@ def test_arc_segment_bounds():
     p.turn_left(90)
     p.arc_left(90, center=(0, 0))
 
-    arc = p.paper.elements[0].segments[0]
+    arc = p.last_segment()
     assert_equal(
         arc.bounds(),
         Bounds(sqrt2 / 2, -sqrt2 / 2, 1, sqrt2 / 2)
@@ -149,7 +149,7 @@ def test_arc_segment_bounds():
     p.turn_left(90)
     p.arc_left(180, center=(0, 0))
 
-    arc = p.paper.elements[0].segments[0]
+    arc = p.last_segment()
     assert_equal(
         arc.bounds(),
         Bounds(-sqrt2 / 2, -sqrt2 / 2, 1, 1)
@@ -162,7 +162,7 @@ def test_arc_segment_bounds():
     p.turn_to(0)
     p.arc_right(180, 5)
 
-    arc = p.paper.elements[0].segments[0]
+    arc = p.last_segment()
     assert_equal(
         arc.bounds(),
         Bounds(0, -10, 5, 0)
@@ -177,7 +177,7 @@ def test_arc_segment_bounds():
     p.turn_left(90)
     p.arc_left(180, 5, start_slant=45)
 
-    arc = p.paper.elements[0].segments[0]
+    arc = p.last_segment()
     assert_equal(
         arc.bounds(),
         Bounds(-5.5, -0.5314980314970469, 5.5, 5.5)

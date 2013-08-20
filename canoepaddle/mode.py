@@ -83,7 +83,7 @@ class StrokeMode(Mode):
         pen.set_mode(mode)
         path.draw_outline(pen, precision)
 
-        for path in pen.paper.elements:
+        for path in pen.paper.paths:
             color = path.segments[0].color
             path_data = ' '.join(
                 p for c, p in

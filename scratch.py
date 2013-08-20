@@ -9,31 +9,37 @@ sqrt3 = math.sqrt(3)
 
 
 def draw():
+    paper = Paper()
+
     p = Pen()
-    p.stroke_mode(0.01)
+    p.stroke_mode(1.0)
+    p.move_to((0, 0))
+    p.line_to((-3, 0))
+    paper.merge(p.paper)
 
-    p.move_to((0.4192474135783115, 0.430155866908118))
-    p.line_to((0.027797353665647728, 0.49398573855399375))
-    p.break_stroke()
-    p.text('1', 0.1)
-    p.move_to((0.5879460634280621, 0.19217214115618309))
-    p.line_to((0.29408558178545596, 0.7948715620494309))
-    p.break_stroke()
-    p.move_to((0.9369476736291589, 0.39225805628934773))
-    p.line_to((0.4192474135783115, 0.430155866908118))
-    p.break_stroke()
-    p.move_to((0.5879460634280621, 0.19217214115618309))
-    p.line_to((0.027797353665647728, 0.49398573855399375))
-    p.break_stroke()
-    p.move_to((0.9369476736291589, 0.39225805628934773))
-    p.line_to((0.41710842266435744, 0.7527652903183519))
-    p.break_stroke()
+    p = Pen()
+    p.stroke_mode(1.0)
+    p.line_to((-3, 0))
+    p.move_to((-6, 0))
+    paper.merge(p.paper)
 
-    p.paper.join_paths()
+    p = Pen()
+    p.stroke_mode(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(1.0, end_slant=45)
+    p.turn_to(-135)
+    p.move_forward(1.4142135623730951)
+    p.turn_to(-90)
+    p.line_forward(2)
+    paper.merge(p.paper)
 
-    return p.paper
+    #paper.join_paths()
+    #XXX For some reason right now one of the segments is in the svg output twice??
+
+    return paper
 
 
 if __name__ == '__main__':
     paper = draw()
-    print(paper.format_svg(3, resolution=500))
+    print(paper.format_svg(1))

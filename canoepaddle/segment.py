@@ -1,4 +1,5 @@
 import math
+from copy import copy
 
 import vec
 from .point import (
@@ -49,6 +50,9 @@ class Segment:
                 continue
             strings.append('{}={}'.format(field, value))
         return '{}({})'.format(self.__class__.__name__, ', '.join(strings))
+
+    def copy(self):
+        return copy(self)
 
     def translate(self, offset):
 
@@ -115,10 +119,14 @@ class Segment:
         if not self.width:
             return
 
-        if isinstance(other, LineSegment):
-            self.join_with_line(other)
-        elif isinstance(other, ArcSegment):
-            self.join_with_arc(other)
+        try:
+            if isinstance(other, LineSegment):
+                self.join_with_line(other)
+            elif isinstance(other, ArcSegment):
+                self.join_with_arc(other)
+        except SegmentError:
+            #TODO: Make it work somehow if the joint is too sharp.
+            raise
 
     def fused_with(self, other):
         """

@@ -28,6 +28,12 @@ class Path:
     def bounds(self):
         return Bounds.union_all(seg.bounds() for seg in self.segments)
 
+    def copy(self):
+        other = Path(self.mode.copy())
+        other.segments = [seg.copy() for seg in self.segments]
+        other.loop_start_segment = self.loop_start_segment.copy()
+        return other
+
     def translate(self, offset):
         for seg in self.segments:
             seg.translate(offset)

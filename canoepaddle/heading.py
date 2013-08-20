@@ -78,6 +78,9 @@ class Angle(HeadingBase):
     def __mod__(self, other):
         return Angle(self.theta % other)
 
+    def copy(self):
+        return Angle(self.theta)
+
 
 class Heading(HeadingBase):
 
@@ -120,6 +123,9 @@ class Heading(HeadingBase):
         else:
             other = Angle(other)
             return Heading(self.theta - other.theta)
+
+    def copy(self):
+        return Heading(self.theta)
 
     def between(self, lo, hi):
         lo = Heading(lo).theta

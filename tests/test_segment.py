@@ -19,8 +19,8 @@ def test_line_segments():
     p.line_forward(2.0)
 
     assert_points_equal(p.position, (sqrt2, sqrt2))
-    assert_equal(len(p.paper.elements), 1)
-    segments = p.paper.elements[0].segments
+    assert_equal(len(p.paper.paths), 1)
+    segments = p.last_path().segments
     for actual, target in zip(segments, [
         ((0, 0), (sqrt2, sqrt2)),
     ]):
@@ -38,13 +38,13 @@ def test_degenerate_segment():
         return p
 
     # No exception raised because the endcaps don't cross.
-    p = draw(+0.1)
+    draw(+0.1)
 
     # For values within epsilon of crossing, it counts as being on top of the
     # side point.
-    p = draw(+epsilon / 2)
-    p = draw(0)
-    p = draw(-epsilon / 2)
+    draw(+epsilon / 2)
+    draw(0)
+    draw(-epsilon / 2)
 
     # Once they really cross, a SegmentError is raised.
     assert_raises(

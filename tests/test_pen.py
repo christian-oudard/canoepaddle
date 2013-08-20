@@ -1,4 +1,3 @@
-from nose.plugins.skip import SkipTest
 from nose.tools import (
     assert_equal,
     assert_almost_equal,
@@ -65,7 +64,7 @@ def test_line_zero():
     p = Pen()
     p.stroke_mode(1.0)
     p.line_forward(0)
-    assert_equal(p.paper.elements, [])
+    assert_equal(p.paper.paths, [])
 
 
 def test_line_thick():
@@ -245,7 +244,7 @@ def test_joint_loop_color():
     p.stroke_mode(2.0, color='red')
     p.line_forward(5)
 
-    assert_equal(len(p.paper.elements), 1)
+    assert_equal(len(p.paper.paths), 1)
 
     assert_path_data(
         p, 0,
@@ -364,11 +363,9 @@ def test_offwidth_joint_error():
 
 
 def test_straight_joint_headings():
-    raise SkipTest()
-
     # The math in calculating joint geometry can get numerically unstable
     # very close to straight joints at various headings.
-    for heading_angle in range(0, 360):
+    for heading_angle in range(0, 45):
         p = Pen()
         p.stroke_mode(1.0)
         p.move_to((0, 0))
@@ -376,12 +373,12 @@ def test_straight_joint_headings():
         p.line_forward(10)
         p.line_forward(10)
 
-        path = p.paper.elements[0]
+        path = p.paper.paths[0]
         path.render_path(2)  # Doesn't crash.
 
         # Check that the joint angle is 90 degrees from the heading.
-        assert_equal(len(p.paper.elements), 1)
-        segments = p.paper.elements[0].segments
+        assert_equal(len(p.paper.paths), 1)
+        segments = p.paper.paths[0].segments
         assert_equal(len(segments), 2)
         s0, s1 = segments
 
@@ -516,10 +513,10 @@ def test_arc_zero():
 
     # Zero-angle and zero-radius arcs have zero length, so they are not added.
     p.arc_left(0, radius=1)
-    assert_equal(p.paper.elements, [])
+    assert_equal(p.paper.paths, [])
 
     p.arc_left(90, radius=0)
-    assert_equal(p.paper.elements, [])
+    assert_equal(p.paper.paths, [])
 
 
 def test_arc_normalize():
@@ -677,7 +674,7 @@ def test_arc_start_slant_bug():
     p.move_to(p1)
     p.turn_to(h1)
     p.arc_left(210, 3)
-    arc = p.paper.elements[0].segments[0]
+    arc = p.last_segment()
     assert_almost_equal(arc.start_heading, 120)
     assert_almost_equal(arc.end_heading, 330)
 
@@ -688,7 +685,7 @@ def test_arc_start_slant_bug():
     p.move_to(p1)
     p.turn_to(h1)
     p.arc_to(p2)
-    arc = p.paper.elements[0].segments[0]
+    arc = p.last_segment()
     assert_almost_equal(arc.start_heading.theta, 120)
     assert_almost_equal(arc.end_heading.theta, 330)
 
@@ -931,7 +928,7 @@ def test_repr():
     p.line_forward(1)
     p.arc_left(90, 1)
 
-    path = p.paper.elements[0]
+    path = p.paper.paths[0]
     line, arc = path.segments
     assert_equal(
         repr(line),
@@ -1381,4 +1378,36 @@ def test_log():
             'turn_right(60)',
             'line_forward(6, end_slant=0)',
         ]
+    )
+
+
+def test_copy():
+    p = Pen()
+    p.fill_mode()
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
+    p2 = p.copy()
+    p2.line_forward(5)
+
+    assert_equal(
+        p.log(),
+        [
+            'fill_mode()', 'move_to((0, 0))', 'turn_to(0)', 'line_forward(5)',
+        ]
+    )
+    assert_path_data(
+        p, 0,
+        'M0,0 L5,0'
+    )
+    assert_equal(
+        p2.log(),
+        [
+            'fill_mode()', 'move_to((0, 0))', 'turn_to(0)', 'line_forward(5)',
+            'line_forward(5)',
+        ]
+    )
+    assert_path_data(
+        p2, 0,
+        'M0,0 L5,0 L10,0'
     )

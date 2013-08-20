@@ -54,6 +54,14 @@ class Bounds:
     def height(self):
         return self.top - self.bottom
 
+    def copy(self):
+        return Bounds(
+            self.left,
+            self.bottom,
+            self.right,
+            self.top,
+        )
+
     def translate(self, offset):
         x, y = offset
         self.left += x
