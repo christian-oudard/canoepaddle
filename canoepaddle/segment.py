@@ -153,14 +153,14 @@ class Segment:
             self.b_left, self.b_right,
             segment=True,
         )
-        if intersection not in [
-            None,
-            self.a_left,
-            self.a_right,
-            self.b_left,
-            self.b_right,
-        ]:
-            raise SegmentError('Degenerate segment, endcaps cross each other.')
+        if intersection is not None:
+            if not any(points_equal(p, intersection) for p in [
+                self.a_left,
+                self.a_right,
+                self.b_left,
+                self.b_right,
+            ]):
+                raise SegmentError('Degenerate segment, endcaps cross each other.')
 
     def can_set_angle(self):
         return (

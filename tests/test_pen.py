@@ -1,23 +1,22 @@
-import math
-
 from nose.plugins.skip import SkipTest
 from nose.tools import (
     assert_equal,
     assert_almost_equal,
     assert_raises,
 )
-
-import vec
-from grapefruit import Color
-
 from util import (
-    assert_segments_equal,
     assert_points_equal,
     assert_svg_file,
     assert_path_data,
     sqrt2,
     sqrt3,
 )
+
+import math
+
+import vec
+from grapefruit import Color
+
 from canoepaddle.pen import Pen
 from canoepaddle.mode import (
     FillMode,
@@ -47,23 +46,6 @@ def test_move_to_xy():
     p.turn_toward((3, 4))
     p.move_to_y(8)
     assert_points_equal(p.position, (6, 8))
-
-
-def test_line_segments():
-    p = Pen()
-    p.fill_mode()
-
-    p.move_to((0, 0))
-    p.turn_to(45)
-    p.line_forward(2.0)
-
-    assert_points_equal(p.position, (sqrt2, sqrt2))
-    assert_equal(len(p.paper.elements), 1)
-    segments = p.paper.elements[0].segments
-    for actual, target in zip(segments, [
-        ((0, 0), (sqrt2, sqrt2)),
-    ]):
-        assert_segments_equal(actual, target)
 
 
 def test_line():
