@@ -139,6 +139,19 @@ def test_arc_segment_bounds():
         Bounds(sqrt2 / 2, -sqrt2 / 2, 1, sqrt2 / 2)
     )
 
+    # Arc which goes right.
+    p = Pen()
+    p.fill_mode()
+    p.move_to((0, 0))
+    p.turn_to(45)
+    p.arc_right(90, 3)
+
+    arc = p.last_segment()
+    assert_equal(
+        arc.bounds(),
+        Bounds(0, 0, 3 * sqrt2, 3 - 1.5 * sqrt2)
+    )
+
     # Arc which pushes the boundary with the middle in two spots.
     p = Pen()
     p.fill_mode()

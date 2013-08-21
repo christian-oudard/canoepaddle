@@ -1,6 +1,6 @@
 import math
 
-from canoepaddle import Pen, Paper
+from canoepaddle import Pen, Paper, Bounds
 from canoepaddle.mode import *
 from grapefruit import Color
 
@@ -9,37 +9,21 @@ sqrt3 = math.sqrt(3)
 
 
 def draw():
-    paper = Paper()
 
-    p = Pen()
-    p.stroke_mode(1.0)
-    p.move_to((0, 0))
-    p.line_to((-3, 0))
-    paper.merge(p.paper)
+    pen = Pen()
 
-    p = Pen()
-    p.stroke_mode(1.0)
-    p.line_to((-3, 0))
-    p.move_to((-6, 0))
-    paper.merge(p.paper)
+    pen.fill_mode('gray')
+    Bounds(0, 0, 3 * sqrt2, 3 - 1.5 * sqrt2).draw(pen)
 
-    p = Pen()
-    p.stroke_mode(1.0)
-    p.move_to((0, 0))
-    p.turn_to(0)
-    p.line_forward(1.0, end_slant=45)
-    p.turn_to(-135)
-    p.move_forward(1.4142135623730951)
-    p.turn_to(-90)
-    p.line_forward(2)
-    paper.merge(p.paper)
+    pen.fill_mode('black')
+    pen.move_to((0, 0))
+    pen.turn_to(45)
+    pen.arc_right(90, 3)
 
-    #paper.join_paths()
-    #XXX For some reason right now one of the segments is in the svg output twice??
 
-    return paper
+    return pen.paper
 
 
 if __name__ == '__main__':
     paper = draw()
-    print(paper.format_svg(1))
+    print(paper.format_svg(6, resolution=100))

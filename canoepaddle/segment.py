@@ -391,8 +391,12 @@ class ArcSegment(Segment):
         ]
 
         # Check which compass points are in the body of the circle.
-        start = self.start_heading - 90
-        end = self.end_heading - 90
+        if self.arc_angle < 0:
+            start = self.end_heading + 90
+            end = self.start_heading + 90
+        else:
+            start = self.start_heading - 90
+            end = self.end_heading - 90
         occupied_points = []
         for i, h in enumerate([0, 90, 180, 270]):
             h = Heading(h)
