@@ -74,8 +74,7 @@ class Segment:
 
         def f(p):
             if p is not None:
-                new_x = x_center - p.x
-                return Point(x_center + new_x, p.y)
+                return p.flipped_x(x_center)
 
         def f_heading(heading):
             if heading is not None:
@@ -87,8 +86,7 @@ class Segment:
 
         def f(p):
             if p is not None:
-                new_y = y_center - p.y
-                return Point(p.x, y_center + new_y)
+                return p.flipped_y(y_center)
 
         def f_heading(heading):
             if heading is not None:

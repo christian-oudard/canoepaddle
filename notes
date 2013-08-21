@@ -12,27 +12,6 @@ TODO:
 - Do color setting into a grapefruit color object right away, not at render time.
 
 
-Coverage
-
-Name                   Stmts   Miss  Cover   Missing
-----------------------------------------------------
-canoepaddle                3      0   100%
-canoepaddle.bounds        48      0   100%
-canoepaddle.error          2      0   100%
-canoepaddle.geometry     108      0   100%
-canoepaddle.heading       92      0   100%
-canoepaddle.mode          84      0   100%
-canoepaddle.paper        145      0   100%
-canoepaddle.path         134      0   100%
-canoepaddle.pen          216      0   100%
-canoepaddle.point          9      0   100%
-canoepaddle.segment      331      0   100%
-canoepaddle.svg           32      0   100%
-canoepaddle.text          26      7    73%   31, 37-39, 42-44
-----------------------------------------------------
-TOTAL                   1230      7    99%
-
-
 Path rules.
 A path is collection of segments that were all drawn with the same mode.
 When you change from one mode to an incompatible mode, you start a new path.
@@ -51,5 +30,3 @@ Each path has exactly one mode.
 Modes are either thick or thin.
 Paths having thin modes have no per-segment properties.
 Paths having thick modes can have different color and width per segment.
-
-

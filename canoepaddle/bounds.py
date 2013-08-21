@@ -1,9 +1,13 @@
-from .point import Point, float_equal
+from .point import Point, float_equal, flip
 
 
 class Bounds:
 
     def __init__(self, left, bottom, right, top):
+        if left > right:
+            raise ValueError('left is greater than right.')
+        if bottom > top:
+            raise ValueError('bottom is above top.')
         self.left = left
         self.bottom = bottom
         self.right = right
@@ -68,6 +72,18 @@ class Bounds:
         self.bottom += y
         self.right += x
         self.top += y
+
+    def mirror_x(self, x_center):
+        left = self.left
+        right = self.right
+        self.left = flip(right, x_center)
+        self.right = flip(left, x_center)
+
+    def mirror_y(self, y_center):
+        bottom = self.bottom
+        top = self.top
+        self.bottom = flip(top, y_center)
+        self.top = flip(bottom, y_center)
 
     def draw(self, pen):
         pen.move_to((self.left, self.bottom))

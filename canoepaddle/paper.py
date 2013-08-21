@@ -198,10 +198,14 @@ class Paper:
     def mirror_x(self, x_center):
         for element in self.paths:
             element.mirror_x(x_center)
+        if self._bounds_override is not None:
+            self._bounds_override.mirror_x(x_center)
 
     def mirror_y(self, y_center):
         for element in self.paths:
             element.mirror_y(y_center)
+        if self._bounds_override is not None:
+            self._bounds_override.mirror_y(y_center)
 
     def format_svg(self, precision=12, resolution=10):
         element_data = '\n'.join(self.svg_elements(precision))

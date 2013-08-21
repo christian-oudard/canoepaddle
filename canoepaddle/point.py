@@ -2,7 +2,16 @@ from collections import namedtuple
 
 epsilon = 10e-10
 
-Point = namedtuple('Point', 'x, y')
+PointBase = namedtuple('Point', 'x, y')
+
+
+class Point(PointBase):
+
+    def flipped_x(self, x_center):
+        return Point(flip(self.x, x_center), self.y)
+
+    def flipped_y(self, y_center):
+        return Point(self.x, flip(self.y, y_center))
 
 
 def float_equal(a, b):
@@ -16,3 +25,8 @@ def points_equal(a, b):
         float_equal(da, db)
         for (da, db) in zip(a, b)
     )
+
+
+def flip(d, c):
+    new_d = c - d
+    return c + new_d

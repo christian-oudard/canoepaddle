@@ -1,6 +1,6 @@
 import math
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 
 from util import assert_path_data
 from canoepaddle import Pen, Bounds
@@ -21,6 +21,17 @@ def test_iter():
     assert_equal(
         tuple(bounds),
         (1, 2, 3, 4),
+    )
+
+
+def test_degenerate():
+    assert_raises(
+        ValueError,
+        lambda: Bounds(3, 0, 2, 0)
+    )
+    assert_raises(
+        ValueError,
+        lambda: Bounds(0, 3, 0, 2)
     )
 
 
