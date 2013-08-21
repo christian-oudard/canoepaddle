@@ -3,8 +3,7 @@ import math
 from nose.tools import assert_equal
 
 from util import assert_path_data
-from canoepaddle import Pen
-from canoepaddle.bounds import Bounds
+from canoepaddle import Pen, Bounds
 
 sqrt2 = math.sqrt(2)
 sqrt3 = math.sqrt(3)

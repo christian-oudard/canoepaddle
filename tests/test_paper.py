@@ -4,9 +4,7 @@ from util import (
     assert_path_data,
     sqrt2,
 )
-from canoepaddle.pen import Pen
-from canoepaddle.paper import Paper
-from canoepaddle.bounds import Bounds
+from canoepaddle import Pen, Paper, Bounds
 
 
 def test_format_empty_bounds():
@@ -784,4 +782,21 @@ def test_mirror_end_slant():
     assert_path_data(
         paper, 1,
         'M-5.5,4.5 L-4.5,5.5 L5.5,-4.5 L4.5,-5.5 L-5.5,4.5 z'
+    )
+
+
+def test_two_pens_one_paper():
+    paper = Paper()
+    p1 = Pen(paper)
+    p2 = Pen(paper)
+    p1.fill_mode()
+    p2.fill_mode()
+    p1.move_to((0, 0))
+    p2.move_to((0, 0))
+    p1.line_to((0, 1))
+    p2.line_to((2, 0))
+
+    assert_path_data(
+        paper, 0,
+        ['M0,0 L0,-1', 'M0,0 L2,0']
     )

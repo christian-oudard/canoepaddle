@@ -29,8 +29,10 @@ def logged(method):
 
 class Pen:
 
-    def __init__(self):
-        self.paper = Paper()
+    def __init__(self, paper=None):
+        if paper is None:
+            paper = Paper()
+        self.paper = paper
         self._mode = None
         self._heading = Heading(0)
         self._position = Point(0.0, 0.0)
