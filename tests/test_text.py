@@ -6,7 +6,6 @@ def test_text():
     p.move_to((0, 0))
     p.text('abcd', 1, 'sans-serif')
     svg_data = p.paper.format_svg(0)
-    print(svg_data)
     assert (
         '<text x="0" y="0" font-family="sans-serif" font-size="1" '
         'fill="#000000">abcd</text>'
@@ -18,7 +17,6 @@ def test_text_centered():
     p.move_to((0, 0))
     p.text('abcd', 1, 'sans-serif', centered=True)
     svg_data = p.paper.format_svg(0)
-    print(svg_data)
     assert (
         '<text x="0" y="0" font-family="sans-serif" font-size="1" '
         'fill="#000000" text-anchor="middle">abcd</text>'

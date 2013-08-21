@@ -136,7 +136,8 @@ class Pen:
     def copy(self):
         other = Pen()
         other.paper = self.paper.copy()
-        other._mode = self._mode.copy()
+        if self._mode is not None:
+            other._mode = self._mode.copy()
         other._heading = self._heading.copy()
         other._position = Point(*self._position)
         other._log = copy(self._log)
