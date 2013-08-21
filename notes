@@ -1,17 +1,15 @@
 TODO:
-- Remove undo(), add copy()
-- change Pen._path into a boolean
 - Bounds has no mirror functions. What happens when you mirror overridden bounds?
 - Test joining and merging coincident segments.
     - Don't join paths whose end segments can't join.
 - Make offwidth and joint errors just start a new path instead? We could do
   flat cap arc joints when illegal
+- Implement custom endcaps.
+    pen.last_segment.start_cap(lambda seg, p: p.arc_to(seg.a_left))
 - move text arguments to be settings of Pen
-- more things in the top level canoepaddle namespace. essentially everything you would normally need.
 - Auto margins on format_svg
 - A learning mode where you don't construct pen objects. You just use global functions and a single pen and paper.
 - Do color setting into a grapefruit color object right away, not at render time.
-- Implement different endcaps, such as round.
 
 
 Coverage

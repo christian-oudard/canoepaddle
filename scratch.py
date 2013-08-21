@@ -1,7 +1,7 @@
 import math
 
-from canoepaddle import Pen, Paper, Bounds
-from canoepaddle.mode import *
+from canoepaddle import *
+
 from grapefruit import Color
 
 sqrt2 = math.sqrt(2)
