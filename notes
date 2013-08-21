@@ -1,5 +1,4 @@
 TODO:
-- Bounds has no mirror functions. What happens when you mirror overridden bounds?
 - Test joining and merging coincident segments.
     - Don't join paths whose end segments can't join.
 - Make offwidth and joint errors just start a new path instead? We could do
