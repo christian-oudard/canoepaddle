@@ -196,11 +196,11 @@ class Paper:
         self.translate((0, y_center - current_y_center))
 
     def mirror_x(self, x_center):
-        for element in self.paths + self.text_elements:
+        for element in self.paths:
             element.mirror_x(x_center)
 
     def mirror_y(self, y_center):
-        for element in self.paths + self.text_elements:
+        for element in self.paths:
             element.mirror_y(y_center)
 
     def format_svg(self, precision=12, resolution=10):

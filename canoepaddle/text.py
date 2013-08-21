@@ -32,13 +32,3 @@ class Text:
 
     def translate(self, offset):
         self.position = Point(*vec.add(self.position, offset))
-
-    def mirror_x(self, x_center):
-        p = self.position
-        new_x = x_center - p.x
-        self.position = Point(x_center + new_x, p.y)
-
-    def mirror_y(self, y_center):
-        p = self.position
-        new_y = y_center - p.y
-        self.position = Point(p.x, y_center + new_y)
