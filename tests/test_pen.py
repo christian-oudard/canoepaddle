@@ -1379,35 +1379,3 @@ def test_log():
             'line_forward(6, end_slant=0)',
         ]
     )
-
-
-def test_copy():
-    p = Pen()
-    p.fill_mode()
-    p.move_to((0, 0))
-    p.turn_to(0)
-    p.line_forward(5)
-    p2 = p.copy()
-    p2.line_forward(5)
-
-    assert_equal(
-        p.log(),
-        [
-            'fill_mode()', 'move_to((0, 0))', 'turn_to(0)', 'line_forward(5)',
-        ]
-    )
-    assert_path_data(
-        p, 0,
-        'M0,0 L5,0'
-    )
-    assert_equal(
-        p2.log(),
-        [
-            'fill_mode()', 'move_to((0, 0))', 'turn_to(0)', 'line_forward(5)',
-            'line_forward(5)',
-        ]
-    )
-    assert_path_data(
-        p2, 0,
-        'M0,0 L5,0 L10,0'
-    )

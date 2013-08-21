@@ -413,6 +413,15 @@ class ArcSegment(Segment):
             endpoints + occupied_points
         ])
 
+    def copy(self):
+        other = super().copy()
+        other.arc_angle = self.arc_angle.copy()
+        other.center = Point(*self.center)
+        other.radius = self.radius
+        other.start_heading = self.start_heading.copy()
+        other.end_heading = self.end_heading.copy()
+        return other
+
     def _translate(self, f):
         super()._translate(f)
         self.center = f(self.center)
