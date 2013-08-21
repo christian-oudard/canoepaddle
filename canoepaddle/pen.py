@@ -133,15 +133,29 @@ class Pen:
         """
         self._break = True
 
-    def copy(self):
+    def copy(self, paper=False):
+        """
+        Copy the pen.
+
+        This creates a pen with the same mode, heading, and position, but on a
+        blank paper.
+
+        If `paper` is True, then the paper and all existing drawn segments are
+        copied as well.
+        """
         other = Pen()
-        other.paper = self.paper.copy()
+
+        if paper:
+            other.paper = self.paper.copy()
+            other._break = self._break
+        else:
+            self.break_stroke()
+
         if self._mode is not None:
             other._mode = self._mode.copy()
         other._heading = self._heading.copy()
         other._position = Point(*self._position)
         other._log = copy(self._log)
-        other._break = self._break
         return other
 
     # Turning.

@@ -3,13 +3,32 @@ from util import assert_path_data
 from canoepaddle import Pen, Paper, Bounds
 
 
-def test_copy_log():
+def test_copy_no_paper():
     p1 = Pen()
     p1.fill_mode()
     p1.move_to((0, 0))
     p1.turn_to(0)
     p1.line_forward(5)
     p2 = p1.copy()
+    p2.line_forward(5)
+
+    assert_path_data(
+        p1, 0,
+        'M0,0 L5,0'
+    )
+    assert_path_data(
+        p2, 0,
+        'M5,0 L10,0'
+    )
+
+
+def test_copy_log():
+    p1 = Pen()
+    p1.fill_mode()
+    p1.move_to((0, 0))
+    p1.turn_to(0)
+    p1.line_forward(5)
+    p2 = p1.copy(paper=True)
     p2.line_forward(5)
 
     assert_equal(
@@ -36,7 +55,6 @@ def test_copy_log():
 
 
 def test_copy_arc():
-    # Draw arcs with all four combinations of sweep and direction flags.
     p1 = Pen()
     p1.fill_mode()
 
@@ -44,7 +62,7 @@ def test_copy_arc():
     p1.turn_to(0)
     p1.arc_left(90, radius=5)
 
-    p2 = p1.copy()
+    p2 = p1.copy(paper=True)
     p2.arc_left(90, radius=5)
 
     assert_path_data(
@@ -84,7 +102,7 @@ def test_copy_text():
     p = Pen()
     p.move_to((0, 0))
     p.text('abcd', 1, 'sans-serif')
-    p = p.copy()
+    p = p.copy(paper=True)
     svg_data = p.paper.format_svg(0)
     assert (
         '<text x="0" y="0" font-family="sans-serif" font-size="1" '
