@@ -1,5 +1,3 @@
-# TODO: Rename element to path? It is always a path right now.
-
 from copy import copy
 from textwrap import dedent
 from string import Template
@@ -224,7 +222,6 @@ class Paper:
         pixel_width = resolution * bounds.width
         pixel_height = resolution * bounds.height
 
-        #TODO: remove background rectangle?
         svg_template = dedent('''\
             <?xml version="1.0" standalone="no"?>
             <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"

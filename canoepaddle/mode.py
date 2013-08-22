@@ -1,5 +1,3 @@
-# TODO: User friendly mode argument validation.
-
 from copy import copy
 
 from .svg import (

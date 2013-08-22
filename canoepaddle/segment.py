@@ -259,7 +259,6 @@ class LineSegment(Segment):
             other.start_joint_illegal = True
 
     def join_with_arc(self, other):
-        # TODO: implement in terms of ArcSegment.join_with_line.
         a, b = self.offset_line_left()
         center, radius = other.offset_circle_left()
         points_left = intersect_circle_line(center, radius, a, b)
@@ -507,17 +506,20 @@ class ArcSegment(Segment):
             other.start_joint_illegal = True
 
     def set_slants(self, start_slant, end_slant):
-        # TODO: refactor these into one function.
-        self.set_start_slant(start_slant)
-        self.set_end_slant(end_slant)
-
-    def set_start_slant(self, start_slant):
         if start_slant is not None:
             start_slant = Heading(start_slant)
-        self.start_slant = start_slant
+        if end_slant is not None:
+            end_slant = Heading(end_slant)
 
-        # Intersect the slant line with the left and right offset circles
-        # to find the starting corners.
+        self.start_slant = start_slant
+        self.end_slant = end_slant
+
+        # Intersect the slant lines with the left and right offset circles
+        # to find the corners.
+        center_left, radius_left = self.offset_circle_left()
+        center_right, radius_right = self.offset_circle_right()
+
+        # Start corners.
         if start_slant is None:
             v_slant = vec.vfrom(self.center, self.a)
         else:
@@ -525,11 +527,8 @@ class ArcSegment(Segment):
         a = self.a
         b = vec.add(self.a, v_slant)
 
-        center, radius = self.offset_circle_left()
-        points_left = intersect_circle_line(center, radius, a, b)
-
-        center, radius = self.offset_circle_right()
-        points_right = intersect_circle_line(center, radius, a, b)
+        points_left = intersect_circle_line(center_left, radius_left, a, b)
+        points_right = intersect_circle_line(center_right, radius_right, a, b)
 
         if len(points_left) == 0 or len(points_right) == 0:
             self.start_joint_illegal = True
@@ -538,15 +537,7 @@ class ArcSegment(Segment):
         self.a_left = Point(*closest_point_to(self.a, points_left))
         self.a_right = Point(*closest_point_to(self.a, points_right))
 
-        self.check_degenerate_segment()
-
-    def set_end_slant(self, end_slant):
-        if end_slant is not None:
-            end_slant = Heading(end_slant)
-        self.end_slant = end_slant
-
-        # Intersect the slant line with the left and right offset circles
-        # to find the ending corners.
+        # End corners.
         if end_slant is None:
             v_slant = vec.vfrom(self.center, self.b)
         else:
@@ -554,11 +545,8 @@ class ArcSegment(Segment):
         a = self.b
         b = vec.add(self.b, v_slant)
 
-        center, radius = self.offset_circle_left()
-        points_left = intersect_circle_line(center, radius, a, b)
-
-        center, radius = self.offset_circle_right()
-        points_right = intersect_circle_line(center, radius, a, b)
+        points_left = intersect_circle_line(center_left, radius_left, a, b)
+        points_right = intersect_circle_line(center_right, radius_right, a, b)
 
         if len(points_left) == 0 or len(points_right) == 0:
             self.end_joint_illegal = True
@@ -569,12 +557,11 @@ class ArcSegment(Segment):
 
         self.check_degenerate_segment()
 
-    # Since positive radius is defined as "left-arcing", and negative
-    # radius is defined as "right-arcing", adding to or subtracting from
-    # the radius will offset the curve to the right or left,
-    # respectively.
-
     def offset_circle_left(self):
+        # Since positive radius is defined as "left-arcing", and negative
+        # radius is defined as "right-arcing", subtracting from the radius
+        # offsets the curve to the left, and adding to the radius offsets it to
+        # the right.
         return (
             self.center,
             self.radius - self.width / 2

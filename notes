@@ -1,6 +1,4 @@
 TODO:
-- Make setting end angle fail gracefully
-- Avoid setting None slants then replacing them for angles that are joined.
 - reorganize tests, put *_illegal stuff in test_segment
 
 !- Implement custom endcaps.
@@ -9,6 +7,8 @@ TODO:
 - Auto margins on format_svg
 - A learning mode where you don't construct pen objects. You just use global functions and a single pen and paper.
 - Do color setting into a grapefruit color object right away, not at render time.
+- Avoid setting None slants then replacing them for angles that are joined?
+- Set a background color, or transparent, for format_svg()
 
 
 Path rules.
