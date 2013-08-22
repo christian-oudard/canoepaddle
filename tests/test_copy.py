@@ -108,3 +108,27 @@ def test_copy_text():
         '<text x="0" y="0" font-family="sans-serif" font-size="1" '
         'fill="#000000">abcd</text>'
     ) in svg_data
+
+
+def test_copy_custom_cap():
+    # Regression test for a bug where doing pen.copy() in a cap function would
+    # break outline drawing.
+    p = Pen()
+    p.stroke_mode(2.0)
+
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
+    p.turn_left(90)
+    p.line_forward(5)
+
+    def copy_cap(pen, end):
+        pen.copy()
+        pen.line_to(end)
+
+    p.last_segment().end_cap = copy_cap
+
+    assert_path_data(
+        p, 0,
+        'M0,-1 L0,1 L6,1 L6,-5 L4,-5 L4,-1 L0,-1 z'
+    )

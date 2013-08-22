@@ -149,7 +149,7 @@ class Pen:
             other.paper = self.paper.copy()
             other._break = self._break
         else:
-            self.break_stroke()
+            other._break = True
 
         if self._mode is not None:
             other._mode = self._mode.copy()

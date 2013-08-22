@@ -18,11 +18,14 @@ def draw():
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(5)
+    p.turn_left(90)
+    p.line_forward(5)
 
-    def circle_cap(pen, end):
-        pen.arc_to(end)
+    def copy_cap(pen, end):
+        pen.copy()
+        pen.line_to(end)
 
-    p.last_segment().end_cap = circle_cap
+    p.last_segment().end_cap = copy_cap
 
     return p.paper
 
