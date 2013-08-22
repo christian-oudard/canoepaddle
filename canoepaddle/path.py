@@ -174,6 +174,7 @@ def draw_thick_segments(pen, segments, loop):
 
     def draw_segment_right(seg, first=False, last=False):
         if first:
+            # This starts on the left of the first segment.
             if loop:
                 # If this segment starts a loop, start directly on right side of
                 # the loop.
@@ -184,20 +185,32 @@ def draw_thick_segments(pen, segments, loop):
                 pen.line_to(seg.a_right)
 
         # Draw along the length of the segment.
+        # If we are not in the right position, go there.
+        if not points_equal(pen.position, seg.a_right):
+            pen.line_to(seg.a_right)
         seg.draw_right(pen)
+        assert pen.position == seg.b_right
 
     def draw_segment_left(seg, first=False, last=False):
         if last:
+            # This starts on the right of the last segment.
             if loop:
                 # If this segment ends a loop, finish the right side and start the
                 # left side of the loop.
-                pen.move_to(seg.b_left)
+                # Draw a line between the loop start segment a_left and
+                # seg.b_left, in case there was a joint error.
+                pen.move_to(segments[0].a_left)
+                pen.line_to(seg.b_left)
             else:
                 # Draw the ending thickness edge.
                 pen.line_to(seg.b_left)
 
         # Continue path back towards the beginning.
+        # If we are not in the right position, go there.
+        if not points_equal(pen.position, seg.b_left):
+            pen.line_to(seg.b_left)
         seg.draw_left(pen)
+        assert points_equal(pen.position, seg.a_left)
 
     # Draw segments.
     if len(segments) == 1:

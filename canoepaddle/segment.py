@@ -15,10 +15,9 @@ from .geometry import (
     closest_point_to,
 )
 from .heading import Heading
-from .error import SegmentError
 
 
-MAX_TURN_ANGLE = 175
+MAX_TURN_ANGLE = 170
 
 
 class Segment:
@@ -33,10 +32,13 @@ class Segment:
         self.b_left = None
         self.b_right = None
 
+        self.start_joint_illegal = False
+        self.end_joint_illegal = False
+
         self.start_slant = None
         self.end_slant = None
-        self.set_start_slant(start_slant)
-        self.set_end_slant(end_slant)
+        if self.can_set_slant():
+            self.set_slants(start_slant, end_slant)
 
     def __iter__(self):
         yield self.a
@@ -117,14 +119,10 @@ class Segment:
         if not self.width:
             return
 
-        try:
-            if isinstance(other, LineSegment):
-                self.join_with_line(other)
-            elif isinstance(other, ArcSegment):
-                self.join_with_arc(other)
-        except SegmentError:
-            #TODO: Make it work somehow if the joint is too sharp.
-            raise
+        if isinstance(other, LineSegment):
+            self.join_with_line(other)
+        elif isinstance(other, ArcSegment):
+            self.join_with_arc(other)
 
     def fused_with(self, other):
         """
@@ -166,9 +164,10 @@ class Segment:
                 self.b_left,
                 self.b_right,
             ]):
-                raise SegmentError('Degenerate segment, endcaps cross each other.')
+                self.start_joint_illegal = True
+                self.end_joint_illegal = True
 
-    def can_set_angle(self):
+    def can_set_slant(self):
         return (
             self.width is not None and
             not points_equal(self.a, self.b)
@@ -191,18 +190,22 @@ class LineSegment(Segment):
         super().reverse()
 
     def join_with_line(self, other):
-        # Check turn angle, and don't turn close to straight back.
         v_self = self._vector()
         v_other = other._vector()
-        angle = math.degrees(vec.angle(v_self, v_other))
-        if abs(angle) > MAX_TURN_ANGLE:
-            raise SegmentError('Turned too sharply.')
+
+        # Check turn angle.
+        self_heading = Heading.from_rad(vec.heading(v_self))
+        other_heading = Heading.from_rad(vec.heading(v_other))
+        turn_angle = self_heading.angle_to(other_heading)
 
         # Special case equal widths.
-        if float_equal(self.width, other.width):
+        if(
+            abs(turn_angle) <= MAX_TURN_ANGLE and
+            float_equal(self.width, other.width)
+        ):
             # When joints between segments of equal width are straight or
             # almost straight, the line-intersection method becomes very
-            # numerically unstable, so we'll use another method instead.
+            # numerically unstable, so use another method instead.
 
             # For each segment, get a vector perpendicular to the
             # segment, then add them. This is an angle bisector for
@@ -219,48 +222,77 @@ class LineSegment(Segment):
             )
 
             # Determine the left and right joint spots.
-            self.b_left = Point(*vec.add(self.b, v_bisect))
-            self.b_right = Point(*vec.sub(self.b, v_bisect))
-            other.a_left = Point(*vec.add(other.a, v_bisect))
-            other.a_right = Point(*vec.sub(other.a, v_bisect))
-            return
+            p_left = vec.add(self.b, v_bisect)
+            p_right = vec.sub(self.b, v_bisect)
+        else:
+            a, b = self.offset_line_left()
+            c, d = other.offset_line_left()
+            p_left = intersect_lines(a, b, c, d)
 
-        a, b = self.offset_line_left()
-        c, d = other.offset_line_left()
-        p_left = intersect_lines(a, b, c, d)
+            a, b = self.offset_line_right()
+            c, d = other.offset_line_right()
+            p_right = intersect_lines(a, b, c, d)
 
-        a, b = self.offset_line_right()
-        c, d = other.offset_line_right()
-        p_right = intersect_lines(a, b, c, d)
+        # Make sure the joint points are "forward" from the perspective
+        # of each segment.
+        if p_left is not None:
+            if vec.dot(vec.vfrom(self.a_left, p_left), v_self) < 0:
+                p_left = None
+        if p_right is not None:
+            if vec.dot(vec.vfrom(self.a_right, p_right), v_self) < 0:
+                p_right = None
+
+        # Don't join the outer sides if the turn angle is too steep.
+        if abs(turn_angle) > MAX_TURN_ANGLE:
+            if turn_angle > 0:
+                p_right = None
+            else:
+                p_left = None
+
+        if p_left is not None:
+            self.b_left = other.a_left = Point(*p_left)
+        if p_right is not None:
+            self.b_right = other.a_right = Point(*p_right)
 
         if p_left is None or p_right is None:
-            raise SegmentError('Joint not allowed.')
-
-        self.b_left = other.a_left = Point(*p_left)
-        self.b_right = other.a_right = Point(*p_right)
+            self.end_joint_illegal = True
+            other.start_joint_illegal = True
 
     def join_with_arc(self, other):
+        # TODO: implement in terms of ArcSegment.join_with_line.
         a, b = self.offset_line_left()
         center, radius = other.offset_circle_left()
         points_left = intersect_circle_line(center, radius, a, b)
+        if len(points_left) > 0:
+            p = Point(*closest_point_to(self.b, points_left))
+            self.b_left = other.a_left = p
 
         a, b = self.offset_line_right()
         center, radius = other.offset_circle_right()
         points_right = intersect_circle_line(center, radius, a, b)
+        if len(points_right) > 0:
+            p = Point(*closest_point_to(self.b, points_right))
+            self.b_right = other.a_right = p
 
-        self.b_left = other.a_left = Point(*closest_point_to(self.b, points_left))
-        self.b_right = other.a_right = Point(*closest_point_to(self.b, points_right))
+        if len(points_left) == 0 or len(points_right) == 0:
+            self.end_joint_illegal = True
+            other.start_joint_illegal = True
 
-    def set_start_slant(self, start_slant):
+    def set_slants(self, start_slant, end_slant):
         if start_slant is not None:
             start_slant = Heading(start_slant)
+        if end_slant is not None:
+            end_slant = Heading(end_slant)
+
         self.start_slant = start_slant
+        self.end_slant = end_slant
 
-        if not self.can_set_angle():
-            return
+        # Intersect the slant lines with the left and right offset lines
+        # to find the corners.
+        line_left = self.offset_line_left()
+        line_right = self.offset_line_right()
 
-        # Intersect the slant line with the left and right offset lines
-        # to find the starting corners.
+        # Start corners.
         if start_slant is None:
             v_slant = vec.perp(self._vector())
         else:
@@ -268,32 +300,16 @@ class LineSegment(Segment):
         a = self.a
         b = vec.add(self.a, v_slant)
 
-        c, d = self.offset_line_left()
-        left = intersect_lines(a, b, c, d)
-
-        c, d = self.offset_line_right()
-        right = intersect_lines(a, b, c, d)
+        left = intersect_lines(a, b, line_left[0], line_left[1])
+        right = intersect_lines(a, b, line_right[0], line_right[1])
 
         if left is None or right is None:
-            raise SegmentError(
-                'Could not set start slant to {}'.format(start_slant)
-            )
+            self.start_joint_illegal = True
+        else:
+            self.a_left = Point(*left)
+            self.a_right = Point(*right)
 
-        self.a_left = Point(*left)
-        self.a_right = Point(*right)
-
-        self.check_degenerate_segment()
-
-    def set_end_slant(self, end_slant):
-        if end_slant is not None:
-            end_slant = Heading(end_slant)
-        self.end_slant = end_slant
-
-        if not self.can_set_angle():
-            return
-
-        # Intersect the slant line with the left and right offset lines
-        # to find the ending corners.
+        # End corners.
         if end_slant is None:
             v_slant = vec.perp(self._vector())
         else:
@@ -301,20 +317,17 @@ class LineSegment(Segment):
         a = self.b
         b = vec.add(self.b, v_slant)
 
-        c, d = self.offset_line_left()
-        left = intersect_lines(a, b, c, d)
+        left = intersect_lines(a, b, line_left[0], line_left[1])
 
-        c, d = self.offset_line_right()
-        right = intersect_lines(a, b, c, d)
+        right = intersect_lines(a, b, line_right[0], line_right[1])
 
         if left is None or right is None:
-            raise SegmentError(
-                'Could not set end slant to {}'.format(end_slant)
-            )
+            self.end_joint_illegal = True
+        else:
+            self.b_left = Point(*left)
+            self.b_right = Point(*right)
 
-        self.b_left = Point(*left)
-        self.b_right = Point(*right)
-
+        # Done, make sure we didn't cross
         self.check_degenerate_segment()
 
     # The offset_line_* functions create a copy of the centerline of a
@@ -439,56 +452,69 @@ class ArcSegment(Segment):
     def join_with_line(self, other):
         a, b = other.offset_line_left()
         center, radius = self.offset_circle_left()
-        points = intersect_circle_line(center, radius, a, b)
-        self.b_left = other.a_left = Point(*closest_point_to(self.b, points))
+        points_left = intersect_circle_line(center, radius, a, b)
+        if len(points_left) > 0:
+            p = Point(*closest_point_to(self.b, points_left))
+            self.b_left = other.a_left = p
 
         a, b = other.offset_line_right()
         center, radius = self.offset_circle_right()
-        points = intersect_circle_line(center, radius, a, b)
-        self.b_right = other.a_right = Point(*closest_point_to(self.b, points))
+        points_right = intersect_circle_line(center, radius, a, b)
+        if len(points_right) > 0:
+            p = Point(*closest_point_to(self.b, points_right))
+            self.b_right = other.a_right = p
+
+        if len(points_left) == 0 or len(points_right) == 0:
+            self.end_joint_illegal = True
+            other.start_joint_illegal = True
 
     def join_with_arc(self, other):
         # Special case coincident arcs.
         if points_equal(self.center, other.center):
-            if (
+            if not (
                 float_equal(self.radius, other.radius) and
                 float_equal(self.width, other.width)
             ):
-                r = vec.vfrom(self.center, self.b)
-                if self.radius < 0:
-                    r = vec.neg(r)
-                v_left = vec.norm(r, self.radius - self.width / 2)
-                self.b_left = other.a_left = Point(*vec.add(self.center, v_left))
-                v_right = vec.norm(r, self.radius + self.width / 2)
-                self.b_right = other.a_right = Point(*vec.add(self.center, v_right))
+                self.end_joint_illegal = True
+                other.start_joint_illegal = True
                 return
-            else:
-                raise SegmentError(
-                    'Joint not allowed, coincident arcs without equal '
-                    'widths or radii.'
-                )
+
+            r = vec.vfrom(self.center, self.b)
+            if self.radius < 0:
+                r = vec.neg(r)
+            v_left = vec.norm(r, self.radius - self.width / 2)
+            self.b_left = other.a_left = Point(*vec.add(self.center, v_left))
+            v_right = vec.norm(r, self.radius + self.width / 2)
+            self.b_right = other.a_right = Point(*vec.add(self.center, v_right))
+            return
 
         c1, r1 = self.offset_circle_left()
         c2, r2 = other.offset_circle_left()
         points_left = intersect_circles(c1, r1, c2, r2)
+        if len(points_left) > 0:
+            p = Point(*closest_point_to(self.b, points_left))
+            self.b_left = other.a_left = p
 
         c1, r1 = self.offset_circle_right()
         c2, r2 = other.offset_circle_right()
         points_right = intersect_circles(c1, r1, c2, r2)
+        if len(points_right) > 0:
+            p = Point(*closest_point_to(self.b, points_right))
+            self.b_right = other.a_right = p
 
         if len(points_left) == 0 or len(points_right) == 0:
-            raise SegmentError('Joint not allowed.')
+            self.end_joint_illegal = True
+            other.start_joint_illegal = True
 
-        self.b_left = other.a_left = Point(*closest_point_to(self.b, points_left))
-        self.b_right = other.a_right = Point(*closest_point_to(self.b, points_right))
+    def set_slants(self, start_slant, end_slant):
+        # TODO: refactor these into one function.
+        self.set_start_slant(start_slant)
+        self.set_end_slant(end_slant)
 
     def set_start_slant(self, start_slant):
         if start_slant is not None:
             start_slant = Heading(start_slant)
         self.start_slant = start_slant
-
-        if not self.can_set_angle():
-            return
 
         # Intersect the slant line with the left and right offset circles
         # to find the starting corners.
@@ -506,9 +532,8 @@ class ArcSegment(Segment):
         points_right = intersect_circle_line(center, radius, a, b)
 
         if len(points_left) == 0 or len(points_right) == 0:
-            raise SegmentError(
-                'Could not set start slant to {}'.format(start_slant)
-            )
+            self.start_joint_illegal = True
+            return
 
         self.a_left = Point(*closest_point_to(self.a, points_left))
         self.a_right = Point(*closest_point_to(self.a, points_right))
@@ -519,9 +544,6 @@ class ArcSegment(Segment):
         if end_slant is not None:
             end_slant = Heading(end_slant)
         self.end_slant = end_slant
-
-        if not self.can_set_angle():
-            return
 
         # Intersect the slant line with the left and right offset circles
         # to find the ending corners.
@@ -539,9 +561,8 @@ class ArcSegment(Segment):
         points_right = intersect_circle_line(center, radius, a, b)
 
         if len(points_left) == 0 or len(points_right) == 0:
-            raise SegmentError(
-                'Could not set end slant to {}'.format(end_slant)
-            )
+            self.end_joint_illegal = True
+            return
 
         self.b_left = Point(*closest_point_to(self.b, points_left))
         self.b_right = Point(*closest_point_to(self.b, points_right))

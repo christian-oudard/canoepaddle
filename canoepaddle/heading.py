@@ -16,6 +16,10 @@ class HeadingBase:
     def rad(self):
         return math.radians(self.theta)
 
+    @classmethod
+    def from_rad(cls, value):
+        return cls(math.degrees(value))
+
     def __lt__(self, other):
         return not self >= other
 
@@ -32,7 +36,7 @@ class Angle(HeadingBase):
         if theta is None:
             raise ValueError('None is not a valid Angle')
         if isinstance(theta, Heading):
-            raise ValueError('Angle required, not Heading')
+            raise TypeError('Angle required, not Heading')
         if isinstance(theta, Angle):
             theta = theta.theta
         self.theta = theta
@@ -41,7 +45,6 @@ class Angle(HeadingBase):
         return str(self.theta)
 
     def __repr__(self):  # pragma: no cover
-        #COVER
         return 'Angle({})'.format(self.theta)
 
     def __eq__(self, other):
@@ -88,7 +91,7 @@ class Heading(HeadingBase):
         if theta is None:
             raise ValueError('None is not a valid Heading')
         if isinstance(theta, Angle):
-            raise ValueError('Heading required, not Angle')
+            raise TypeError('Heading required, not Angle')
         if isinstance(theta, Heading):
             theta = theta.theta
         self.theta = theta % 360
@@ -124,10 +127,11 @@ class Heading(HeadingBase):
             other = Angle(other)
             return Heading(self.theta - other.theta)
 
-    def copy(self):
-        return Heading(self.theta)
-
     def between(self, lo, hi):
+        """
+        Determine whether turning counterclockwise from lo to hi will
+        pass through self.
+        """
         lo = Heading(lo).theta
         mid = self.theta
         hi = Heading(hi).theta
@@ -139,6 +143,19 @@ class Heading(HeadingBase):
         if hi < mid:
             hi += 360
         return hi - lo < 360
+
+    def angle_to(self, other):
+        """
+        Find the smallest angle that can turn self into other.
+        """
+        other = Heading(other)
+        angle = other - self
+        if angle > 180:
+            angle -= 360
+        return angle
+
+    def copy(self):
+        return Heading(self.theta)
 
     def flipped_x(self):
         return Heading(180 - self.theta)

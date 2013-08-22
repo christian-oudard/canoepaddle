@@ -129,7 +129,7 @@ def test_mirror_lines_thick():
 def test_mirror_arcs_thick():
 
     def stroke(p):
-        p.stroke_mode(2)
+        p.stroke_mode(2.0)
         p.move_to((0, 0))
         p.turn_to(0)
         p.arc_left(90, 5)

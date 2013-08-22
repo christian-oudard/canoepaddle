@@ -1,4 +1,4 @@
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal
 from util import (
     assert_segments_equal,
     assert_points_equal,
@@ -7,7 +7,6 @@ from util import (
 
 from canoepaddle.pen import Pen
 from canoepaddle.point import epsilon
-from canoepaddle.error import SegmentError
 
 
 def test_line_segments():
@@ -37,17 +36,24 @@ def test_degenerate_segment():
         p.line_forward(0.5 + offset, end_slant=45)
         return p
 
-    # No exception raised because the endcaps don't cross.
-    draw(+0.1)
+    # No error when the endcaps don't cross.
+    p = draw(+0.1)
+    assert not p.last_segment().start_joint_illegal
+    assert not p.last_segment().end_joint_illegal
 
     # For values within epsilon of crossing, it counts as being on top of the
     # side point.
-    draw(+epsilon / 2)
-    draw(0)
-    draw(-epsilon / 2)
+    p = draw(+epsilon / 2)
+    assert not p.last_segment().start_joint_illegal
+    assert not p.last_segment().end_joint_illegal
+    p = draw(0)
+    assert not p.last_segment().start_joint_illegal
+    assert not p.last_segment().end_joint_illegal
+    p = draw(-epsilon / 2)
+    assert not p.last_segment().start_joint_illegal
+    assert not p.last_segment().end_joint_illegal
 
-    # Once they really cross, a SegmentError is raised.
-    assert_raises(
-        SegmentError,
-        lambda: draw(-0.1)
-    )
+    # Once they really cross, there is an error.
+    p = draw(-0.1)
+    assert p.last_segment().start_joint_illegal
+    assert p.last_segment().end_joint_illegal

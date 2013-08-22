@@ -310,7 +310,7 @@ def test_join_and_fuse_simple():
 
 def test_fuse_with_joint():
     p = Pen()
-    p.stroke_mode(2)
+    p.stroke_mode(2.0)
 
     p.move_to((0, 0))
     p.turn_to(180)
@@ -338,4 +338,28 @@ def test_fuse_with_joint():
     assert_path_data(
         p, 0,
         'M-6,5 L-4,5 L-4,1 L5,1 L5,-1 L-6,-1 L-6,5 z'
+    )
+
+
+def test_join_paths_turn_back_no_joint():
+    p = Pen()
+    p.stroke_mode(1.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(10)
+    p.turn_right(180)
+    p.break_stroke()
+    p.line_forward(5)
+    p.paper.join_paths()
+
+    line1, line2 = p.last_path().segments
+    assert line1.end_joint_illegal
+    assert line2.start_joint_illegal
+
+    assert_path_data(
+        p, 1,
+        (
+            'M0.0,-0.5 L0.0,0.5 L10.0,0.5 L10.0,-0.5 '
+            'L5.0,-0.5 L5.0,0.5 L10.0,0.5 L10.0,-0.5 L0.0,-0.5 z'
+        )
     )

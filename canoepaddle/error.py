@@ -1,2 +1,0 @@
-class SegmentError(Exception):
-    pass

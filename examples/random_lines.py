@@ -2,7 +2,6 @@ from collections import defaultdict
 import random
 
 from canoepaddle import Pen
-from canoepaddle.error import SegmentError
 
 
 # Randomly draw lines between random points. Don't draw more than two lines
@@ -42,10 +41,9 @@ if __name__ == '__main__':
             p.move_to(a)
             p.line_to(b)
             p.break_stroke()
+
         try:
             p.paper.join_paths()
-        except SegmentError:
-            continue
         except AssertionError:
             print(p.log())
             break

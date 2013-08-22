@@ -18,11 +18,11 @@ def test_init_error():
     )
     # Don't allow Headings and Angles to be conflated. They are conceptually different.
     assert_raises(
-        ValueError,
+        TypeError,
         lambda: Angle(Heading(45)),
     )
     assert_raises(
-        ValueError,
+        TypeError,
         lambda: Heading(Angle(45)),
     )
 
@@ -82,6 +82,26 @@ def test_subtract_heading():
 
 def test_radians():
     assert Heading(90).rad == math.pi / 2
+    assert Angle(90).rad == math.pi / 2
+    assert Heading.from_rad(math.pi / 2) == 90
+    assert Angle.from_rad(math.pi / 2) == 90
+
+
+def test_angle_to():
+    assert Heading(0).angle_to(170) == Angle(170)
+    assert Heading(170).angle_to(0) == Angle(-170)
+    assert Heading(0).angle_to(190) == Angle(-170)
+    assert Heading(190).angle_to(0) == Angle(170)
+    assert Heading(45).angle_to(-45) == Angle(-90)
+    assert Heading(-45).angle_to(45) == Angle(90)
+
+    assert Heading(90).angle_to(-90) == Angle(180)
+    assert Heading(-90).angle_to(90) == Angle(180)
+
+    assert_raises(
+        TypeError,
+        lambda: Heading(0).angle_to(Angle(90))
+    )
 
 
 def test_between():
