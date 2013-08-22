@@ -12,13 +12,18 @@ sqrt3 = math.sqrt(3)
 def draw():
 
     p = Pen()
-#    p.stroke_mode(1.0)
-    p.outline_mode(1.0, 0.1)
+
+    p.stroke_mode(2.0)
+
     p.move_to((0, 0))
     p.turn_to(0)
-    p.line_forward(20)
-    p.turn_left(175)
-    p.line_forward(20)
+    p.line_forward(5)
+
+    def circle_cap(pen, end):
+        pen.arc_to(end)
+
+    p.last_segment().end_cap = circle_cap
+
     return p.paper
 
 

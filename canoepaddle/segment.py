@@ -40,6 +40,9 @@ class Segment:
         if self.can_set_slant():
             self.set_slants(start_slant, end_slant)
 
+        self.start_cap = flat_cap
+        self.end_cap = flat_cap
+
     def __iter__(self):
         yield self.a
         yield self.b
@@ -177,6 +180,12 @@ class Segment:
 class LineSegment(Segment):
 
     repr_fields = ['a', 'b', 'start_slant', 'end_slant']
+
+    @property
+    def heading(self):
+        return Heading.from_rad(vec.heading(vec.vfrom(self.a, self.b)))
+    start_heading = heading
+    end_heading = heading
 
     def bounds(self):
         if self.width is None:
@@ -580,3 +589,7 @@ class ArcSegment(Segment):
     def draw_left(self, pen):
         pen.turn_to(self.end_heading + 180)
         pen.arc_to(self.a_left, self.center)
+
+
+def flat_cap(pen, end):
+    pen.line_to(end)

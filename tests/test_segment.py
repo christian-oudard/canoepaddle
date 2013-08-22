@@ -449,3 +449,31 @@ def test_degenerate_arc():
     seg = p.last_segment()
     assert seg.start_joint_illegal
     assert seg.end_joint_illegal
+
+
+def test_custom_cap():
+
+    def circle_cap(pen, end):
+        pen.arc_to(end)
+
+    p = Pen()
+    p.stroke_mode(2.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
+    p.last_segment().end_cap = circle_cap
+    assert_path_data(
+        p, 0,
+        'M0,-1 L0,1 L5,1 A 1,1 0 0 0 5,-1 L0,-1 z'
+    )
+
+    p = Pen()
+    p.stroke_mode(2.0)
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.line_forward(5)
+    p.last_segment().start_cap = circle_cap
+    assert_path_data(
+        p, 0,
+        'M0,-1 A 1,1 0 1 0 0,1 L5,1 L5,-1 L0,-1 z'
+    )

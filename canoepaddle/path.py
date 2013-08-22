@@ -180,9 +180,9 @@ def draw_thick_segments(pen, segments, loop):
                 # the loop.
                 pen.move_to(seg.a_right)
             else:
-                # Draw the beginning edge of the stroke.
                 pen.move_to(seg.a_left)
-                pen.line_to(seg.a_right)
+                pen.turn_to(seg.start_heading + 180)
+                seg.start_cap(pen, seg.a_right)
 
         # Draw along the length of the segment.
         # If we are not in the right position, go there.
@@ -202,8 +202,9 @@ def draw_thick_segments(pen, segments, loop):
                 pen.move_to(segments[0].a_left)
                 pen.line_to(seg.b_left)
             else:
-                # Draw the ending thickness edge.
-                pen.line_to(seg.b_left)
+                pen.move_to(seg.b_right)
+                pen.turn_to(seg.end_heading)
+                seg.end_cap(pen, seg.b_left)
 
         # Continue path back towards the beginning.
         # If we are not in the right position, go there.
