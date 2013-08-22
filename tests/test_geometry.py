@@ -2,7 +2,7 @@ from nose.tools import (
     assert_equal,
     assert_almost_equal,
 )
-from util import assert_points_equal, sqrt2, sqrt3
+from .util import assert_points_equal, sqrt2, sqrt3
 from canoepaddle.geometry import (
     intersect_lines,
     intersect_circle_line,

@@ -49,8 +49,6 @@ def _extract_path_data(pen_or_paper, precision):
             m.group(1) for m in
             re.finditer(r'd="([^"]*)"', element)
         ]
-        if len(path_data) == 0:
-            raise AssertionError('Could not find path data in "{}"'.format(element))
         actual_path_data.extend(path_data)
     return actual_path_data
 

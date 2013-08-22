@@ -1,4 +1,4 @@
-from util import assert_path_data, sqrt2
+from .util import assert_path_data, sqrt2
 
 from canoepaddle import Pen
 

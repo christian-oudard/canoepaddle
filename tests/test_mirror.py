@@ -1,6 +1,6 @@
 from nose.tools import assert_equal
 
-from util import (
+from .util import (
     assert_path_data,
     sqrt2,
 )

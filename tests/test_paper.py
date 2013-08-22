@@ -1,5 +1,5 @@
 from nose.tools import assert_equal, assert_raises
-from util import assert_path_data
+from .util import assert_path_data
 
 from canoepaddle import Pen, Paper, Bounds
 
