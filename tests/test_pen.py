@@ -417,6 +417,19 @@ def test_arc():
     )
 
 
+def test_arc_error():
+    # Don't allow drawing an arc without a center or radius.
+    p = Pen()
+    assert_raises(
+        TypeError,
+        lambda: p.arc_left(90)
+    )
+    assert_raises(
+        TypeError,
+        lambda: p.arc_right(90)
+    )
+
+
 def test_arc_center():
     # Draw the same arcs as in test_arc, but using centers instead of radii.
     p = Pen()

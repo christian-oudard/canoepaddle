@@ -233,6 +233,12 @@ class Pen:
     def arc_left(
         self, arc_angle, radius=None, center=None, start_slant=None, end_slant=None,
     ):
+        if (
+            (radius is None and center is None) or
+            (radius is not None and center is not None)
+        ):
+            raise TypeError('You must specify exactly one of center or radius.')
+
         arc_angle = Angle(arc_angle)
         # Create a radius vector, which is a vector from the arc center to the
         # current position. Subtract to find the center, then rotate the radius
