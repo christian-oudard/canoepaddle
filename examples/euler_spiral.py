@@ -1,11 +1,7 @@
-import math
 from canoepaddle import Pen
 from canoepaddle.point import float_equal
 from scipy.special import fresnel
 import numpy
-
-fresnel_multiplier = math.sqrt(2 / math.pi)
-fresnel_limit = (1 / math.sqrt(2)) * math.sqrt(math.pi / 2)
 
 
 def euler_spiral_parametric(t):

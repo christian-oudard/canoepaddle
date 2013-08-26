@@ -18,14 +18,30 @@ def draw():
     p.move_to((0, 0))
     p.turn_to(0)
     p.line_forward(5)
-    p.turn_left(90)
-    p.line_forward(5)
 
-    def copy_cap(pen, end):
-        pen.copy()
-        pen.line_to(end)
+    def scythe_cap(pen, end):
+        start_heading = pen.heading
 
-    p.last_segment().end_cap = copy_cap
+        temp_pen = pen.copy()
+        temp_pen.turn_right(75)
+        temp_pen.move_forward(1.0)
+        tip = temp_pen.position
+
+        temp_pen.move_to(end)
+        temp_pen.turn_to(start_heading)
+        temp_pen.arc_to(tip)
+        return_heading = temp_pen.heading + 180
+
+        pen.turn_to(start_heading)
+        pen.arc_to(tip)
+        pen.turn_to(return_heading)
+        pen.arc_to(end)
+
+
+    p.last_segment().end_cap = scythe_cap
+    p.move_forward(5)
+    p.fill_mode()
+    p.circle(.5)
 
     return p.paper
 
