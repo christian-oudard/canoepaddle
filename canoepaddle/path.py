@@ -31,7 +31,8 @@ class Path:
     def copy(self):
         other = Path(self.mode.copy())
         other.segments = [seg.copy() for seg in self.segments]
-        other.loop_start_segment = self.loop_start_segment.copy()
+        if self.loop_start_segment is not None:
+            other.loop_start_segment = self.loop_start_segment.copy()
         return other
 
     def translate(self, offset):
