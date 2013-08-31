@@ -163,3 +163,17 @@ def test_copy_loop():
             'M1.9,0.1 L1.9,0.9 L1.1,0.9 L1.1,0.1 L1.9,0.1 z'
         )
     )
+
+
+def test_copy_arc_to():
+    p = Pen()
+    p.fill_mode()
+    p.move_to((0, 0))
+    p.turn_to(0)
+    p.arc_to((5, 5))
+    p = p.copy(paper=True)
+
+    assert_path_data(
+        p, 0,
+        'M0,0 A 5,5 0 0 0 5,-5'
+    )

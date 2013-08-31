@@ -14,8 +14,7 @@ from .geometry import (
     intersect_circles,
     closest_point_to,
 )
-from .heading import Heading
-
+from .heading import Heading, Angle
 
 MAX_TURN_ANGLE = 170
 
@@ -382,7 +381,7 @@ class ArcSegment(Segment):
         self, a, b, width, color, start_slant, end_slant,
         center, radius, arc_angle, start_heading, end_heading,
     ):
-        self.arc_angle = arc_angle
+        self.arc_angle = Angle(arc_angle)
         self.center = Point(*center)
         self.radius = radius
         self.start_heading = start_heading
