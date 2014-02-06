@@ -1,4 +1,5 @@
 import math
+import itertools
 from copy import copy
 from functools import wraps
 
@@ -403,6 +404,29 @@ class Pen:
             color,
             centered,
         ))
+
+    # Parametric.
+
+    def parametric(self, func, start, end, step):
+        start_x, start_y = self.position
+        start_heading = self.heading
+
+        for i in itertools.count():
+            t = start + step * i
+            if t > end:
+                break
+            x, y = func(t)
+
+            x += start_x
+            y += start_y
+
+            if i == 0:
+                self.move_to((x, y))
+            else:
+                self.line_to((x, y))
+
+        self.move_to((start_x, start_y))
+        self.turn_to(start_heading)
 
     # Internal.
 
