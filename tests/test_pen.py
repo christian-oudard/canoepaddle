@@ -950,7 +950,7 @@ def test_color_formats():
             '#ff0000',
         ),
         (
-            Color.NewFromHtml('red'),
+            Color.from_html('red'),
             '#ff0000',
         ),
         (

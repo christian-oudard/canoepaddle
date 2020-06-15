@@ -147,7 +147,7 @@ class Segment:
     def check_degenerate_segment(self):
         if any(
             p is None for p in
-            [self.a_left, self.a_right, self.b_left, self.b_right],
+            [self.a_left, self.a_right, self.b_left, self.b_right]
         ):
             return
 
@@ -171,8 +171,8 @@ class Segment:
 
     def can_set_slant(self):
         return (
-            self.width is not None and
-            not points_equal(self.a, self.b)
+            self.width is not None
+            and not points_equal(self.a, self.b)
         )
 
 
@@ -208,8 +208,8 @@ class LineSegment(Segment):
 
         # Special case equal widths.
         if(
-            abs(turn_angle) <= MAX_TURN_ANGLE and
-            float_equal(self.width, other.width)
+            abs(turn_angle) <= MAX_TURN_ANGLE
+            and float_equal(self.width, other.width)
         ):
             # When joints between segments of equal width are straight or
             # almost straight, the line-intersection method becomes very
@@ -479,8 +479,8 @@ class ArcSegment(Segment):
         # Special case coincident arcs.
         if points_equal(self.center, other.center):
             if not (
-                float_equal(self.radius, other.radius) and
-                float_equal(self.width, other.width)
+                float_equal(self.radius, other.radius)
+                and float_equal(self.width, other.width)
             ):
                 self.end_joint_illegal = True
                 other.start_joint_illegal = True

@@ -15,9 +15,9 @@ def html_color(color):
     if isinstance(color, Color):
         return color.html
     if isinstance(color, str):
-        return Color.NewFromHtml(color).html
+        return Color.from_html(color).html
 
-    return Color.RgbToHtml(*color)
+    return Color(color).html
 
 
 def text_element(text, position, font_family, font_size, color, centered, precision):

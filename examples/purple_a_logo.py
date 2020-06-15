@@ -10,6 +10,7 @@ def draw(p):
     p.arc_left(270, 3)
     p.line_forward(1, end_slant=45)
 
+
 if __name__ == '__main__':
     p = Pen()
     draw(p)

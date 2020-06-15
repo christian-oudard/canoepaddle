@@ -52,5 +52,5 @@ if __name__ == '__main__':
     bounds.top += 1
     paper.override_bounds(bounds)
     print(paper.format_svg(6, resolution=100))
-    #print(paper.format_svg(2, resolution=100))
-    #print(paper.format_svg(1, resolution=100))
+    # print(paper.format_svg(2, resolution=100))
+    # print(paper.format_svg(1, resolution=100))

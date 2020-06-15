@@ -15,10 +15,10 @@ class Bounds:
 
     def __eq__(self, other):
         return (
-            float_equal(self.left, other.left) and
-            float_equal(self.bottom, other.bottom) and
-            float_equal(self.right, other.right) and
-            float_equal(self.top, other.top)
+            float_equal(self.left, other.left)
+            and float_equal(self.bottom, other.bottom)
+            and float_equal(self.right, other.right)
+            and float_equal(self.top, other.top)
         )
 
     def __repr__(self):

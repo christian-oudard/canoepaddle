@@ -62,13 +62,13 @@ class Path:
         elif points_equal(self_last, other_last):
             other.reverse()
 
-        #print('join {}-{} < {}-{} ({} < {})'.format(
-            #tuple(self.segments[0].a),
-            #tuple(self.segments[-1].b),
-            #tuple(other.segments[0].a),
-            #tuple(other.segments[-1].b),
-            #id(self), id(other),
-        #))
+        # print('join {}-{} < {}-{} ({} < {})'.format(
+        #     tuple(self.segments[0].a),
+        #     tuple(self.segments[-1].b),
+        #     tuple(other.segments[0].a),
+        #     tuple(other.segments[-1].b),
+        #     id(self), id(other),
+        # ))
 
         self.segments[-1].join_with(other.segments[0])
         self.segments.extend(other.segments)
@@ -89,11 +89,11 @@ class Path:
             left = self.segments[i]
             right = self.segments[i + 1]
             if (
-                isinstance(left, LineSegment) and
-                isinstance(right, LineSegment) and
-                left.width == right.width and
-                left.color == right.color and
-                collinear(left.a, left.b, right.b)
+                isinstance(left, LineSegment)
+                and isinstance(right, LineSegment)
+                and left.width == right.width
+                and left.color == right.color
+                and collinear(left.a, left.b, right.b)
             ):
                 fused_segment = left.fused_with(right)
                 self.segments[i:i+2] = [fused_segment]
@@ -120,8 +120,8 @@ class Path:
 
         # Check whether we need to join to the first segment.
         if (
-            self.loop_start_segment is not None and
-            points_equal(new_segment.b, self.loop_start_segment.a)
+            self.loop_start_segment is not None
+            and points_equal(new_segment.b, self.loop_start_segment.a)
         ):
             new_segment.join_with(self.loop_start_segment)
             self.loop_start_segment = None
@@ -248,8 +248,8 @@ def group_segments(segments):
             continue
         last_seg = group[-1]
         if (
-            seg.color == last_seg.color and
-            points_equal(last_seg.b, seg.a)
+            seg.color == last_seg.color
+            and points_equal(last_seg.b, seg.a)
         ):
             group.append(seg)
         else:  # Finish this group and start another.

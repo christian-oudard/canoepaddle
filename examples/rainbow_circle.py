@@ -20,8 +20,8 @@ def draw(p):
         chroma = 0.4
         a = chroma * math.sin(math.radians(angle))
         b = chroma * math.cos(math.radians(angle))
-        color = Color.NewFromLab(l, a, b)
-        assert color.isLegal
+        color = Color.from_lab(l, a, b)
+        assert color.is_legal
         p.stroke_mode(1.0, color)
 
         p.arc_right(
@@ -29,6 +29,7 @@ def draw(p):
             center=(0, 0),
         )
         angle += angle_step
+
 
 if __name__ == '__main__':
     p = Pen()

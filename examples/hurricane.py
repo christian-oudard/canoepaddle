@@ -11,6 +11,7 @@ def arm(inner=1.5, outer=3):
     p.fill_mode()
     p.circle(0.5)  # Makeshift round endcaps.
 
+
 orientation = 70
 
 p.stroke_mode(1.0)

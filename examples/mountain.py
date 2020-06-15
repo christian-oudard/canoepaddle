@@ -15,7 +15,6 @@ def draw():
     start_width = width = 3.0
     ratio = (1 / 2) ** (1/5)
 
-
     series = []
     while radius > center_radius / sqrt2:
         series.append((radius, width))

@@ -127,8 +127,8 @@ def intersect_circles(center1, radius1, center2, radius2):
     radius_sum = radius1 + radius2
     radius_difference = abs(radius1 - radius2)
     if (
-        float_equal(dist, radius_sum) or
-        float_equal(dist, radius_difference)
+        float_equal(dist, radius_sum)
+        or float_equal(dist, radius_difference)
     ):
         return [
             vec.add(
@@ -153,12 +153,12 @@ def intersect_circles(center1, radius1, center2, radius2):
     dist2 = vec.mag2(transverse)
     x = (dist2 - radius2**2 + radius1**2) / (2 * dist)
     a = (
-        (1 / dist) *
-        sqrt(
-            (-dist + radius1 - radius2) *
-            (-dist - radius1 + radius2) *
-            (-dist + radius1 + radius2) *
-            (dist + radius1 + radius2)
+        (1 / dist)
+        * sqrt(
+            (-dist + radius1 - radius2)
+            * (-dist - radius1 + radius2)
+            * (-dist + radius1 + radius2)
+            * (dist + radius1 + radius2)
         )
     )
     chord_middle = vec.add(

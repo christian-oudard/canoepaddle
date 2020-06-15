@@ -1,7 +1,7 @@
 #! /bin/sh
 
 rm -f .coverage  # For some reason this occasionally reveals more uncovered lines.
-nosetests-3.3 --verbosity=2 --with-id --with-doctest --with-coverage --cover-tests \
+nosetests --verbosity=2 --with-id --with-doctest --with-coverage --cover-tests \
     --cover-package canoepaddle \
     --cover-package tests \
     $@
@@ -15,6 +15,6 @@ if [ $passed -eq 0 ] ; then
     echo
     echo 'Running examples...'
     for file in examples/*.py; do
-        python $file > $file.svg
+        python3 $file > $file.svg
     done
 fi

@@ -35,4 +35,4 @@ pen.circle(0.01)
 
 print(pen.paper.format_svg(5, resolution=500))
 
-#TODO: euler spiral solver to end at a particular point. newton-raphson method for root finding convergence?
+# TODO: euler spiral solver to end at a particular point. newton-raphson method for root finding convergence?

@@ -118,8 +118,8 @@ class OutlineMode(StrokeMode):
     def compatible_with(self, other):
         # Outlines have to be consistent through the whole stroke.
         return (
-            self.outline_width == other.outline_width and
-            self.outline_color == other.outline_color
+            self.outline_width == other.outline_width
+            and self.outline_color == other.outline_color
         )
 
 

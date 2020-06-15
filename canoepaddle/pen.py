@@ -235,8 +235,8 @@ class Pen:
         self, arc_angle, radius=None, center=None, start_slant=None, end_slant=None,
     ):
         if (
-            (radius is None and center is None) or
-            (radius is not None and center is not None)
+            (radius is None and center is None)
+            or (radius is not None and center is not None)
         ):
             raise TypeError('You must specify exactly one of center or radius.')
 
@@ -437,8 +437,8 @@ class Pen:
 
         # Continue the current path if possible.
         if (
-            not self._break and
-            modes_compatible(self.last_path().mode, self.mode)
+            not self._break
+            and modes_compatible(self.last_path().mode, self.mode)
         ):
             self.last_path().add_segment(new_segment)
         else:

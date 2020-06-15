@@ -20,6 +20,7 @@ def trefoil(origin, radius, num_leaves, leaf_angle, step=1):
         p.turn_right(leaf_angle / 2)
         p.arc_to(next_point)
 
+
 trefoil((-6, 6), 3, 3, 110)
 trefoil((0, 6), 2.7, 4, 120)
 trefoil((6, 6), 2.7, 4, 70)
